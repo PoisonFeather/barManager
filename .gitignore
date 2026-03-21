@@ -1,0 +1,7 @@
+node_modules/
+.env
+.DS_Store
+dist/
+build/
+# Docker data (dacă ai pus volumul în folderul proiectului)
+pgdata/
