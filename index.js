@@ -1,3 +1,21 @@
+/**
+ * 🍹 BarManager API - Core Engine
+ * ---------------------------------------------------------
+ * Proiect: QR-Order SaaS (MVP)
+ * Descriere: Backend API pentru gestionarea barurilor, meniurilor și comenzilor prin QR.
+ * Tehnologii: Node.js, Express, PostgreSQL (Tranzacțional)
+ * * FLUXURI PRINCIPALE:
+ * 1. [ONBOARDING] /onboarding/full-setup -> Creare completă Bar + Meniu + Mese.
+ * 2. [MENU] /menu-complete/:slug       -> Fetch ultra-rapid (JSON Aggregation) pentru Client View.
+ * 3. [ORDERS] /orders                  -> Procesare comenzi cu integritate SQL (Transaction safe).
+ * * SECURITATE: CORS activat, Tranzacții SQL pentru date critice.
+ * PORT: 3001 (Default)
+ * ---------------------------------------------------------
+ * Autor: Andrei
+ * Data: 2026
+ */
+
+
 import express from 'express';
 import pkg from 'pg';
 import cors from 'cors';
@@ -63,7 +81,7 @@ app.post('/categories', async (req, res) => {
     const client = await pool.connect(); // Deschidem conexiunea pentru tranzacție
     
     try {
-      const { bar_name, slug, primary_color, menu } = req.body;
+      const { bar_name, slug, primary_color,bar_number_tables, menu} = req.body;
       await client.query('BEGIN'); // Start tranzacție
   
       // 1. Creăm Barul
@@ -89,8 +107,10 @@ app.post('/categories', async (req, res) => {
         }
       }
   
-      // 3. Generăm automat 10 mese pentru barul ăsta
-      for (let i = 1; i <= 10; i++) {
+      // 3. Generam mesele cu numarul din onboarding / 10 if no number provided
+      const tableCount = (bar_number_tables && bar_number_tables > 0) ? bar_number_tables : 10; //checking if not empty
+
+      for (let i = 1; i <= table_count ; i++) {
         await client.query(
           'INSERT INTO tables (bar_id, table_number) VALUES ($1, $2)',
           [barId, i]
@@ -112,10 +132,17 @@ app.post('/categories', async (req, res) => {
     try {
       const { slug } = req.params;
   
-      // Query SQL complex care aggrega produsele în categorii folosind JSONB
       const query = `
         SELECT 
           b.*,
+          -- 1. Aducem mesele barului (Adăugat acum!)
+          (
+            SELECT jsonb_agg(jsonb_build_object(
+              'id', t.id,
+              'table_number', t.table_number
+            )) FROM tables t WHERE t.bar_id = b.id
+          ) as tables,
+          -- 2. Aducem categoriile și produsele
           (
             SELECT jsonb_agg(jsonb_build_object(
               'id', c.id,
@@ -129,11 +156,11 @@ app.post('/categories', async (req, res) => {
                   'description', p.description,
                   'is_available', p.is_available,
                   'image_url', p.image_url
-                ) ORDER BY p.name) -- Ordonam produsele alfabetic
+                ) ORDER BY p.name)
                 FROM products p
-                WHERE p.category_id = c.id AND p.is_available = true -- Aducem doar produsele in stoc
+                WHERE p.category_id = c.id
               )
-            ) ORDER BY c.display_order) -- Ordonam categoriile cum vrea patronul
+            ) ORDER BY c.display_order)
             FROM categories c
             WHERE c.bar_id = b.id
           ) as categories
@@ -144,15 +171,131 @@ app.post('/categories', async (req, res) => {
       const result = await pool.query(query, [slug]);
   
       if (result.rows.length === 0) {
-        return res.status(404).json({ error: "Barul nu există, boss" });
+        return res.status(404).json({ error: "Barul nu există" });
       }
   
-      // Structura JSON-ului de ieșire este: { ...bar_data, categories: [ {..., products: []} ] }
       res.json(result.rows[0]);
   
     } catch (err) {
       console.error(err);
-      res.status(500).json({ error: "Eroare internă de server. Verifică logurile." });
+      res.status(500).json({ error: "Eroare de server" });
+    }
+  });
+  
+
+app.post('/orders', async (req, res) => {
+    const client = await pool.connect();
+    
+    try {
+      const { bar_id, table_id, items, total_amount } = req.body;
+  
+      if (!items || items.length === 0) {
+        return res.status(400).json({ error: "Coșul e gol!" });
+      }
+  
+      await client.query('BEGIN'); // Start Tranzacție
+  
+      // 1. Inserăm Comanda principală
+      const orderRes = await client.query(
+        'INSERT INTO orders (bar_id, table_id, total_amount, status) VALUES ($1, $2, $3, $4) RETURNING id',
+        [bar_id, table_id, total_amount, 'pending']
+      );
+      const orderId = orderRes.rows[0].id;
+  
+      // 2. Inserăm fiecare produs din coș în order_items
+      const itemQueries = items.map(item => {
+        return client.query(
+          'INSERT INTO order_items (order_id, product_id, quantity, price_at_time) VALUES ($1, $2, $3, $4)',
+          [orderId, item.id, item.quantity, item.price]
+        );
+      });
+      
+      await Promise.all(itemQueries);
+  
+      await client.query('COMMIT'); // Salvăm totul
+  
+      res.json({ 
+        success: true, 
+        orderId, 
+        message: "Comanda a ajuns la barman! 🍻" 
+      });
+  
+    } catch (err) {
+      await client.query('ROLLBACK'); // Anulăm tot în caz de eroare
+      console.error(err);
+      res.status(500).json({ error: "Eroare la procesarea comenzii." });
+    } finally {
+      client.release();
+    }
+  });
+
+
+  // 1. Vezi toate comenzile active ale unui bar
+app.get('/orders/:barId', async (req, res) => {
+    try {
+      const { barId } = req.params;
+      const query = `
+        SELECT o.*, t.table_number,
+        (SELECT jsonb_agg(jsonb_build_object(
+          'name', p.name,
+          'qty', oi.quantity
+        )) FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = o.id) as items
+        FROM orders o
+        JOIN tables t ON o.table_id = t.id
+        WHERE o.bar_id = $1 AND o.status != 'completed'
+        ORDER BY o.created_at DESC;
+      `;
+      const result = await pool.query(query, [barId]);
+      res.json(result.rows);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+  
+  // 2. Schimbă statusul unei comenzi (ex: din pending in completed)
+  app.patch('/orders/:orderId/status', async (req, res) => {
+    try {
+      const { orderId } = req.params;
+      const { status } = req.body;
+      await pool.query('UPDATE orders SET status = $1 WHERE id = $2', [status, orderId]);
+      res.json({ success: true });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+  
+  // 3. Toggle Stoc (Epuizat / Disponibil)
+  app.patch('/products/:productId/toggle', async (req, res) => {
+    try {
+      const { productId } = req.params;
+      const { is_available } = req.body;
+      await pool.query('UPDATE products SET is_available = $1 WHERE id = $2', [is_available, productId]);
+      res.json({ success: true });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+
+  app.get('/table-history/:tableId', async (req, res) => {
+    try {
+      const { tableId } = req.params;
+      const query = `
+        SELECT o.id, o.total_amount, o.status, o.created_at,
+        (SELECT jsonb_agg(jsonb_build_object(
+          'name', p.name,
+          'qty', oi.quantity,
+          'price', oi.price_at_time
+        )) FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = o.id) as items
+        FROM orders o
+        WHERE o.table_id = $1 AND o.status != 'completed' -- Arătăm doar ce nu e plătit final
+        ORDER BY o.created_at DESC;
+      `;
+      const result = await pool.query(query, [tableId]);
+      res.json(result.rows);
+    } catch (err) {
+        
+      res.status(500).json({ error: err.message });
     }
   });
 app.listen(3001, () => console.log('🚀 Server pornit pe portul 3001'));

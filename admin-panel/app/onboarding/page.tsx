@@ -6,6 +6,7 @@ export default function OnboardingPage() {
     bar_name: '',
     slug: '',
     primary_color: '#000000',
+    bar_number_tables:0,
     menu: [{ category: '', products: [{ name: '', price: '', description: '' }] }]
   });
 
@@ -26,7 +27,7 @@ export default function OnboardingPage() {
     });
     
     if (response.ok) {
-      alert("Boss, barul e LIVE! 🚀");
+      alert("LIVE");
     } else {
       alert("Eroare la decolare. Verifică terminalul.");
     }
@@ -44,6 +45,8 @@ export default function OnboardingPage() {
                onChange={e => setBarData({...barData, slug: e.target.value})} />
         <input type="color" className="w-full h-12 bg-zinc-800 rounded cursor-pointer" 
                onChange={e => setBarData({...barData, primary_color: e.target.value})} />
+        <input type="number" placeholder='Numar mese' className="p-3 bg-zinc-800 rounded"
+            onChange={e => setBarData({...barData, bar_number_tables : Number(e.target.value)})} />
       </div>
 
       {/* Dinamic Menu */}
