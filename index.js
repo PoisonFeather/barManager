@@ -298,32 +298,37 @@ app.get('/orders/:barId', async (req, res) => {
   //dashboard barman - grupare pe mese / produse ne-servite
 // Aducem TOATE produsele ne-servite, grupate pe mese
 app.get('/dashboard/summary/:barId', async (req, res) => {
-  try {
-    const { barId } = req.params;
-    const query = `
-      SELECT 
-        t.id as table_id,
-        t.table_number,
-        jsonb_agg(jsonb_build_object(
-          'item_id', oi.id,
-          'name', p.name,
-          'qty', oi.quantity,
-          'order_id', o.id
-        )) as items
-      FROM tables t
-      JOIN orders o ON o.table_id = t.id
-      JOIN order_items oi ON oi.order_id = o.id
-      JOIN products p ON oi.product_id = p.id
-      WHERE o.bar_id = $1 AND o.is_paid = FALSE AND oi.status = 'pending'
-      GROUP BY t.id, t.table_number
-      ORDER BY t.table_number ASC;
-    `;
-    const result = await pool.query(query, [barId]);
-    res.json(result.rows);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
+    try {
+      const { barId } = req.params;
+      const query = `
+        SELECT 
+          t.id as table_id,
+          t.table_number,
+          -- Luăm doar produsele care sunt încă 'pending'
+          COALESCE(
+            jsonb_agg(jsonb_build_object(
+              'item_id', oi.id,
+              'name', p.name,
+              'qty', oi.quantity
+            )) FILTER (WHERE oi.status = 'pending'), 
+            '[]'
+          ) as pending_items,
+          -- Calculăm TOTALUL general (servite + pending) pentru nota de plată
+          SUM(oi.quantity * oi.price_at_time) as total_to_pay
+        FROM tables t
+        JOIN orders o ON o.table_id = t.id
+        JOIN order_items oi ON oi.order_id = o.id
+        JOIN products p ON oi.product_id = p.id
+        WHERE o.bar_id = $1 AND o.is_paid = FALSE
+        GROUP BY t.id, t.table_number
+        ORDER BY t.table_number ASC;
+      `;
+      const result = await pool.query(query, [barId]);
+      res.json(result.rows);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
 
 // Marchează un produs ca fiind servit (dispare de la barman, rămâne la client pe notă)
 app.patch('/order-items/:itemId/serve', async (req, res) => {
