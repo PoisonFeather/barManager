@@ -281,20 +281,92 @@ app.get('/orders/:barId', async (req, res) => {
     try {
       const { tableId } = req.params;
       const query = `
-        SELECT o.id, o.total_amount, o.status, o.created_at,
-        (SELECT jsonb_agg(jsonb_build_object(
-          'name', p.name,
-          'qty', oi.quantity,
-          'price', oi.price_at_time
-        )) FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = o.id) as items
+        SELECT oi.quantity, p.name, oi.price_at_time as price
         FROM orders o
-        WHERE o.table_id = $1 AND o.status != 'completed' -- Arătăm doar ce nu e plătit final
-        ORDER BY o.created_at DESC;
+        JOIN order_items oi ON oi.order_id = o.id
+        JOIN products p ON oi.product_id = p.id
+        WHERE o.table_id = $1 AND o.is_paid = FALSE
+        ORDER BY oi.id ASC;
       `;
       const result = await pool.query(query, [tableId]);
       res.json(result.rows);
     } catch (err) {
-        
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  //dashboard barman - grupare pe mese / produse ne-servite
+// Aducem TOATE produsele ne-servite, grupate pe mese
+app.get('/dashboard/summary/:barId', async (req, res) => {
+  try {
+    const { barId } = req.params;
+    const query = `
+      SELECT 
+        t.id as table_id,
+        t.table_number,
+        jsonb_agg(jsonb_build_object(
+          'item_id', oi.id,
+          'name', p.name,
+          'qty', oi.quantity,
+          'order_id', o.id
+        )) as items
+      FROM tables t
+      JOIN orders o ON o.table_id = t.id
+      JOIN order_items oi ON oi.order_id = o.id
+      JOIN products p ON oi.product_id = p.id
+      WHERE o.bar_id = $1 AND o.is_paid = FALSE AND oi.status = 'pending'
+      GROUP BY t.id, t.table_number
+      ORDER BY t.table_number ASC;
+    `;
+    const result = await pool.query(query, [barId]);
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+// Marchează un produs ca fiind servit (dispare de la barman, rămâne la client pe notă)
+app.patch('/order-items/:itemId/serve', async (req, res) => {
+  try {
+    const { itemId } = req.params;
+    await pool.query("UPDATE order_items SET status = 'served' WHERE id = $1", [itemId]);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json(err); }
+});
+
+// Închide Masa (toate comenzile devin plătite)
+app.patch('/tables/:tableId/close', async (req, res) => {
+  try {
+    const { tableId } = req.params;
+    await pool.query("UPDATE orders SET is_paid = TRUE WHERE table_id = $1 AND is_paid = FALSE", [tableId]);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json(err); }
+});
+  
+  // Endpoint nou: Marchează un singur produs ca fiind servit
+  app.patch('/order-items/:itemId/serve', async (req, res) => {
+    try {
+      const { itemId } = req.params;
+      await pool.query("UPDATE order_items SET status = 'served' WHERE id = $1", [itemId]);
+      res.json({ success: true });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // toggle pentru stoc la produse 
+  app.patch('/products/:id/toggle', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { is_available } = req.body;
+      
+      await pool.query(
+        "UPDATE products SET is_available = $1 WHERE id = $2",
+        [is_available, id]
+      );
+      
+      res.json({ success: true });
+    } catch (err) {
       res.status(500).json({ error: err.message });
     }
   });
