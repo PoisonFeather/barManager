@@ -321,28 +321,41 @@ app.get('/dashboard/summary/:barId', async (req, res) => {
     try {
       const { barId } = req.params;
       const query = `
-        SELECT 
-          t.id as table_id,
-          t.table_number,
-          -- Luăm doar produsele care sunt încă 'pending'
-          COALESCE(
-            jsonb_agg(jsonb_build_object(
-              'item_id', oi.id,
-              'name', p.name,
-              'qty', oi.quantity
-            )) FILTER (WHERE oi.status = 'pending'), 
-            '[]'
-          ) as pending_items,
-          -- Calculăm TOTALUL general (servite + pending) pentru nota de plată
-          SUM(oi.quantity * oi.price_at_time) as total_to_pay
-        FROM tables t
-        JOIN orders o ON o.table_id = t.id
-        JOIN order_items oi ON oi.order_id = o.id
-        JOIN products p ON oi.product_id = p.id
-        WHERE o.bar_id = $1 AND o.is_paid = FALSE
-        GROUP BY t.id, t.table_number
-        ORDER BY t.table_number ASC;
-      `;
+    SELECT 
+      t.id as table_id,
+      t.table_number,
+      -- 🛎️ Cererile active (Chelner/Nota) - Subquery-ul nou
+      (
+        SELECT jsonb_agg(jsonb_build_object(
+          'id', tr.id,
+          'type', tr.type,
+          'method', tr.payment_method,
+          'time', tr.created_at
+        ))
+        FROM table_requests tr
+        WHERE tr.table_id = t.id AND tr.status = 'pending'
+      ) as active_requests,
+      
+      -- 🍺 Produsele care sunt încă 'pending' (logica ta existentă)
+      COALESCE(
+        jsonb_agg(jsonb_build_object(
+          'item_id', oi.id,
+          'name', p.name,
+          'qty', oi.quantity
+        )) FILTER (WHERE oi.status = 'pending'), 
+        '[]'
+      ) as pending_items,
+      
+      -- 💰 Calculăm TOTALUL general (servite + pending) pentru nota de plată
+      SUM(oi.quantity * oi.price_at_time) as total_to_pay
+    FROM tables t
+    JOIN orders o ON o.table_id = t.id
+    JOIN order_items oi ON oi.order_id = o.id
+    JOIN products p ON oi.product_id = p.id
+    WHERE o.bar_id = $1 AND o.is_paid = FALSE
+    GROUP BY t.id, t.table_number
+    ORDER BY t.table_number ASC;
+`;
       const result = await pool.query(query, [barId]);
       res.json(result.rows);
     } catch (err) {
@@ -395,4 +408,32 @@ app.patch('/tables/:tableId/close', async (req, res) => {
       res.status(500).json({ error: err.message });
     }
   });
+  // Clientul trimite o cerere (chelner sau notă)
+app.post('/requests', async (req, res) => {
+  try {
+    const { bar_id, table_id, type, payment_method } = req.body;
+    const newRequest = await pool.query(
+      'INSERT INTO table_requests (bar_id, table_id, type, payment_method) VALUES ($1, $2, $3, $4) RETURNING *',
+      [bar_id, table_id, type, payment_method]
+    );
+    res.json(newRequest.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Barmanul marchează cererea ca rezolvată
+// Marchează o cerere (chelner/nota) ca fiind rezolvată
+app.patch('/requests/:id/complete', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await pool.query(
+      "UPDATE table_requests SET status = 'completed' WHERE id = $1",
+      [id]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 app.listen(3001, () => console.log('🚀 Server pornit pe portul 3001'));
