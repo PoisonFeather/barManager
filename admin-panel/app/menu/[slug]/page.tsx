@@ -1,8 +1,27 @@
+/**  Componenta client-side pentru comenzi
+  *  - Preia datele meniului și istoricul comenzilor pentru masa curentă
+  *  - Permite adăugarea produselor în coș și trimiterea comenzii
+  *  - Oferă opțiuni de servicii (chemare chelner, cerere notă)
+  *  - Se asigură că totul este sincronizat cu localStorage pentru persistență
+  *  - Folosește culorile și stilurile definite de bar pentru o experiență personalizată
+  * 
+  * TODO:
+  * - Adăugare feedback vizual pentru acțiuni (ex: animație la adăugare în coș, confirmare vizuală la trimiterea comenzii)
+  * - Optimizare performanță pentru meniuri mari (ex: paginare, încărcare lazy a imaginilor)
+  * - Gestionare erori mai robustă (ex: afișare mesaje de eroare detaliate, retry la trimiterea comenzii)
+  * - Posibilă integrare cu un sistem de notificări în timp real pentru actualizări ale comenzii sau mesaje de la chelner
+  * - Îmbunătățirea UI/UX pentru modalul de servicii, poate cu mai multe opțiuni sau personalizare în funcție de bar
+  * 
+  */
+
+
 "use client";
 import { useEffect, useState, use } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ThemeToggle } from "@/components/ThemeToggle";
 
+
+// Această componentă este destinată să fie rulată pe client, deoarece folosește stări și efecte pentru a gestiona interacțiunile utilizatorului și pentru a prelua date dinamice de la server.
 export default function ClientMenu({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const searchParams = useSearchParams();
@@ -54,7 +73,7 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
   useEffect(() => {
     if (finalTableId) fetchHistory();
   }, [finalTableId]);
-
+// 3. LOGICA COȘ (Fixat cu backticks)
   const addToCart = (product: any) => {
     setCart((prev) => {
       const existing = prev.find(item => item.id === product.id);
@@ -78,7 +97,7 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
   const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
-  // 3. TRIMITERE COMANDĂ (Fixat cu backticks)
+  // 4. TRIMITERE COMANDĂ (Fixat cu backticks)
   const sendOrder = async () => {
     if (!data?.id || !finalTableId) {
       alert("Nu am putut identifica masa!");
@@ -205,7 +224,7 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
         </div>
       )}
 
-      {/* MODAL COȘ (CEL PREMIUM) */}
+      {/* MODAL COȘ */}
       {isCartOpen && (
         <div className="fixed inset-0 z-50 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-md" onClick={() => setIsCartOpen(false)}></div>

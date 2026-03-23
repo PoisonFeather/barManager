@@ -1,3 +1,17 @@
+/* Onboarding dashboard 
+- Form pentru a introduce toate datele necesare despre bar (nume, slug, culoare, numar mese)
+- Form dinamic pentru a adăuga categorii și produse (cu nume și preț)
+- Buton de submit care trimite totul la backend pentru a crea barul și meniul aferent
+TODO:
+- Validări de bază (ex: nume obligatoriu, preț numeric)
+- Feedback vizual pentru erori sau succes
+- Posibilitate de a adăuga o descriere pentru fiecare produs
+- Posibilitate de a șterge categorii sau produse adăugate din greșeală
+- Design responsive și user-friendly
+
+*/
+
+
 "use client";
 import { useState } from 'react';
 
@@ -32,7 +46,7 @@ export default function OnboardingPage() {
       alert("Eroare la decolare. Verifică terminalul.");
     }
   };
-
+  // Logica pentru a adăuga un produs nou într-o categorie specifică
   return (
     <div className="p-8 bg-black min-h-screen text-white font-sans">
       <h1 className="text-4xl font-black mb-8 text-red-600">NEW BAR ONBOARDING</h1>
