@@ -228,56 +228,83 @@ const sendRequest = async (type: string, method: string | null = null) => {
 
       {/* 4. MODAL COȘ & ISTORIC */}
       {isCartOpen && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsCartOpen(false)}></div>
-          <div className="relative bg-zinc-900 w-full max-h-[90vh] rounded-t-[3rem] p-8 flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-300">
-             <div className="w-12 h-1.5 bg-zinc-800 rounded-full mx-auto mb-8"></div>
-             
-             <div className="flex-1 overflow-y-auto space-y-8 pb-10">
-                {/* Produse noi în coș */}
-                {cart.length > 0 && (
-                  <div className="space-y-4">
-                    <h3 className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">În coș</h3>
-                    {cart.map((item) => (
-                      <div key={item.id} className="flex justify-between items-center bg-white/5 p-4 rounded-2xl border border-white/5">
-                        <div>
-                          <p className="font-bold">{item.name}</p>
-                          <p className="text-[10px] text-zinc-500">{(item.price * item.quantity).toFixed(2)} RON</p>
-                        </div>
-                        <div className="flex items-center gap-4 bg-black/40 p-2 rounded-xl">
-                          <button className="w-8 h-8 flex items-center justify-center font-bold" onClick={() => updateQuantity(item.id, -1)}>−</button>
-                          <span className="font-black w-4 text-center">{item.quantity}</span>
-                          <button className="w-8 h-8 flex items-center justify-center font-bold" onClick={() => updateQuantity(item.id, 1)}>+</button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Istoric comenzi */}
-                {orderHistory.length > 0 && (
-                  <div className="pt-6 border-t border-white/10">
-                    <h3 className="text-zinc-500 text-[10px] font-black uppercase mb-4 tracking-widest">Comandate anterior</h3>
-                    <div className="space-y-2 opacity-60">
-                      {orderHistory.map((item, i) => (
-                        <div key={i} className="flex justify-between text-xs font-medium">
-                          <span>{item.quantity}x {item.name}</span>
-                          <span>{(item.quantity * item.price).toFixed(2)} RON</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-             </div>
-
-             {cart.length > 0 && (
-               <button onClick={sendOrder} className="w-full p-6 rounded-[2rem] font-black text-xl shadow-2xl active:scale-95 transition-all" style={{ backgroundColor: data.primary_color, color: '#000' }}>
-                 Trimite Comanda
-               </button>
-             )}
+  <div className="fixed inset-0 z-50 flex flex-col justify-end">
+    {/* Overlay cu blur mai intens */}
+    <div className="absolute inset-0 bg-black/40 backdrop-blur-md" onClick={() => setIsCartOpen(false)}></div>
+    
+    <div className="relative bg-white dark:bg-zinc-900 w-full max-h-[85vh] rounded-t-[3rem] shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-300">
+       {/* Handle-ul de sus pentru drag feeling */}
+       <div className="w-12 h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full mx-auto my-6"></div>
+       
+       <div className="flex-1 overflow-y-auto px-8 pb-10 space-y-8">
+          <div className="flex justify-between items-end">
+            <h2 className="text-3xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">Nota Ta</h2>
+            <button onClick={() => setIsCartOpen(false)} className="text-[10px] font-black uppercase text-zinc-400">Închide</button>
           </div>
-        </div>
-      )}
+
+          {/* Produse noi în coș - Stil Card Premium */}
+          {cart.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-zinc-400 text-[10px] font-black uppercase tracking-[0.2em]">De Comandat</h3>
+              {cart.map((item) => (
+                <div key={item.id} className="flex justify-between items-center bg-zinc-50 dark:bg-white/5 p-5 rounded-[2rem] border border-zinc-100 dark:border-white/5">
+                  <div className="flex-1">
+                    <p className="font-black text-zinc-900 dark:text-zinc-100 uppercase text-sm leading-tight">{item.name}</p>
+                    <p className="text-[10px] font-bold text-zinc-500 mt-1">{(item.price * item.quantity).toFixed(2)} RON</p>
+                  </div>
+                  <div className="flex items-center gap-4 bg-zinc-200/50 dark:bg-black/40 p-1.5 rounded-2xl border border-zinc-300 dark:border-white/10">
+                    <button className="w-8 h-8 flex items-center justify-center font-bold text-zinc-900 dark:text-white" onClick={() => updateQuantity(item.id, -1)}>−</button>
+                    <span className="font-black w-4 text-center text-sm">{item.quantity}</span>
+                    <button className="w-8 h-8 flex items-center justify-center font-bold text-zinc-900 dark:text-white" onClick={() => updateQuantity(item.id, 1)}>+</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Istoric - Stil Subtil */}
+          {orderHistory.length > 0 && (
+            <div className="pt-4">
+              <h3 className="text-zinc-400 text-[10px] font-black uppercase tracking-[0.2em] mb-4 text-center">Comandate Anterior</h3>
+              <div className="space-y-2 bg-zinc-100 dark:bg-black/20 p-6 rounded-[2rem] border border-dashed border-zinc-200 dark:border-white/10">
+                {orderHistory.map((item, i) => (
+                  <div key={i} className="flex justify-between text-[11px] font-bold uppercase tracking-tight text-zinc-500 dark:text-zinc-400">
+                    <span>{item.quantity}x {item.name}</span>
+                    <span className="font-mono italic">{(item.quantity * item.price).toFixed(2)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+       </div>
+
+       {/* TOTAL ȘI BUTON - Secțiunea de jos fixă */}
+       <div className="p-8 pt-4 bg-zinc-50 dark:bg-zinc-900/80 border-t border-zinc-100 dark:border-white/5 backdrop-blur-lg">
+          <div className="flex justify-between items-center mb-6 px-2">
+            <span className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Total de plată</span>
+            <span className="text-2xl font-black text-zinc-900 dark:text-white">
+              {(totalAmount + orderHistory.reduce((sum, o) => sum + Number(o.price * o.quantity || 0), 0)).toFixed(2)} RON
+            </span>
+          </div>
+
+          {cart.length > 0 ? (
+             <button 
+                onClick={sendOrder} 
+                className="w-full p-6 rounded-[2rem] font-black text-lg uppercase tracking-widest shadow-2xl transition-all active:scale-95 flex justify-between items-center px-10 group"
+                style={{ backgroundColor: data.primary_color || '#ff5f00', color: '#000' }}
+             >
+               <span>Trimite Comanda</span>
+               <span className="opacity-40 group-hover:translate-x-2 transition-transform">🚀</span>
+             </button>
+          ) : (
+            <p className="text-center text-[10px] font-black text-zinc-400 uppercase tracking-widest pb-4 italic">
+              Coșul este gol • Adaugă ceva bun
+            </p>
+          )}
+       </div>
+    </div>
+  </div>
+)}
 
       {/* 5. MODAL SERVICII (CHELNER / NOTA) */}
       {isServiceModalOpen && (
