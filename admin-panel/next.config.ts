@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // ✅ În Next.js 15/16, aceasta este o proprietate de bază, NU experimentală
+  allowedDevOrigins: ['192.168.0.180','192.168.0.52:3000', 'localhost:3000'],
+  
+  /* alte opțiuni aici, dar NU în interiorul "experimental" */
 };
 
 export default nextConfig;

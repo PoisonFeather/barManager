@@ -33,7 +33,13 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
     
     return () => clearInterval(interval);
   }, [slug, barData?.id]);
-
+  
+  const completeRequest = async (requestId: string) => {
+    try {
+      const res = await fetch(`http://localhost:3001/requests/${requestId}/complete`, { method: 'PATCH' });
+      if (res.ok) fetchSummary(barData.id); // REFRESH INSTANT
+    } catch (err) { console.error(err); }
+  };
   // 2. Acțiuni Barman
   const serveItem = async (itemId: string) => {
     try {
@@ -42,12 +48,7 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
     } catch (err) { alert("Eroare la servire."); }
   };
 
-  const completeRequest = async (requestId: string) => {
-    try {
-      const res = await fetch(`http://localhost:3001/requests/${requestId}/complete`, { method: 'PATCH' });
-      if (res.ok) fetchSummary(barData.id); // REFRESH INSTANT
-    } catch (err) { console.error(err); }
-  };
+  
 
   const closeTable = async (tableId: string) => {
     if (!confirm("Sigur închizi masa? Toate comenzile vor fi marcate ca plătite.")) return;

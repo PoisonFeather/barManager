@@ -28,6 +28,7 @@ const { Pool } = pkg;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const envPath = path.resolve(__dirname, '.env');
 
+
 // --- DEBUG START ---
 console.log("-----------------------------------------");
 if (fs.existsSync(envPath)) {
@@ -43,7 +44,11 @@ dotenv.config({ path: envPath });
 console.log("🔗 DATABASE_URL:", process.env.DATABASE_URL ? "✅ ÎNCĂRCATĂ" : "❌ LIPSEȘTE");
 console.log("-----------------------------------------");
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: '*', // Permite orice sursă
+  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 // Conexiunea la baza de date din Docker
