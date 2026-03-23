@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, use } from 'react';
+import { useRef,useEffect, useState, use } from 'react';
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function BartenderDashboard({ params }: { params: Promise<{ slug: string }> }) {
@@ -77,6 +77,49 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
       }
     } catch (err) { alert("Eroare stoc."); }
   };
+  const prevTotalAlerts = useRef(0);
+
+  // 1. Adaugă o stare pentru activare sus în componentă
+const [isAudioEnabled, setIsAudioEnabled] = useState(false);
+const audioRef = useRef<HTMLAudioElement | null>(null);
+
+// 2. Inițializăm audio-ul o singură dată
+useEffect(() => {
+  audioRef.current = new Audio('/ding.mp3');
+  audioRef.current.load();
+}, []);
+
+// 3. Funcția de deblocare (TREBUIE chemată la click)
+const enableAudio = () => {
+  if (audioRef.current) {
+    // Redăm sunetul 0.1 secunde și dăm PAUSE imediat. 
+    // Asta "convinge" browserul că utilizatorul vrea sunet pe pagina asta.
+    audioRef.current.play().then(() => {
+      audioRef.current?.pause();
+      if (audioRef.current) audioRef.current.currentTime = 0;
+      setIsAudioEnabled(true);
+    }).catch(err => console.error("Eroare deblocare:", err));
+  }
+};
+
+// 4. Modifică useEffect-ul de "Ding"
+useEffect(() => {
+  if (!tableGroups || tableGroups.length === 0 || !isAudioEnabled) return;
+
+  const currentTotal = tableGroups.reduce((acc, group) => {
+    return acc + (group.pending_items?.length || 0) + (group.active_requests?.length || 0);
+  }, 0);
+
+  if (currentTotal > prevTotalAlerts.current && prevTotalAlerts.current !== 0) {
+    //console.log("🔔 DING! (Acum ar trebui să sune)");
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(e => console.log("Tot e blocat:", e));
+    }
+  }
+  prevTotalAlerts.current = currentTotal;
+}, [tableGroups, isAudioEnabled]);
+
 
   if (!barData) return <div className="min-h-screen bg-black flex items-center justify-center text-white font-black animate-pulse">CONECTARE...</div>;
 
@@ -91,7 +134,16 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> Dashboard Live
           </p>
         </div>
-  
+        {!isAudioEnabled && (
+  <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center">
+    <button 
+      onClick={enableAudio}
+      className="bg-orange-500 hover:bg-orange-600 text-black font-black px-10 py-5 rounded-[2rem] text-xl shadow-2xl animate-bounce"
+    >
+      🚀 ACTIVEAZĂ ALERTELE SONORE
+    </button>
+  </div>
+)}
         <div className="flex items-center gap-4 w-full md:w-auto">
           <ThemeToggle />
           <div className="flex flex-1 md:flex-none gap-1 bg-zinc-200 dark:bg-black/50 p-1.5 rounded-2xl border border-zinc-300 dark:border-white/5">
