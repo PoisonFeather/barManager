@@ -265,12 +265,7 @@ README-ul deja existent menționează și directoare dedicate pentru docker și 
 * dashboard operațional pentru fluxul din bar.
 
 Aceste direcții apar explicit atât în comentariile din backend, cât și în README-ul actual.        
-
-## ⚠️ Observații tehnice
-
-Există cel puțin o inconsecvență vizibilă în codul backend: variabila `tableCount` este declarată, dar în bucla de generare a meselor apare `table_count`, ceea ce ar trebui verificat și corectat.    
-
-De asemenea, proiectul pare încă într-o etapă de MVP, fără strat clar de autentificare, autorizare sau validare avansată a inputului. Aceasta este o inferență bazată pe fișierele disponibile.   0  
+ 
 
 ## 🗺 Roadmap recomandat
 

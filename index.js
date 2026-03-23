@@ -110,7 +110,7 @@ app.post('/categories', async (req, res) => {
       // 3. Generam mesele cu numarul din onboarding / 10 if no number provided
       const tableCount = (bar_number_tables && bar_number_tables > 0) ? bar_number_tables : 10; //checking if not empty
 
-      for (let i = 1; i <= table_count ; i++) {
+      for (let i = 1; i <= tableCount ; i++) {
         await client.query(
           'INSERT INTO tables (bar_id, table_number) VALUES ($1, $2)',
           [barId, i]
