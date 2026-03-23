@@ -19,9 +19,29 @@
 import express from 'express';
 import pkg from 'pg';
 import cors from 'cors';
-const { Pool } = pkg;
-import 'dotenv/config';
+import dotenv from 'dotenv';
+import fs from 'fs'; // Importă modulul de File System
+import path from 'path';
+import { fileURLToPath } from 'url';
 
+const { Pool } = pkg;
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const envPath = path.resolve(__dirname, '.env');
+
+// --- DEBUG START ---
+console.log("-----------------------------------------");
+if (fs.existsSync(envPath)) {
+  const content = fs.readFileSync(envPath, 'utf8');
+  console.log("📄 Conținut brut .env (primele 20 caractere):", content.substring(0, 20) + "...");
+  console.log("📄 Lungime fișier:", content.length, "caractere");
+} else {
+  console.log("❌ Fișierul .env NU există la calea:", envPath);
+}
+// --- DEBUG END ---
+
+dotenv.config({ path: envPath });
+console.log("🔗 DATABASE_URL:", process.env.DATABASE_URL ? "✅ ÎNCĂRCATĂ" : "❌ LIPSEȘTE");
+console.log("-----------------------------------------");
 const app = express();
 app.use(cors());
 app.use(express.json());
