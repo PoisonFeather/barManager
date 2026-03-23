@@ -12,6 +12,9 @@
   * - Posibilă integrare cu un sistem de notificări în timp real pentru actualizări ale comenzii sau mesaje de la chelner
   * - Îmbunătățirea UI/UX pentru modalul de servicii, poate cu mai multe opțiuni sau personalizare în funcție de bar
   * 
+  * - FIX: aspect meniu trimitere comanda in light mode (culoarea textului era prea deschisa)
+  * - FIX: probleme de hidratare și stări nealiniate la deschiderea/închiderea coșului și a modalului de servicii
+  * 
   */
 
 
