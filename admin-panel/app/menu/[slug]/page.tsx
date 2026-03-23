@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, use } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function ClientMenu({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -151,17 +152,25 @@ const sendRequest = async (type: string, method: string | null = null) => {
   if (!data) return <div className="p-10 text-white bg-black h-screen flex items-center justify-center font-black animate-pulse">ÎNCĂRCARE...</div>;
 
   return (
-    <div className="min-h-screen bg-black text-white pb-32 font-sans relative">
+    <div className="min-h-screen bg-zinc-50 dark:bg-black text-zinc-900 dark:text-white pb-32 font-sans relative transition-colors duration-300">
       {/* 1. HEADER */}
-      <div className="sticky top-0 z-40 p-5 backdrop-blur-xl border-b border-white/10 flex justify-between items-center" style={{ borderBottomColor: data.primary_color + '44' }}>
-        <div>
-          <h1 className="font-black text-2xl uppercase leading-none">{data.name}</h1>
-          <p className="text-[9px] text-zinc-500 font-bold uppercase mt-1 tracking-widest">Order System</p>
-        </div>
-        <div className="px-4 py-2 rounded-2xl text-[11px] font-black" style={{ backgroundColor: data.primary_color || '#ffffff', color: '#000' }}>
-          MASA {displayTableNumber}
-        </div>
-      </div>
+      <div className="sticky top-0 z-40 p-5 backdrop-blur-xl border-b border-white/10 flex justify-between items-center transition-colors duration-300 bg-white/80 dark:bg-black/80" style={{ borderBottomColor: data.primary_color + '44' }}>
+  <div>
+    <h1 className="font-black text-2xl uppercase leading-none text-zinc-900 dark:text-white">
+      {data.name}
+    </h1>
+    <p className="text-[9px] text-zinc-500 font-bold uppercase mt-1 tracking-widest">Order System</p>
+  </div>
+  
+  <div className="flex items-center gap-3">
+    {/* BUTONUL DE DARK/LIGHT MODE */}
+    <ThemeToggle />
+
+    <div className="px-4 py-2 rounded-2xl text-[11px] font-black shadow-sm" style={{ backgroundColor: data.primary_color || '#ffffff', color: '#000' }}>
+      MASA {displayTableNumber}
+    </div>
+  </div>
+</div>
 
       {/* 2. LISTA PRODUSE */}
       <div className="p-4 space-y-10 mt-4">
