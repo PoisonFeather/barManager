@@ -22,7 +22,7 @@ export function ThemeToggle() {
       <span
         className={`${
           isDark ? "translate-x-8 bg-zinc-900" : "translate-x-1 bg-white"
-        } inline-block h-7 w-7 transform rounded-full transition-transform duration-300 ease-in-out flex items-center justify-center shadow-md`}
+        } inline-block h-7 w-7 transform rounded-full transition-transform duration-300 ease-in-out items-center justify-center shadow-md`}
       >
         {isDark ? (
           <span className="text-[14px]">🌙</span>
