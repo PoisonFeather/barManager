@@ -160,9 +160,9 @@ export function validateCreateRequestPayload(req, res, next) {
   //errors.push("payment_method must be a non-empty string when provided");
   //}
 
-  if (type === "bill" && isNonEmptyString(payment_method)) {
-    errors.push("payment_method should not be provided for bill requests");
-  }
+  //if (type === "bill" && isNonEmptyString(payment_method)) {
+  //errors.push("payment_method should not be provided for bill requests");
+  //}
 
   if (errors.length > 0) {
     return fail(res, "Invalid request payload", errors);
@@ -178,12 +178,17 @@ export function validateToggleProductPayload(req, res, next) {
   const { productId } = req.params ?? {};
   const { is_available } = req.body ?? {};
   const errors = [];
-
+  console.log("Validating toggle product payload:", {
+    productId,
+    is_available,
+  });
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   const parsedProductId = Number(productId);
-  if (!Number.isInteger(parsedProductId) || parsedProductId <= 0) {
-    errors.push("productId must be a positive integer");
+  if (!productId || !uuidRegex.test(productId)) {
+    errors.push("productId must be a valid UUID");
   }
-  if (!isBoolean(is_available)) {
+  if (typeof is_available !== "boolean") {
     errors.push("is_available must be a boolean");
   }
 
