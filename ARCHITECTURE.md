@@ -55,6 +55,11 @@ barManager/
         env.js
       db/
         pool.js
+      middleware/
+        validation.js
+      controllers/
+      services/
+      repositories/
       routes/
         dashboard.routes.js
         health.routes.js
@@ -93,11 +98,19 @@ The backend has been refactored toward SRP at module level.
 2. `backend/src/app.js` (HTTP composition)
    - configures middleware
    - registers route modules
-3. `backend/src/routes/*.routes.js` (transport + domain endpoints)
-   - express handlers for each domain area
-4. `backend/src/db/pool.js` (data access primitive)
+3. `backend/src/middleware/*.js` (cross-cutting HTTP concerns)
+   - request validation and request-shape guards
+4. `backend/src/routes/*.routes.js` (transport layer)
+   - route path/method binding to middleware + controllers
+5. `backend/src/controllers/*.js` (HTTP orchestration)
+   - converts HTTP inputs to service calls and maps responses
+6. `backend/src/services/*.js` (domain logic)
+   - business rules and transaction orchestration
+7. `backend/src/repositories/*.js` (persistence)
+   - SQL and DB interaction only
+8. `backend/src/db/pool.js` (data access primitive)
    - shared PostgreSQL pool
-5. `backend/src/config/env.js` (runtime config)
+9. `backend/src/config/env.js` (runtime config)
    - env loading and diagnostics
 
 ### 3.2 Backend responsibility map
@@ -108,9 +121,21 @@ The backend has been refactored toward SRP at module level.
 - `db/pool.js`
   - owns DB client pool creation
   - must not register routes or business behavior
+- `middleware/validation.js`
+  - owns payload and params shape validation
+  - rejects invalid input early with 400 responses
 - `routes/*.routes.js`
-  - currently own HTTP handlers and SQL calls
-  - next refactor stage will split into controllers/services/repositories
+  - own HTTP transport binding only
+  - delegate to middleware and controllers
+- `controllers/*.js`
+  - own request/response orchestration
+  - should not contain SQL
+- `services/*.js`
+  - own domain behavior and use-case orchestration
+  - should not depend on Express req/res
+- `repositories/*.js`
+  - own SQL and persistence details
+  - return data primitives to services
 
 ### 3.3 Route domains
 
@@ -127,6 +152,19 @@ The backend has been refactored toward SRP at module level.
   - table service request creation/completion
 - `health.routes.js`
   - DB readiness endpoint (`GET /health/db`)
+
+### 3.4 Validation middleware coverage
+
+Critical endpoint guards are centralized in `backend/src/middleware/validation.js`:
+
+- `POST /onboarding/full-setup`
+  - required `bar_name`, `slug`, `menu[]` structure
+- `POST /orders`
+  - required numeric ids, non-empty items, positive totals/prices
+- `POST /requests`
+  - required ids and request type
+- `PATCH /products/:productId/toggle`
+  - valid `productId` and boolean `is_available`
 
 ---
 
@@ -201,6 +239,11 @@ Current frontend SRP status:
 - `POST /requests`
 - `PATCH /requests/:id/complete`
 
+Validation notes:
+
+- invalid payloads return `400` with `{ error, details }`
+- controllers/services run only after middleware passes
+
 ### Health
 
 - `GET /health/db`
@@ -233,8 +276,10 @@ These conventions keep the codebase maintainable as the team scales.
 - `config/`: runtime config only
 - `db/`: connection primitives only
 - `routes/`: HTTP transport only (target state)
-- `services/` (future): domain logic + orchestration
-- `repositories/` (future): SQL and DB queries only
+- `middleware/`: shared request guards and cross-cutting concerns
+- `controllers/`: request/response orchestration
+- `services/`: domain logic + orchestration
+- `repositories/`: SQL and DB queries only
 
 ### 8.2 Change strategy
 
@@ -261,10 +306,10 @@ These conventions keep the codebase maintainable as the team scales.
 
 Current technical debt to address in upcoming refactors:
 
-1. Route handlers still combine transport + business + SQL
+1. Some controllers still duplicate error-status resolution helper logic
 2. Frontend pages remain large and multi-responsibility
-3. API request validation middleware is not yet standardized
-4. Automated backend tests are limited
+3. Automated backend tests are still limited
+4. Validation rules are centralized but can be expanded per endpoint
 
 ---
 
@@ -279,9 +324,9 @@ Suggested staged migration:
 
 ### Phase B (next)
 
-- introduce `controllers/`, `services/`, `repositories/`
-- move SQL out of route files
-- centralize validation and shared API error helpers
+- standardize shared error response helpers across controllers
+- expand automated tests for critical transactional flows
+- add stricter per-endpoint validation rules where needed
 
 ### Phase C
 
