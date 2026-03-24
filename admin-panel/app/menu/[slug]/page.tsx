@@ -76,6 +76,8 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
   useEffect(() => {
     if (finalTableId) fetchHistory();
   }, [finalTableId]);
+
+
 // 3. LOGICA COȘ (Fixat cu backticks)
   const addToCart = (product: any) => {
     setCart((prev) => {
@@ -130,7 +132,7 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
         fetchHistory();
       }
     } catch (err) {
-      alert("Eroare la server!");
+      alert("Eroare la server!" + err );
     }
   };
 
@@ -265,30 +267,85 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
       )}
 
       {/* 5. MODAL SERVICII */}
-      {isServiceModalOpen && (
-        <div className="fixed inset-0 z-60 flex flex-col justify-end">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => { setIsServiceModalOpen(false); setServiceStep('choice'); }}></div>
-          <div className="relative bg-zinc-950 w-full rounded-t-[3rem] p-10 pb-16 border-t border-white/5 animate-in slide-in-from-bottom duration-300">
-            <div className="w-12 h-1.5 bg-zinc-800 rounded-full mx-auto mb-10"></div>
-            {serviceStep === 'choice' ? (
-              <div className="grid gap-4">
-                <h3 className="text-center font-black uppercase text-[10px] tracking-widest mb-4 text-zinc-500">Servicii Masă</h3>
-                <button onClick={() => sendRequest('waiter')} className="w-full p-6 rounded-4xl bg-white/5 border border-white/10 flex items-center justify-between active:bg-white/10 transition-all"><div className="flex items-center gap-4"><span className="text-2xl">🛎️</span><span className="font-bold text-lg">Cheamă Chelnerul</span></div><span>→</span></button>
-                <button onClick={() => setServiceStep('payment')} className="w-full p-6 rounded-4xl bg-white/5 border border-white/10 flex items-center justify-between active:bg-white/10 transition-all"><div className="flex items-center gap-4"><span className="text-2xl">🧾</span><span className="font-bold text-lg">Cere Nota de Plată</span></div><span>→</span></button>
-              </div>
-            ) : (
-              <div className="grid gap-6">
-                <h3 className="text-center font-black uppercase text-[10px] tracking-widest opacity-40">Metoda de plată?</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <button onClick={() => sendRequest('bill', 'cash')} className="flex flex-col items-center gap-3 p-8 rounded-[2.5rem] bg-zinc-900 border border-white/5 active:scale-95 transition-all"><span className="text-4xl">💵</span><span className="font-black uppercase text-[10px]">CASH</span></button>
-                  <button onClick={() => sendRequest('bill', 'card')} className="flex flex-col items-center gap-3 p-8 rounded-[2.5rem] bg-zinc-900 border border-white/5 active:scale-95 transition-all"><span className="text-4xl">💳</span><span className="font-black uppercase text-[10px]">CARD</span></button>
-                </div>
-                <button onClick={() => setServiceStep('choice')} className="text-[10px] font-black uppercase opacity-30 mt-4 tracking-widest text-center w-full">← Înapoi</button>
-              </div>
-            )}
+{isServiceModalOpen && (
+  <div className="fixed inset-0 z-60 flex flex-col justify-end">
+    {/* Overlay-ul cu blur */}
+    <div 
+      className="absolute inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm" 
+      onClick={() => { setIsServiceModalOpen(false); setServiceStep('choice'); }}
+    ></div>
+    
+    {/* Containerul Modalului - Am schimbat bg-zinc-950 cu bg-white dark:bg-zinc-950 */}
+    <div className="relative bg-white dark:bg-zinc-950 w-full rounded-t-[3rem] p-10 pb-16 border-t border-zinc-200 dark:border-white/5 animate-in slide-in-from-bottom duration-300 shadow-2xl">
+      
+      {/* Handle-ul de sus */}
+      <div className="w-12 h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full mx-auto mb-10"></div>
+      
+      {serviceStep === 'choice' ? (
+        <div className="grid gap-4">
+          <h3 className="text-center font-black uppercase text-[10px] tracking-widest mb-4 text-zinc-400 dark:text-zinc-500">
+            Servicii Masă
+          </h3>
+          
+          {/* Buton Cheamă Chelnerul - bg-zinc-50 pentru Light Mode */}
+          <button 
+            onClick={() => sendRequest('waiter')} 
+            className="w-full p-6 rounded-4xl bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 flex items-center justify-between active:scale-95 transition-all text-zinc-900 dark:text-white"
+          >
+            <div className="flex items-center gap-4">
+              <span className="text-2xl">🛎️</span>
+              <span className="font-bold text-lg">Cheamă Chelnerul</span>
+            </div>
+            <span className="opacity-30">→</span>
+          </button>
+
+          {/* Buton Cere Nota */}
+          <button 
+            onClick={() => setServiceStep('payment')} 
+            className="w-full p-6 rounded-4xl bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 flex items-center justify-between active:scale-95 transition-all text-zinc-900 dark:text-white"
+          >
+            <div className="flex items-center gap-4">
+              <span className="text-2xl">🧾</span>
+              <span className="font-bold text-lg">Cere Nota de Plată</span>
+            </div>
+            <span className="opacity-30">→</span>
+          </button>
+        </div>
+      ) : (
+        <div className="grid gap-6">
+          <h3 className="text-center font-black uppercase text-[10px] tracking-widest text-zinc-400 dark:text-zinc-600">
+            Metoda de plată?
+          </h3>
+          <div className="grid grid-cols-2 gap-4">
+            {/* Butoane Metodă Plată - bg-zinc-100 pentru Light Mode */}
+            <button 
+              onClick={() => sendRequest('bill', 'cash')} 
+              className="flex flex-col items-center gap-3 p-8 rounded-[2.5rem] bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 active:scale-95 transition-all text-zinc-900 dark:text-white"
+            >
+              <span className="text-4xl">💵</span>
+              <span className="font-black uppercase text-[10px]">CASH</span>
+            </button>
+            
+            <button 
+              onClick={() => sendRequest('bill', 'card')} 
+              className="flex flex-col items-center gap-3 p-8 rounded-[2.5rem] bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 active:scale-95 transition-all text-zinc-900 dark:text-white"
+            >
+              <span className="text-4xl">💳</span>
+              <span className="font-black uppercase text-[10px]">CARD</span>
+            </button>
           </div>
+          
+          <button 
+            onClick={() => setServiceStep('choice')} 
+            className="text-[10px] font-black uppercase text-zinc-400 dark:text-zinc-600 mt-4 tracking-widest text-center w-full active:opacity-100 transition-opacity"
+          >
+            ← Înapoi
+          </button>
         </div>
       )}
+    </div>
+  </div>
+)}
     </div>
   );
 }
