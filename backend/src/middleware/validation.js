@@ -48,7 +48,9 @@ export function validateOnboardingPayload(req, res, next) {
   } else {
     menu.forEach((categoryItem, categoryIndex) => {
       if (!isNonEmptyString(categoryItem?.category)) {
-        errors.push(`menu[${categoryIndex}].category must be a non-empty string`);
+        errors.push(
+          `menu[${categoryIndex}].category must be a non-empty string`
+        );
       }
 
       if (
@@ -154,14 +156,21 @@ export function validateCreateRequestPayload(req, res, next) {
   if (!isNonEmptyString(type)) {
     errors.push("type is required and must be a non-empty string");
   }
-  if (payment_method !== undefined && !isNonEmptyString(payment_method)) {
-    errors.push("payment_method must be a non-empty string when provided");
+  //if (payment_method !== undefined && !isNonEmptyString(payment_method)) {
+  //errors.push("payment_method must be a non-empty string when provided");
+  //}
+
+  if (type === "bill" && isNonEmptyString(payment_method)) {
+    errors.push("payment_method should not be provided for bill requests");
   }
 
   if (errors.length > 0) {
     return fail(res, "Invalid request payload", errors);
   }
 
+  if (type !== "bill") {
+    req.body.payment_method = null;
+  }
   return next();
 }
 
