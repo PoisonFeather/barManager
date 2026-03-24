@@ -5,3 +5,4 @@ dist/
 build/
 # Docker data (dacă ai pus volumul în folderul proiectului)
 pgdata/
+TODO.local.md
