@@ -1,0 +1,35 @@
+import express from "express";
+import cors from "cors";
+import menuRoutes from "./routes/menu.routes.js";
+import onboardingRoutes from "./routes/onboarding.routes.js";
+import ordersRoutes from "./routes/orders.routes.js";
+import dashboardRoutes from "./routes/dashboard.routes.js";
+import requestsRoutes from "./routes/requests.routes.js";
+import healthRoutes from "./routes/health.routes.js";
+
+/**
+ * Express app factory.
+ * This module owns HTTP/middleware composition only.
+ */
+export function createApp() {
+  const app = express();
+
+  app.use(
+    cors({
+      origin: "*",
+      methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+    })
+  );
+  app.use(express.json());
+
+  // Domain route modules
+  app.use(menuRoutes);
+  app.use(onboardingRoutes);
+  app.use(ordersRoutes);
+  app.use(dashboardRoutes);
+  app.use(requestsRoutes);
+  app.use(healthRoutes);
+
+  return app;
+}

@@ -1,76 +1,99 @@
-# 🍺 BarManager SaaS – QR Ordering System
+# BarManager
 
-Platformă SaaS modernă pentru digitalizarea meniurilor și gestionarea comenzilor în baruri și restaurante, folosind QR codes și o experiență complet web, fără instalare de aplicații.
+BarManager is a full-stack QR ordering MVP for bars and restaurants.
 
-## 🚀 Descriere
+Core flow:
 
-BarManager este un sistem full-stack pentru localuri care permite:
+**Scan -> View menu -> Add to cart -> Send order -> Serve**
 
-* crearea rapidă a unui bar prin onboarding complet;
-* generarea automată a meniurilor digitale;
-* comandă directă de pe telefon prin QR code;
-* dashboard live pentru barman;
-* gestionarea comenzilor în timp real.
+## What it does
 
-Backend-ul este construit cu Node.js și Express, iar partea de interfață folosește Next.js. Structura proiectului sugerează un MVP orientat spre QR ordering white-label pentru baruri și restaurante.            
+- Creates a bar with full onboarding (bar + categories + products + tables)
+- Exposes a customer-facing QR menu
+- Accepts and tracks orders in real time for staff
+- Provides bartender dashboard actions (serve items, close tables, stock toggle)
+- Supports table service requests (waiter / bill)
 
-## 🧠 Arhitectură
+## Architecture
 
 ```text
-Client (Next.js)
-    ↓
-REST API (Node.js / Express)
-    ↓
+Next.js Admin + Client Views
+        |
+        v
+Node.js + Express REST API
+        |
+        v
 PostgreSQL (Docker)
 ```
 
-API-ul central gestionează baruri, categorii, produse, mese și comenzi, iar frontend-ul include cel puțin o pagină de onboarding, o pagină pentru meniul clientului și un dashboard pentru barman.                
+## Tech stack
 
-## 🛠 Tech Stack
+- Backend: Node.js, Express, pg, dotenv, cors
+- Frontend: Next.js, React, TypeScript, Tailwind CSS
+- Database: PostgreSQL 15 (Docker)
 
-### Backend
+## Project structure
 
-* Node.js
-* Express.js
-* PostgreSQL prin `pg`
-* `dotenv`
-* `cors`
-
-### Frontend
-
-* Next.js
-* React
-* TypeScript
-* Tailwind CSS
-
-Dependințele backend-ului și configurația de rulare sunt definite în `package.json`.    
-
-## ⚙️ Setup Local
-
-### 1. Clone repository
-
-```bash
-git clone https://github.com/PoisonFeather/barManager.git
-cd barManager
+```text
+barManager/
+  backend/
+    index.js
+    src/
+      app.js
+      config/
+      db/
+      routes/
+  admin-panel/
+  docker/
+  README.md
 ```
 
-Repository-ul este declarat în configurarea proiectului.    
+## Backend SRP structure
 
-### 2. Instalare dependențe backend
+The backend was refactored toward Single Responsibility Principle (SRP):
+
+- `backend/index.js`: process bootstrap only (load env, create app, start server)
+- `backend/src/config/`: environment loading and startup diagnostics
+- `backend/src/db/`: database connection pool
+- `backend/src/app.js`: express middleware + route composition
+- `backend/src/routes/`: domain-focused route modules
+
+This layout improves scalability, maintainability, and safer domain evolution.
+
+## Local setup
+
+### 1) Start PostgreSQL (Docker)
+
+Use the compose file under `docker/` (example):
 
 ```bash
+cd docker
+docker compose up -d
+```
+
+### 2) Configure backend environment
+
+Create `backend/.env`:
+
+```env
+DATABASE_URL=postgres://user:password@localhost:5432/barmanager
+```
+
+Optional:
+
+```env
+PORT=3001
+```
+
+### 3) Run backend
+
+```bash
+cd backend
 npm install
-```
-
-### 3. Pornire backend
-
-```bash
 npm run dev
 ```
 
-Scriptul `dev` pornește `nodemon index.js`. Backend-ul este configurat implicit pentru portul 3001.        
-
-### 4. Pornire frontend
+### 4) Run frontend
 
 ```bash
 cd admin-panel
@@ -78,36 +101,49 @@ npm install
 npm run dev
 ```
 
-În README-ul existent este menționat frontend-ul pe portul 3000 și backend-ul pe portul 3001.    
+Default ports:
 
-## 🔐 Environment Variables
+- Frontend: `http://localhost:3000`
+- Backend: `http://localhost:3001`
 
-Creează un fișier `.env` pentru backend cu o variabilă de forma:
+## Health checks
 
-```env
-DATABASE_URL=postgres://user:password@localhost:5432/barmanager
+- `GET /health/db`  
+  Checks API readiness and database connectivity.
+
+Example:
+
+```bash
+curl http://localhost:3001/health/db
 ```
 
-Conexiunea către PostgreSQL este realizată prin `process.env.DATABASE_URL`.    
+## API overview (main endpoints)
 
-## 📦 API Overview
+### Onboarding and menu
 
-## 1. Onboarding complet
+- `POST /onboarding/full-setup`
+- `GET /menu/:slug`
+- `GET /menu-complete/:slug`
+- `POST /categories`
+- `POST /products`
 
-```http
-POST /onboarding/full-setup
-```
+### Orders and table lifecycle
 
-Acest endpoint creează într-o singură tranzacție:
+- `POST /orders`
+- `GET /orders/:barId`
+- `PATCH /orders/:orderId/status`
+- `GET /table-history/:tableId`
+- `PATCH /order-items/:itemId/serve`
+- `PATCH /tables/:tableId/close`
 
-* barul;
-* categoriile;
-* produsele;
-* mesele localului.
+### Dashboard and requests
 
-Fluxul este tranzacțional, folosind `BEGIN`, `COMMIT` și `ROLLBACK` pentru consistența datelor.    
+- `GET /dashboard/summary/:barId`
+- `PATCH /products/:productId/toggle`
+- `POST /requests`
+- `PATCH /requests/:id/complete`
 
-### Exemplu payload
+## Example onboarding payload
 
 ```json
 {
@@ -117,12 +153,12 @@ Fluxul este tranzacțional, folosind `BEGIN`, `COMMIT` și `ROLLBACK` pentru con
   "bar_number_tables": 12,
   "menu": [
     {
-      "category": "Cocktailuri",
+      "category": "Cocktails",
       "products": [
         {
           "name": "Mojito",
           "price": 28,
-          "description": "Rom, lime, menta, sifon"
+          "description": "Rum, lime, mint, soda"
         }
       ]
     }
@@ -130,163 +166,11 @@ Fluxul este tranzacțional, folosind `BEGIN`, `COMMIT` și `ROLLBACK` pentru con
 }
 ```
 
-Onboarding-ul este folosit și de interfața frontend dedicată creării unui bar nou.    
+## Roadmap
 
-## 2. Vizualizare meniu complet
-
-```http
-GET /menu-complete/:slug
-```
-
-Returnează:
-
-* informațiile barului;
-* mesele asociate;
-* categoriile;
-* produsele din fiecare categorie.
-
-Acest endpoint folosește JSON aggregation în SQL pentru a returna tot meniul într-un singur răspuns optimizat.    
-
-## 3. Vizualizare meniu simplificat
-
-```http
-GET /menu/:slug
-```
-
-Endpoint de test care verifică dacă barul există și întoarce categoriile asociate.    
-
-## 4. Adăugare categorie
-
-```http
-POST /categories
-```
-
-Permite inserarea unei categorii noi cu `bar_id`, `name` și `display_order`.    
-
-## 5. Adăugare produs
-
-```http
-POST /products
-```
-
-Permite inserarea unui produs nou cu `category_id`, `name`, `price`, `description` și `image_url`.    
-
-## 6. Creare comandă
-
-```http
-POST /orders
-```
-
-Procesează o comandă nouă pe baza:
-
-* `bar_id`
-* `table_id`
-* `items`
-* `total_amount`
-
-Comanda este inserată tranzacțional în `orders` și `order_items`. Coșul gol este validat explicit înainte de procesare.    
-
-## 7. Vizualizare comenzi active
-
-```http
-GET /orders/:barId
-```
-
-Endpoint pentru vizualizarea comenzilor active ale unui bar. Implementarea apare în backend-ul principal.    
-
-## 🧾 Frontend Features
-
-## Client QR Menu
-
-Pagina clientului:
-
-* citește slug-ul barului din URL;
-* identifică masa din query params;
-* încarcă meniul complet;
-* persistă coșul în `localStorage`;
-* trimite comenzile către backend;
-* încarcă istoricul mesei.
-
-Fluxul de client este implementat într-o pagină Next.js cu fetch direct către backend-ul local.    
-
-## Onboarding UI
-
-Pagina de onboarding permite:
-
-* introducerea numelui barului;
-* setarea slug-ului;
-* alegerea culorii principale;
-* definirea numărului de mese;
-* adăugarea dinamică de categorii și produse;
-* trimiterea întregului setup către endpoint-ul de onboarding.
-
-Această interfață este orientată spre configurare rapidă pentru un bar nou.    
-
-## Bartender Dashboard
-
-Dashboard-ul pentru barman oferă:
-
-* vizualizarea meselor active;
-* gruparea produselor pending pe mese;
-* polling la 10 secunde;
-* marcarea produselor ca servite;
-* închiderea unei mese;
-* activare sau dezactivare stoc pentru produse.
-
-Interfața are două tab-uri principale: `orders` și `stock`.    
-
-## 📂 Structură proiect
-
-Structura dedusă din fișierele disponibile și README-ul existent:
-
-```text
-/backend
-  index.js
-
-/admin-panel
-  app/
-    onboarding/
-    [slug]/
-    dashboard/
-
-docker/
-package.json
-README.md
-```
-
-README-ul deja existent menționează și directoare dedicate pentru docker și scripturi de automatizare.    
-
-## 🔥 Puncte forte
-
-* onboarding complet într-un singur request;
-* logică tranzacțională pentru date critice;
-* agregare JSON direct în PostgreSQL;
-* experiență client simplă, bazată pe QR și web;
-* dashboard operațional pentru fluxul din bar.
-
-Aceste direcții apar explicit atât în comentariile din backend, cât și în README-ul actual.        
- 
-
-## 🗺 Roadmap recomandat
-
-* autentificare pentru administratori și baruri;
-* validare request-uri;
-* rate limiting și securizare API;
-* WebSocket sau SSE pentru update-uri live;
-* generare QR per masă;
-* analytics pentru comenzi și produse;
-* integrare plăți.
-
-Primele obiective din roadmap-ul existent includ deja multi-tenant DB, onboarding bulk import și client view premium.    
-
-## 👨‍💻 Autor
-
-Andrei Biro, 2026.    
-
-## 💡 Concept
-
-Ideea centrală a proiectului este simplificarea fluxului de comandă în localuri:
-
-**Scan → View Menu → Add to Cart → Send Order → Serve**
-
-Acest flux este susținut de backend-ul Express, de pagina de client și de dashboard-ul pentru barman.            
+- Auth and role-based access
+- Request validation middleware
+- Rate limiting and API hardening
+- Real-time updates (WebSocket or SSE)
+- QR generation per table
+- Analytics and payments
