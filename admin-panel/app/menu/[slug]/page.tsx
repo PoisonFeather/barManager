@@ -21,6 +21,7 @@
 import { useEffect, useState, use } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ThemeToggle } from "@/components/ThemeToggle";
+import {motion, AnimatePresence} from 'framer-motion';
 
 
 // Această componentă este destinată să fie rulată pe client, deoarece folosește stări și efecte pentru a gestiona interacțiunile utilizatorului și pentru a prelua date dinamice de la server.
@@ -183,27 +184,49 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
       </div>
 
       {/* LISTA PRODUSE */}
-      <div className="p-4 space-y-10 mt-4">
-        {data.categories?.map((cat: any) => (
-          <div key={cat.id}>
-            <h2 className="text-zinc-400 dark:text-zinc-600 uppercase text-[10px] font-black tracking-[0.2em] mb-5 pl-2 border-l-2 border-zinc-300 dark:border-white/20">{cat.name}</h2>
-            <div className="grid gap-4">
-              {cat.products?.map((prod: any) => (
-                <div key={prod.id} className={`bg-white dark:bg-zinc-900/40 p-5 rounded-4xl flex justify-between items-center border border-zinc-100 dark:border-white/5 shadow-sm ${!prod.is_available ? 'opacity-40 grayscale' : ''}`}>
-                  <div className="flex-1 pr-4">
-                    <h3 className="font-bold text-lg dark:text-zinc-100">{prod.name}</h3>
-                    <span className="text-zinc-500 dark:text-zinc-400 font-black text-sm">{Number(prod.price).toFixed(2)} RON</span>
-                  </div>
-                  {prod.is_available && (
-                    <button onClick={() => addToCart(prod)} className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl font-light bg-zinc-100 dark:bg-white/5 active:scale-90 transition-transform" style={{ color: data.primary_color }}>+</button>
-                  )}
-                </div>
-              ))}
+<div className="p-4 space-y-10 mt-4">
+  {data.categories?.map((cat: any) => (
+    <div key={cat.id}>
+      <h2 className="text-zinc-400 dark:text-zinc-600 uppercase text-[10px] font-black tracking-[0.2em] mb-5 pl-2 border-l-2 border-zinc-300 dark:border-white/20">
+        {cat.name}
+      </h2>
+      <div className="grid gap-4">
+        {cat.products?.map((prod: any, index: number) => (
+          <motion.div 
+            key={prod.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            whileTap={{ scale: 0.98 }}
+            className={`bg-white dark:bg-zinc-900/40 p-5 rounded-4xl flex justify-between items-center border border-zinc-100 dark:border-white/5 shadow-sm ${!prod.is_available ? 'opacity-40 grayscale' : ''}`}
+          >
+            <div className="flex-1 pr-4">
+              <h3 className="font-bold text-lg dark:text-zinc-100">{prod.name}</h3>
+              <span className="text-zinc-500 dark:text-zinc-400 font-black text-sm">
+                {Number(prod.price).toFixed(2)} RON
+              </span>
             </div>
-          </div>
+            
+            {prod.is_available && (
+              <motion.button 
+              onClick={() => addToCart(prod)}
+              whileTap={{ scale: 0.9 }} 
+              className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl font-light bg-zinc-100 dark:bg-white/5 transition-colors duration-300 hover:bg-[var(--primary)] hover:text-black" 
+              style={{ 
+                color: data.primary_color,
+                // @ts-ignore (dacă folosești TS, altfel e ok)
+                '--primary': data.primary_color 
+              } as React.CSSProperties}
+            >
+              +
+            </motion.button>
+            )}
+          </motion.div>
         ))}
       </div>
-
+    </div>
+  ))}
+</div>
       {/* FLOATING ACTION BAR */}
       {!isCartOpen && !isServiceModalOpen && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[92%] max-w-md z-40 flex gap-3 animate-in fade-in slide-in-from-bottom duration-500">
