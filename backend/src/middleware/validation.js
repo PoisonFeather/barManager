@@ -178,10 +178,10 @@ export function validateToggleProductPayload(req, res, next) {
   const { productId } = req.params ?? {};
   const { is_available } = req.body ?? {};
   const errors = [];
-  console.log("Validating toggle product payload:", {
-    productId,
-    is_available,
-  });
+  //console.log("Validating toggle product payload:", {
+  //productId,
+  //is_available,
+  //});
   const uuidRegex =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   const parsedProductId = Number(productId);
