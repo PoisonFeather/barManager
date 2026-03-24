@@ -9,12 +9,26 @@ function isPositiveNumber(value) {
   return typeof value === "number" && Number.isFinite(value) && value > 0;
 }
 
+function isPositiveNumberLike(value) {
+  const parsed = typeof value === "string" ? Number(value) : value;
+  return typeof parsed === "number" && Number.isFinite(parsed) && parsed > 0;
+}
+
+function isPositiveIntegerLike(value) {
+  const parsed = typeof value === "string" ? Number(value) : value;
+  return Number.isInteger(parsed) && parsed > 0;
+}
+
 function isNonEmptyString(value) {
   return typeof value === "string" && value.trim().length > 0;
 }
 
 function isBoolean(value) {
   return typeof value === "boolean";
+}
+
+function isValidEntityId(value) {
+  return isPositiveIntegerLike(value) || isNonEmptyString(value);
 }
 
 export function validateOnboardingPayload(req, res, next) {
@@ -71,35 +85,58 @@ export function validateOnboardingPayload(req, res, next) {
 export function validateCreateOrderPayload(req, res, next) {
   const { bar_id, table_id, items, total_amount } = req.body ?? {};
   const errors = [];
+  const normalizedItems = [];
 
-  if (!Number.isInteger(bar_id) || bar_id <= 0) {
-    errors.push("bar_id must be a positive integer");
+  if (!isValidEntityId(bar_id)) {
+    errors.push("bar_id is required and must be a valid identifier");
   }
-  if (!Number.isInteger(table_id) || table_id <= 0) {
-    errors.push("table_id must be a positive integer");
+  if (!isValidEntityId(table_id)) {
+    errors.push("table_id is required and must be a valid identifier");
   }
   if (!Array.isArray(items) || items.length === 0) {
     errors.push("items must be a non-empty array");
   } else {
     items.forEach((item, index) => {
-      if (!Number.isInteger(item?.id) || item.id <= 0) {
-        errors.push(`items[${index}].id must be a positive integer`);
+      const rawItemId = item?.id ?? item?.product_id;
+      if (!isValidEntityId(rawItemId)) {
+        errors.push(`items[${index}].id must be a valid identifier`);
       }
-      if (!Number.isInteger(item?.quantity) || item.quantity <= 0) {
+      if (!isPositiveIntegerLike(item?.quantity)) {
         errors.push(`items[${index}].quantity must be a positive integer`);
       }
-      if (!isPositiveNumber(item?.price)) {
+      if (!isPositiveNumberLike(item?.price)) {
         errors.push(`items[${index}].price must be a positive number`);
+      }
+
+      if (
+        isValidEntityId(rawItemId) &&
+        isPositiveIntegerLike(item?.quantity) &&
+        isPositiveNumberLike(item?.price)
+      ) {
+        normalizedItems.push({
+          id: rawItemId,
+          quantity: Number(item.quantity),
+          price: Number(item.price),
+        });
       }
     });
   }
-  if (!isPositiveNumber(total_amount)) {
+  if (!isPositiveNumberLike(total_amount)) {
     errors.push("total_amount must be a positive number");
   }
 
   if (errors.length > 0) {
     return fail(res, "Invalid order payload", errors);
   }
+
+  // Normalize numeric-like payload values for downstream services/repositories.
+  req.body = {
+    ...req.body,
+    bar_id,
+    table_id,
+    total_amount: Number(total_amount),
+    items: normalizedItems,
+  };
 
   return next();
 }
@@ -108,11 +145,11 @@ export function validateCreateRequestPayload(req, res, next) {
   const { bar_id, table_id, type, payment_method } = req.body ?? {};
   const errors = [];
 
-  if (!Number.isInteger(bar_id) || bar_id <= 0) {
-    errors.push("bar_id must be a positive integer");
+  if (!isValidEntityId(bar_id)) {
+    errors.push("bar_id is required and must be a valid identifier");
   }
-  if (!Number.isInteger(table_id) || table_id <= 0) {
-    errors.push("table_id must be a positive integer");
+  if (!isValidEntityId(table_id)) {
+    errors.push("table_id is required and must be a valid identifier");
   }
   if (!isNonEmptyString(type)) {
     errors.push("type is required and must be a non-empty string");
