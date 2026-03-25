@@ -4,6 +4,7 @@ import {
   createProductHandler,
   getCompleteMenuHandler,
   getMenuHandler,
+  getTableStatusHandler,
 } from "../controllers/menu.controller.js";
 import { getTableStatus } from "../repositories/table.repository.js";
 

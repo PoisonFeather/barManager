@@ -50,3 +50,13 @@ export async function getCompleteMenuHandler(req, res) {
     return res.status(resolveStatus(error)).json({ error: error.message });
   }
 }
+
+export const getTableStatusHandler = async (req, res) => {
+  try {
+    const { tableId } = req.params;
+    // Logica ta pentru statusul mesei...
+    res.json({ status: "active" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
