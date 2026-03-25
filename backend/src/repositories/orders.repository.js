@@ -15,10 +15,13 @@ export async function withTransaction(work) {
   }
 }
 
-export async function insertOrder(client, { bar_id, table_id, total_amount }) {
+export async function insertOrder(
+  client,
+  { bar_id, table_id, total_amount, status }
+) {
   const orderRes = await client.query(
     "INSERT INTO orders (bar_id, table_id, total_amount, status) VALUES ($1, $2, $3, $4) RETURNING id",
-    [bar_id, table_id, total_amount, "pending"]
+    [bar_id, table_id, total_amount, status] // <--- Aici folosim status-ul din payload!
   );
   return orderRes.rows[0].id;
 }
@@ -76,8 +79,14 @@ export async function markOrderItemServed(itemId) {
 }
 
 export async function closeTableOrders(tableId) {
+  // Folosim un mic query multiplu sau o tranzacție
+  // Trebuie să închidem comenzile ȘI să resetăm masa
   await pool.query(
     "UPDATE orders SET is_paid = TRUE WHERE table_id = $1 AND is_paid = FALSE",
+    [tableId]
+  );
+  await pool.query(
+    "UPDATE tables SET status = 'closed', current_session_token = NULL WHERE id = $1",
     [tableId]
   );
 }

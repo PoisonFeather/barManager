@@ -32,12 +32,12 @@ export const orderService = {
   // Trimite cereri speciale (Chelner sau Notă)
   sendRequest: async (payload: any) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/requests`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      return response.ok;
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/requests`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload) // Trimitem tot obiectul, inclusiv session_token
+          });
+      return res.ok;
     } catch (err) {
       console.error("Request Service Error:", err);
       return false;

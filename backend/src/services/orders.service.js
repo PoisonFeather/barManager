@@ -10,7 +10,7 @@ import {
 } from "../repositories/orders.repository.js";
 
 export async function createOrder(payload) {
-  const { bar_id, table_id, items, total_amount } = payload;
+  const { bar_id, table_id, items, total_amount, status } = payload; // am adăugat status
 
   if (!items || items.length === 0) {
     const error = new Error("Coșul e gol!");
@@ -19,11 +19,14 @@ export async function createOrder(payload) {
   }
 
   const orderId = await withTransaction(async (client) => {
+    // Atenție: insertOrder trebuie să primească și status-ul acum!
     const createdOrderId = await insertOrder(client, {
       bar_id,
       table_id,
       total_amount,
+      status: status || "pending_approval",
     });
+
     await insertOrderItems(client, createdOrderId, items);
     return createdOrderId;
   });
@@ -31,7 +34,10 @@ export async function createOrder(payload) {
   return {
     success: true,
     orderId,
-    message: "Comanda a ajuns la barman! 🍻",
+    message:
+      status === "confirmed"
+        ? "Comandă preluată!"
+        : "Așteaptă aprobarea barmanului! 🍻",
   };
 }
 

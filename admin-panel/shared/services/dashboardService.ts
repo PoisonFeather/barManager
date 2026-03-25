@@ -31,4 +31,21 @@ export const dashboardService = {
       });
     return res.ok;
   },
+  approveTable: async (tableId: string) => {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/dashboard/approve-table`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tableId })
+    });
+    return res.ok;
+  },
+
+  rejectTable: async (tableId: string) => {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/dashboard/reject-table`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tableId })
+    });
+    return res.ok;
+  }
 };

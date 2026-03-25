@@ -55,3 +55,52 @@ export const closeTableHandler = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// backend/src/controllers/dashboard.controller.js
+
+export const openTableHandler = async (req, res) => {
+  try {
+    const { tableId } = req.params;
+    const newToken = uuidv4(); // Generăm token-ul DOAR aici
+
+    await db.query(
+      "UPDATE tables SET status = 'open', current_session_token = $1 WHERE id = $2",
+      [newToken, tableId]
+    );
+
+    // Anunțăm prin Socket că masa s-a deschis
+    // Clientul care "ascultă" va primi semnalul și va face refresh
+    req.app.get("io")?.emit("table-opened", { tableId, token: newToken });
+
+    res.json({ success: true, token: newToken });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+export const approveTableAndOrder = async (req, res) => {
+  const { tableId, orderId } = req.body;
+  const newToken = uuidv4();
+
+  try {
+    // 1. Deschidem masa oficial în baza de date
+    await db.query(
+      "UPDATE tables SET status = 'open', current_session_token = $1 WHERE id = $2",
+      [newToken, tableId]
+    );
+
+    // 2. Confirmăm comanda care stătea în așteptare
+    await db.query("UPDATE orders SET status = 'confirmed' WHERE id = $1", [
+      orderId,
+    ]);
+
+    // 3. 📢 ANUNȚĂM CLIENTUL (prin Socket)
+    // Îi trimitem token-ul direct prin "țeavă" ca să nu mai facă el fetch
+    req.app.get("io")?.emit(`table-approved-${tableId}`, {
+      token: newToken,
+    });
+
+    res.json({ success: true, token: newToken });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

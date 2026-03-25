@@ -12,41 +12,53 @@ function resolveStatus(error, fallback = 500) {
   return Number.isInteger(error?.status) ? error.status : fallback;
 }
 
+// orders.controller.js
+
 export async function createOrderHandler(req, res) {
   try {
-    const { table_id, session_token } = req.body;
+    const { table_id, bar_id, session_token, items, total_amount } = req.body;
 
-    // 1. Validăm sesiunea înainte de orice
-    const tableCheck = await db.query(
-      "SELECT current_session_token FROM tables WHERE id = $1",
+    // 🛡️ 1. Validarea Sesiunii (Rămâne în controller, e treaba de "pază")
+    const tableResult = await db.query(
+      "SELECT status, current_session_token FROM tables WHERE id = $1",
       [table_id]
     );
+    const table = tableResult.rows[0];
 
-    const activeToken = tableCheck.rows[0]?.current_session_token;
-
-    if (!activeToken || activeToken !== session_token) {
-      return res.status(403).json({
-        success: false,
-        error:
-          "Sesiune expirată! Te rugăm să scanezi din nou codul QR de pe masă.",
-      });
+    let orderStatus = "pending_approval";
+    if (
+      table?.status === "open" &&
+      table.current_session_token === session_token
+    ) {
+      orderStatus = "confirmed";
+    } else if (
+      table?.status === "open" &&
+      table.current_session_token !== session_token
+    ) {
+      return res.status(403).json({ error: "Sesiune invalidă!" });
     }
 
-    // 2. Dacă e valid, procesăm comanda (codul tău existent)
-    const response = await createOrder(req.body);
+    // 🚀 2. Apelăm SERVICIUL (cel cu tranzacția)
+    const result = await createOrder({
+      bar_id,
+      table_id,
+      items,
+      total_amount,
+      status: orderStatus, // Îi dăm statusul calculat
+    });
 
-    // 3. Trimitem semnalul prin Socket (cum am făcut anterior)
-    const io = req.app.get("io");
-    if (response?.success && io) {
-      io.emit("new-data", { type: "ORDER", tableId: table_id });
-    }
+    // 3. Socket-ul rămâne aici
+    req.app.get("io").emit("new-data", {
+      type: "ORDER_REQUEST",
+      tableId: table_id,
+      status: orderStatus,
+    });
 
-    return res.json(response);
+    return res.json(result);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(error.status || 500).json({ error: error.message });
   }
 }
-
 export async function listActiveOrdersHandler(req, res) {
   try {
     const { barId } = req.params;

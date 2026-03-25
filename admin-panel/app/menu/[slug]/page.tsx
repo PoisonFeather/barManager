@@ -96,10 +96,12 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
 
   const handleSendRequest = async (type: string, method: string | null = null) => {
     if (!barData?.id || !currentTable?.id) return alert("Eroare identificare!");
+    const token = localStorage.getItem(`session_${currentTable.id}`);
 
     const ok = await orderService.sendRequest({
       bar_id: barData.id,
       table_id: currentTable.id,
+      session_token: token, // 🔑 Tokenul de sesiune pentru securitate
       type,
       payment_method: method
     });

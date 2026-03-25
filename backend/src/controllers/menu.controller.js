@@ -57,9 +57,9 @@ export const getTableStatusHandler = async (req, res) => {
   try {
     const { tableId } = req.params;
 
-    // 1. Căutăm masa
+    // 1. Căutăm masa și statusul ei
     const result = await db.query(
-      "SELECT current_session_token FROM tables WHERE id = $1",
+      "SELECT status, current_session_token FROM tables WHERE id = $1",
       [tableId]
     );
 
@@ -67,19 +67,22 @@ export const getTableStatusHandler = async (req, res) => {
       return res.status(404).json({ error: "Masa nu există" });
     }
 
-    let token = result.rows[0].current_session_token;
+    const { status, current_session_token } = result.rows[0];
 
-    // 2. Dacă masa e "închisă" (token NULL), generăm unul nou
-    if (!token) {
-      token = uuidv4();
-      await db.query(
-        "UPDATE tables SET current_session_token = $1 WHERE id = $2",
-        [token, tableId]
-      );
-      console.log(`✅ Sesiune nouă generată pentru masa ${tableId}`);
+    // 2. Logică de răspuns bazată pe status
+    // Dacă e 'open', îi dăm token-ul (pentru refresh sau al doilea om la masă)
+    if (status === "open") {
+      return res.json({
+        status: "open",
+        sessionToken: current_session_token,
+      });
     }
 
-    res.json({ sessionToken: token });
+    // Dacă e 'closed' sau 'pending', NU îi dăm token-ul
+    return res.json({
+      status: status, // îi spunem clientului că e închisă
+      sessionToken: null,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

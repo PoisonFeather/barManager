@@ -31,7 +31,21 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
   const handleComplete = async (id: string) => (await dashboardService.completeRequest(id)) && refresh();
   const handleServe = async (id: string) => (await dashboardService.serveItem(id)) && refresh();
   const handleClose = async (id: string) => confirm("Închizi masa?") && (await dashboardService.closeTable(id)) && refresh();
+  const handleApprove = async (tableId: string) => {
+    // Chemăm serviciul să deschidă masa și să confirme comanda
+    const ok = await dashboardService.approveTable(tableId);
+    if (ok) {
+      refresh(); // Refresh la date ca să dispară zona galbenă
+    }
+  };
   
+  const handleReject = async (tableId: string) => {
+    if (confirm("Sigur anulezi cererea? Comanda va fi ștearsă.")) {
+      const ok = await dashboardService.rejectTable(tableId);
+      if (ok) refresh();
+    }
+  };
+
   if (!barData) return <div className="min-h-screen bg-black flex items-center justify-center text-white font-black animate-pulse uppercase tracking-[0.5em]">Conectare...</div>;
 
   return (
@@ -59,6 +73,8 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
                 onComplete={handleComplete} 
                 onServe={handleServe} 
                 onClose={handleClose} 
+                onApprove={handleApprove}
+                onReject={handleReject}
               />
             ))
           )}
