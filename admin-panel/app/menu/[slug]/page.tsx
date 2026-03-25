@@ -17,9 +17,6 @@ import { CartModal } from "./components/CartModal";
 import { ServiceModal } from "./components/ServiceModal";
 
 
-
-
-
 export default function ClientMenu({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const searchParams = useSearchParams();
@@ -58,22 +55,26 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
   useEffect(() => {
     if (!socket || !currentTable?.id) return;
   
-    const eventName = `table-approved-${currentTable.id}`;
+    const approvalEvent = `table-approved-${currentTable.id}`;
+    const updateEvent = `table-updated-${currentTable.id}`; 
   
-    socket.on(eventName, (data: { token: string }) => {
+    // 1. Ascultăm când Barmanul aprobă masa
+    socket.on(approvalEvent, (data: { token: string }) => {
       console.log("🎉 Masa a fost aprobată LIVE! Token:", data.token);
-      
-      // 1. Salvăm token-ul în LocalStorage imediat
       localStorage.setItem(`session_${currentTable.id}`, data.token);
-      
-      // 2. Opțional: Force refresh ca să se vadă schimbările de UI
-      // window.location.reload(); 
-      // SAU mai bine, doar refresh la istoric:
       refreshHistory();
     });
+
+    // 2. 📢 Ascultăm când ALTCINEVA de la masă pune o comandă
+    socket.on(updateEvent, (data) => {
+      console.log("update socket for new order at the same table!", data);
+      refreshHistory(); //  Asta trage datele noi și updatează istoric/total pe laptop!
+    });
   
+    // Curățenie când închizi pagina
     return () => {
-      socket.off(eventName);
+      socket.off(approvalEvent);
+      socket.off(updateEvent); 
     };
   }, [socket, currentTable?.id]);
 

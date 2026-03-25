@@ -16,8 +16,6 @@ function resolveStatus(error, fallback = 500) {
   return Number.isInteger(error?.status) ? error.status : fallback;
 }
 
-// orders.controller.js
-
 export async function createOrderHandler(req, res) {
   try {
     const { table_id, bar_id, session_token, items, total_amount } = req.body;
@@ -42,7 +40,7 @@ export async function createOrderHandler(req, res) {
       console.log(
         "Current table token is different from the one provided in the order request."
       );
-      console.log(table.current_session_token, session_token);
+      //console.log(table.current_session_token, session_token);
       return res.status(403).json({ error: "Sesiune invalidă!" });
     }
 
@@ -61,7 +59,13 @@ export async function createOrderHandler(req, res) {
       tableId: table_id,
       status: orderStatus,
     });
-
+    // Socket-ul pentru CLIENȚI (Sincronizare live la masă)
+    // Emitem un eveniment fix pe ID-ul mesei, ca doar ei să audă
+    req.app.get("io").emit(`table-updated-${table_id}`, {
+      type: "HISTORY_UPDATE",
+      message: "Altcineva a adăugat produse!",
+    });
+    console.log("added order and emitted socket event");
     return res.json(result);
   } catch (error) {
     res.status(error.status || 500).json({ error: error.message });

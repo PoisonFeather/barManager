@@ -4,8 +4,8 @@ export const orderService = {
   // Preia produsele deja comandate și servite la masa curentă
   fetchHistory: async (tableId: string) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/table-history/${tableId}`);
-      if (!res.ok) return [];
+        const res = await fetch(`${API_BASE_URL}/table-history/${tableId}?t=${Date.now()}`);
+        if (!res.ok) return [];
       return await res.json();
     } catch (err) {
       console.error("History Service Error:", err);
