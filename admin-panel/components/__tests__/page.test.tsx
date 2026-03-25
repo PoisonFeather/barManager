@@ -136,7 +136,7 @@ describe("BartenderDashboard", () => {
       render(<BartenderDashboard params={Promise.resolve({ slug: "test-bar" })} />);
     });
 
-    const closeBtn = await screen.findByText(/Închide Nota/i);
+    const closeBtn = await screen.findByText(/Închide & Eliberează Masa/i);
     expect(closeBtn).toBeDisabled();
   });
 });
