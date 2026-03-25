@@ -1,0 +1,56 @@
+interface Props {
+    totalItems: number;
+    totalAmount: number;
+    historyTotal: number;
+    onOpenCart: () => void;
+    onOpenService: () => void;
+    primaryColor: string;
+    isCartOpen: boolean;
+    isServiceModalOpen: boolean;
+  }
+  
+  export function FloatingActionBar({ 
+    totalItems, totalAmount, historyTotal, onOpenCart, onOpenService, primaryColor, isCartOpen, isServiceModalOpen 
+  }: Props) {
+    
+    // Nu afișăm bara dacă modalurile sunt deschise (ca să nu se suprapună)
+    if (isCartOpen || isServiceModalOpen) return null;
+  
+    return (
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[92%] max-w-md z-40 flex gap-3 animate-in fade-in slide-in-from-bottom duration-500">
+        {/* Buton Servicii */}
+        <button 
+          onClick={onOpenService} 
+          className="w-16 h-16 rounded-4xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 flex items-center justify-center text-xl shadow-2xl active:scale-95 transition-transform"
+        >
+          🛎️
+        </button>
+  
+        {/* Buton Coș / Notă */}
+        {(totalItems > 0 || historyTotal > 0) && (
+          <div className="flex-1">
+            {totalItems > 0 ? (
+              <button 
+                onClick={onOpenCart} 
+                className="w-full h-16 px-8 rounded-4xl font-black flex justify-between items-center shadow-xl active:scale-95 transition-all" 
+                style={{ backgroundColor: primaryColor, color: '#000' }}
+              >
+                <span className="italic uppercase text-sm font-black">Comandă</span>
+                <span className="text-lg tabular-nums">{totalAmount.toFixed(2)} RON</span>
+              </button>
+            ) : (
+              <button 
+                onClick={onOpenCart} 
+                className="w-full h-16 px-6 rounded-4xl font-bold bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 flex justify-between items-center shadow-2xl active:scale-95"
+              >
+                <span className="uppercase text-[10px] tracking-widest opacity-60">Vezi Nota</span>
+                <span className="text-sm font-black text-orange-500">
+                  {historyTotal.toFixed(2)} RON
+                </span>
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }

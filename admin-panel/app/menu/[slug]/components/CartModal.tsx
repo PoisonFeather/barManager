@@ -1,0 +1,98 @@
+// app/menu/[slug]/components/CartModal.tsx
+import { motion, AnimatePresence } from "framer-motion";
+
+interface Props {
+  cart: any[];
+  history: any[];
+  onUpdate: (id: string, delta: number) => void;
+  onSend: () => void;
+  onClose: () => void;
+  primaryColor: string;
+  totalAmount: number;
+  historyTotal: number;
+}
+
+export function CartModal({ cart, history, onUpdate, onSend, onClose, primaryColor, totalAmount, historyTotal }: Props) {
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col justify-end">
+      {/* Overlay cu blur */}
+      <motion.div 
+        initial={{ opacity: 0 }} 
+        animate={{ opacity: 1 }} 
+        exit={{ opacity: 0 }}
+        onClick={onClose} 
+        className="absolute inset-0 bg-black/40 backdrop-blur-md"
+      />
+      
+      <motion.div 
+        initial={{ y: "100%" }} 
+        animate={{ y: 0 }} 
+        exit={{ y: "100%" }}
+        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+        className="relative bg-white dark:bg-zinc-900 w-full max-h-[85vh] rounded-t-[3rem] shadow-2xl flex flex-col overflow-hidden"
+      >
+        <div className="w-12 h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full mx-auto my-6" />
+        
+        <div className="flex-1 overflow-y-auto px-8 pb-10 space-y-8">
+          <div className="flex justify-between items-end">
+            <h2 className="text-3xl font-black uppercase tracking-tighter">Nota Ta</h2>
+            <button onClick={onClose} className="text-[10px] font-black uppercase text-zinc-400">Închide</button>
+          </div>
+
+          {/* Produse noi în coș */}
+          {cart.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-zinc-400 text-[10px] font-black uppercase tracking-widest">De Comandat</h3>
+              {cart.map((item) => (
+                <div key={item.id} className="flex justify-between items-center bg-zinc-50 dark:bg-white/5 p-5 rounded-4xl border border-zinc-100 dark:border-white/5">
+                  <div className="flex-1">
+                    <p className="font-black uppercase text-sm">{item.name}</p>
+                    <p className="text-[10px] font-bold text-zinc-500">{(item.price * item.quantity).toFixed(2)} RON</p>
+                  </div>
+                  <div className="flex items-center gap-4 bg-zinc-200/50 dark:bg-black/40 p-1.5 rounded-2xl border border-zinc-300 dark:border-white/10">
+                    <button className="w-8 h-8 flex items-center justify-center font-bold" onClick={() => onUpdate(item.id, -1)}>−</button>
+                    <span className="font-black w-4 text-center text-sm">{item.quantity}</span>
+                    <button className="w-8 h-8 flex items-center justify-center font-bold" onClick={() => onUpdate(item.id, 1)}>+</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Istoric comenzi (deja servite) */}
+          {history.length > 0 && (
+            <div className="pt-4">
+              <h3 className="text-zinc-400 text-[10px] font-black uppercase tracking-widest mb-4 text-center">Comandate Anterior</h3>
+              <div className="space-y-2 bg-zinc-100 dark:bg-black/20 p-6 rounded-4xl border border-dashed border-zinc-200 dark:border-white/10">
+                {history.map((item, i) => (
+                  <div key={i} className="flex justify-between text-[11px] font-bold uppercase tracking-tight text-zinc-500">
+                    <span>{item.quantity}x {item.name}</span>
+                    <span className="font-mono italic">{(item.quantity * item.price).toFixed(2)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer cu Total și Buton */}
+        <div className="p-8 pt-4 bg-zinc-50 dark:bg-zinc-900/80 border-t border-zinc-100 dark:border-white/5 backdrop-blur-lg">
+          <div className="flex justify-between items-center mb-6 px-2">
+            <span className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Total de plată</span>
+            <span className="text-2xl font-black text-zinc-900 dark:text-white">{(totalAmount + historyTotal).toFixed(2)} RON</span>
+          </div>
+          {cart.length > 0 && (
+            <button 
+              onClick={onSend} 
+              className="w-full p-6 rounded-4xl font-black text-lg uppercase tracking-widest shadow-2xl active:scale-95 flex justify-between items-center px-10 group" 
+              style={{ backgroundColor: primaryColor, color: '#000' }}
+            >
+              <span>Trimite Comanda</span>
+              <span className="opacity-40 group-hover:translate-x-2 transition-transform">🚀</span>
+            </button>
+          )}
+        </div>
+      </motion.div>
+    </div>
+  );
+}
