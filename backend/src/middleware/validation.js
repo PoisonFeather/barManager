@@ -175,14 +175,16 @@ export function validateCreateRequestPayload(req, res, next) {
 }
 
 export function validateToggleProductPayload(req, res, next) {
-  const { productId } = req.params ?? {};
+  const { productId } = req.params ?? {}; // ID-ul vine din URL
   const { is_available } = req.body ?? {};
   const errors = [];
 
-  const parsedProductId = Number(productId);
-  if (!Number.isInteger(parsedProductId) || parsedProductId <= 0) {
-    errors.push("productId must be a positive integer");
+  if (!isValidEntityId(productId)) {
+    errors.push(
+      "productId must be a valid identifier (integer or string/UUID)"
+    );
   }
+
   if (!isBoolean(is_available)) {
     errors.push("is_available must be a boolean");
   }
