@@ -15,8 +15,7 @@ export async function createTableRequest({
 }
 
 export async function completeTableRequest(id) {
-  await pool.query(
-    "UPDATE table_requests SET status = 'completed' WHERE id = $1",
-    [id]
-  );
+  await pool.query("UPDATE requests SET status = 'completed' WHERE id = $1", [
+    id,
+  ]);
 }

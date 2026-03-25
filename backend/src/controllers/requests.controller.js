@@ -66,6 +66,7 @@ export async function completeRequestHandler(req, res) {
     const result = await completeRequest(id);
     return res.json(result);
   } catch (error) {
+    console.log(error);
     return res.status(resolveStatus(error)).json({ error: error.message });
   }
 }
