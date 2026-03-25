@@ -1,22 +1,28 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-export function useSocket(onNewData: () => void) {
+export function useSocket(onNewData?: () => void) {
+  const [socket, setSocket] = useState<Socket | null>(null);
+
   useEffect(() => {
-    // 1. Inițializăm conexiunea
-    const socket: Socket = io(SOCKET_URL);
+    const s: Socket = io(SOCKET_URL);
+    setSocket(s);
 
-    // 2. Ascultăm evenimentul pe care l-am definit în Backend
-    socket.on('new-data', (data) => {
-      console.log('📡 Semnal primit prin Socket:', data);
-      onNewData(); // Executăm funcția de refresh
-    });
+    s.on('connect', () => console.log('🔌 Conectat la Socket Server'));
 
-    // 3. Cleanup: Închidem socket-ul când barmanul pleacă de pe pagină
+    if (onNewData) {
+      s.on('new-data', (data) => {
+        console.log('📡 Semnal primit:', data);
+        onNewData();
+      });
+    }
+
     return () => {
-      socket.disconnect();
+      s.disconnect();
     };
-  }, [onNewData]);
+  }, []); // [] ca să nu se reconecteze la fiecare render
+
+  return { socket };
 }

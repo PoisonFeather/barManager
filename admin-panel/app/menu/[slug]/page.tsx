@@ -7,6 +7,7 @@ import { AnimatePresence } from 'framer-motion';
 import { useBarData } from "@/shared/hooks/useBarData";
 import { useCart } from "@/shared/hooks/useCart";
 import { orderService } from "@/shared/services/orderService";
+import { useSocket } from "@/shared/hooks/useSocket";
 
 // 2. Importăm Componentele de UI decupate
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -15,9 +16,14 @@ import { FloatingActionBar } from "./components/FloatingActionBar";
 import { CartModal } from "./components/CartModal";
 import { ServiceModal } from "./components/ServiceModal";
 
+
+
+
+
 export default function ClientMenu({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const searchParams = useSearchParams();
+  
   
   // 3. Hook-uri de Date și Coș (Toată logica e izolată aici)
   const { barData, loading: menuLoading } = useBarData(slug);
@@ -47,6 +53,29 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
       if (Array.isArray(history)) setOrderHistory(history);
     }
   };
+  const { socket } = useSocket(refreshHistory);
+
+  useEffect(() => {
+    if (!socket || !currentTable?.id) return;
+  
+    const eventName = `table-approved-${currentTable.id}`;
+  
+    socket.on(eventName, (data: { token: string }) => {
+      console.log("🎉 Masa a fost aprobată LIVE! Token:", data.token);
+      
+      // 1. Salvăm token-ul în LocalStorage imediat
+      localStorage.setItem(`session_${currentTable.id}`, data.token);
+      
+      // 2. Opțional: Force refresh ca să se vadă schimbările de UI
+      // window.location.reload(); 
+      // SAU mai bine, doar refresh la istoric:
+      refreshHistory();
+    });
+  
+    return () => {
+      socket.off(eventName);
+    };
+  }, [socket, currentTable?.id]);
 
   useEffect(() => {
     if (currentTable?.id) refreshHistory();

@@ -38,15 +38,16 @@ export async function insertOrderItems(client, orderId, items) {
 
 export async function getActiveOrdersByBar(barId) {
   const query = `
-    SELECT o.*, t.table_number,
-    (SELECT jsonb_agg(jsonb_build_object(
-      'name', p.name,
-      'qty', oi.quantity
-    )) FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = o.id) as items
-    FROM orders o
-    JOIN tables t ON o.table_id = t.id
-    WHERE o.bar_id = $1 AND o.status != 'completed'
-    ORDER BY o.created_at DESC;
+    SELECT 
+      t.id as table_id, 
+      t.table_number, 
+      t.status as table_status,
+      -- Verificăm dacă există vreo comandă neaprobată pentru această masă
+      (SELECT status FROM orders WHERE table_id = t.id AND status = 'pending_approval' LIMIT 1) as pending_status,
+      (SELECT id FROM orders WHERE table_id = t.id AND status = 'pending_approval' LIMIT 1) as last_order_id,
+      ... restul query-ului tău ...
+    FROM tables t
+    WHERE t.bar_id = $1
   `;
   const result = await pool.query(query, [barId]);
   return result.rows;

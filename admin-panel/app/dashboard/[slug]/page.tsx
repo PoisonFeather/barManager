@@ -19,7 +19,7 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
   
   // 1. Luăm datele și funcția de refresh
   const { tableGroups, refresh } = useDashboardSummary(barData?.id || null);
-  
+  //"Date primite în Dashboard:", JSON.stringify(tableGroups, null, 2));
   // 2. 🔥 CONECTAREA LIVE:
   // De fiecare dată când Socket-ul primește semnalul 'new-data' din backend,
   // va executa automat funcția refresh(). Fără refresh manual, fără polling!

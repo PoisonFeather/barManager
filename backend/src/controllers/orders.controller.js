@@ -35,6 +35,10 @@ export async function createOrderHandler(req, res) {
       table?.status === "open" &&
       table.current_session_token !== session_token
     ) {
+      console.log(
+        "Current table token is different from the one provided in the order request."
+      );
+      console.log(table.current_session_token, session_token);
       return res.status(403).json({ error: "Sesiune invalidă!" });
     }
 

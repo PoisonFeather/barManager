@@ -19,9 +19,11 @@ const PORT = Number(process.env.PORT || 3001);
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://localhost:3000", // Portul de Next.js
+    origin: ["http://localhost:3000", "http://192.168.0.52:3000"], // Portul de Next.js
     methods: ["GET", "POST", "PATCH"],
+    credentials: true,
   },
+  allowEIO3: true,
 });
 
 // app.use((req, res, next) => {

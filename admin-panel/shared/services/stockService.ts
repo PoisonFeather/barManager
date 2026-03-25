@@ -44,7 +44,7 @@ export const stockService = {
     //   }
   
       try {
-        const res = await fetch(`${API_BASE_URL}/products/${prodId}/toggle`, {
+        const res = await fetch(`${API_BASE_URL}/dashboard/products/${prodId}/toggle`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ is_available: newStatus }),

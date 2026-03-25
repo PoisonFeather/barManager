@@ -22,12 +22,12 @@ export function createApp() {
     })
   );
   app.use(express.json());
-
+  app.use("/dashboard", dashboardRoutes);
   // Domain route modules
   app.use(menuRoutes);
   app.use(onboardingRoutes);
   app.use(ordersRoutes);
-  app.use(dashboardRoutes);
+  //app.use(dashboardRoutes);
   app.use(requestsRoutes);
   app.use(healthRoutes);
 

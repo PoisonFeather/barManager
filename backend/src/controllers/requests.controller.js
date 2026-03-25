@@ -37,6 +37,9 @@ export async function createRequestHandler(req, res) {
 
     // 🚀 2. Dacă e totul OK, creăm cererea în DB
     const result = await createRequest(req.body);
+    console.log(
+      `✅ Cerere creată: Masa ${table_id} - Tip: ${type} - ID Cerere: ${result.id} TOKEN ${session_token}`
+    );
 
     // 📢 3. Anunțăm Dashboard-ul barmanului prin Socket
     const io = req.app.get("io");
@@ -45,6 +48,7 @@ export async function createRequestHandler(req, res) {
         type: "SERVICE_REQUEST",
         requestType: type,
         tableId: table_id,
+        session_token: session_token,
       });
     }
 

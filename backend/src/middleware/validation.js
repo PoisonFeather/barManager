@@ -144,7 +144,8 @@ export function validateCreateOrderPayload(req, res, next) {
 }
 
 export function validateCreateRequestPayload(req, res, next) {
-  const { bar_id, table_id, type, payment_method } = req.body ?? {};
+  const { bar_id, payment_method, session_token, table_id, type } =
+    req.body ?? {};
   const errors = [];
 
   if (!isValidEntityId(bar_id)) {
@@ -159,7 +160,7 @@ export function validateCreateRequestPayload(req, res, next) {
   //if (payment_method !== undefined && !isNonEmptyString(payment_method)) {
   //errors.push("payment_method must be a non-empty string when provided");
   //}
-
+  console.log(session_token);
   if (type === "bill" && isNonEmptyString(payment_method)) {
     errors.push("payment_method should not be provided for bill requests");
   }

@@ -5,31 +5,38 @@ export async function getDashboardSummaryByBar(barId) {
     SELECT 
       t.id as table_id,
       t.table_number,
+      -- 🛡️ LOGICA DE STATUS: Dacă există o comandă 'pending_approval', masa devine GALBENĂ
+      CASE 
+        WHEN EXISTS (SELECT 1 FROM orders WHERE table_id = t.id AND status = 'pending_approval') THEN 'pending_approval'
+        ELSE t.status 
+      END as status,
       (
         SELECT jsonb_agg(jsonb_build_object(
-          'id', tr.id,
-          'type', tr.type,
-          'method', tr.payment_method,
-          'time', tr.created_at
+          'id', r.id,
+          'type', r.type,
+          'method', r.payment_method,
+          'time', r.created_at
         ))
-        FROM table_requests tr
-        WHERE tr.table_id = t.id AND tr.status = 'pending'
+        FROM requests r
+        WHERE r.table_id = t.id AND r.status = 'pending'
       ) as active_requests,
       COALESCE(
         jsonb_agg(jsonb_build_object(
           'item_id', oi.id,
           'name', p.name,
           'qty', oi.quantity
-        )) FILTER (WHERE oi.status = 'pending'),
+        )) FILTER (WHERE oi.status = 'pending' AND o.status = 'confirmed'),
         '[]'
       ) as pending_items,
-      SUM(oi.quantity * oi.price_at_time) as total_to_pay
+      -- Luăm ID-ul ultimei comenzi neaprobate (ne trebuie pentru butonul de Approve)
+      (SELECT id FROM orders WHERE table_id = t.id AND status = 'pending_approval' LIMIT 1) as last_order_id,
+      COALESCE(SUM(oi.quantity * oi.price_at_time) FILTER (WHERE o.status = 'confirmed'), 0) as total_to_pay
     FROM tables t
-    JOIN orders o ON o.table_id = t.id
-    JOIN order_items oi ON oi.order_id = o.id
-    JOIN products p ON oi.product_id = p.id
-    WHERE o.bar_id = $1 AND o.is_paid = FALSE
-    GROUP BY t.id, t.table_number
+    LEFT JOIN orders o ON o.table_id = t.id AND o.is_paid = FALSE
+    LEFT JOIN order_items oi ON oi.order_id = o.id
+    LEFT JOIN products p ON oi.product_id = p.id
+    WHERE t.bar_id = $1
+    GROUP BY t.id, t.table_number, t.status
     ORDER BY t.table_number ASC;
   `;
   const result = await pool.query(query, [barId]);
