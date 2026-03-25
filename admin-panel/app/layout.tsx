@@ -13,7 +13,6 @@ export const metadata: Metadata = {
 // app/layout.tsx
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    // ACEASTA ESTE LINIA CRITICĂ:
     <html lang="ro" suppressHydrationWarning>
       <body>
         <Providers>{children}</Providers>
