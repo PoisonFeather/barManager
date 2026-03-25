@@ -10,24 +10,31 @@ export async function getDashboardSummaryByBar(barId) {
         WHEN EXISTS (SELECT 1 FROM orders WHERE table_id = t.id AND status = 'pending_approval') THEN 'pending_approval'
         ELSE t.status 
       END as status,
-      (
-        SELECT jsonb_agg(jsonb_build_object(
-          'id', r.id,
-          'type', r.type,
-          'method', r.payment_method,
-          'time', r.created_at
-        ))
-        FROM requests r
-        WHERE r.table_id = t.id AND r.status = 'pending'
+      
+      -- 🚨 CORECTAT AICI: cheia payment_method și COALESCE
+      COALESCE(
+        (
+          SELECT jsonb_agg(jsonb_build_object(
+            'id', r.id,
+            'type', r.type,
+            'payment_method', r.payment_method, 
+            'time', r.created_at
+          ))
+          FROM requests r
+          WHERE r.table_id = t.id AND r.status = 'pending'
+        ),
+        '[]'::jsonb
       ) as active_requests,
+
       COALESCE(
         jsonb_agg(jsonb_build_object(
           'item_id', oi.id,
           'name', p.name,
           'qty', oi.quantity
         )) FILTER (WHERE oi.status = 'pending' AND o.status = 'confirmed'),
-        '[]'
+        '[]'::jsonb
       ) as pending_items,
+      
       -- Luăm ID-ul ultimei comenzi neaprobate (ne trebuie pentru butonul de Approve)
       (SELECT id FROM orders WHERE table_id = t.id AND status = 'pending_approval' LIMIT 1) as last_order_id,
       COALESCE(SUM(oi.quantity * oi.price_at_time) FILTER (WHERE o.status = 'confirmed'), 0) as total_to_pay

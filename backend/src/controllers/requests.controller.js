@@ -11,9 +11,9 @@ function resolveStatus(error, fallback = 500) {
 
 export async function createRequestHandler(req, res) {
   try {
-    const { table_id, session_token, type } = req.body;
+    const { bar_id, table_id, type, payment_method, session_token } = req.body;
 
-    // 🛡️ 1. VERIFICARE SECURITATE (Prank-Proof)
+    // Security check
     const tableResult = await db.query(
       "SELECT status, current_session_token FROM tables WHERE id = $1",
       [table_id]
@@ -36,6 +36,7 @@ export async function createRequestHandler(req, res) {
     }
 
     // 🚀 2. Dacă e totul OK, creăm cererea în DB
+    //console.log(req.body);
     const result = await createRequest(req.body);
     console.log(
       `✅ Cerere creată: Masa ${table_id} - Tip: ${type} - ID Cerere: ${result.id} TOKEN ${session_token}`
@@ -51,7 +52,7 @@ export async function createRequestHandler(req, res) {
         session_token: session_token,
       });
     }
-
+    //console.log(io);
     return res.json(result);
   } catch (error) {
     console.error("💥 Eroare createRequest:", error);

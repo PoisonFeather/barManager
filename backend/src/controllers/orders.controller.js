@@ -6,6 +6,10 @@ import {
   listActiveOrders,
   serveOrderItem,
 } from "../services/orders.service.js";
+import {
+  createRequest,
+  completeRequest,
+} from "../services/requests.service.js";
 
 import { pool as db } from "../db/pool.js";
 function resolveStatus(error, fallback = 500) {
@@ -50,7 +54,7 @@ export async function createOrderHandler(req, res) {
       total_amount,
       status: orderStatus, // Îi dăm statusul calculat
     });
-
+    //console.log(result);
     // 3. Socket-ul rămâne aici
     req.app.get("io").emit("new-data", {
       type: "ORDER_REQUEST",

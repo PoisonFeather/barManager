@@ -147,7 +147,7 @@ export function validateCreateRequestPayload(req, res, next) {
   const { bar_id, payment_method, session_token, table_id, type } =
     req.body ?? {};
   const errors = [];
-
+  //console.log(req.body);
   if (!isValidEntityId(bar_id)) {
     errors.push("bar_id is required and must be a valid identifier");
   }

@@ -32,10 +32,13 @@ export const orderService = {
   // Trimite cereri speciale (Chelner sau Notă)
   sendRequest: async (payload: any) => {
     try {
+        const token = localStorage.getItem(`session_${payload.table_id}`);
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/requests`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload) // Trimitem tot obiectul, inclusiv session_token
+            body: JSON.stringify({
+                ...payload,
+            session_token:token}) // Trimitem tot obiectul, inclusiv session_token
           });
       return res.ok;
     } catch (err) {

@@ -91,3 +91,33 @@ export async function closeTableOrders(tableId) {
     [tableId]
   );
 }
+
+export async function insertRequest({
+  bar_id,
+  table_id,
+  type,
+  payment_method,
+  session_token,
+}) {
+  const query = `
+    INSERT INTO requests (bar_id, table_id, type, payment_method, session_token, status)
+    VALUES ($1, $2, $3, $4, $5, 'pending')
+    RETURNING id;
+  `;
+  const result = await pool.query(query, [
+    bar_id,
+    table_id,
+    type,
+    payment_method,
+    session_token,
+  ]);
+  return result.rows[0].id;
+}
+
+// Funcție pentru a marca cererea ca rezolvată (când barmanul apasă OK)
+export async function updateRequestStatus(requestId, status = "completed") {
+  await pool.query("UPDATE requests SET status = $1 WHERE id = $2", [
+    status,
+    requestId,
+  ]);
+}
