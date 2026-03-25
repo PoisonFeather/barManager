@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useState, use, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { AnimatePresence } from 'framer-motion';
 
-// 1. Importăm Hook-urile și Serviciile noastre
+// 1. Importăm Hook-urile și Serviciile din shared
 import { useBarData } from "@/shared/hooks/useBarData";
 import { useCart } from "@/shared/hooks/useCart";
 import { orderService } from "@/shared/services/orderService";
@@ -18,21 +19,20 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
   const { slug } = use(params);
   const searchParams = useSearchParams();
   
-  // 3. Inițializăm Hook-urile custom
+  // 3. Hook-uri de Date și Coș (Toată logica e izolată aici)
   const { barData, loading: menuLoading } = useBarData(slug);
   const { cart, addToCart, updateQuantity, clearCart, totalAmount, totalItems } = useCart();
 
-  // 4. Stări locale pentru UI și Istoric
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const [orderHistory, setOrderHistory] = useState<any[]>([]);
 
-  // 5. Logică Identificare Masă (Memoizată pentru eficiență)
+  // 4. Identificare Masă (Memoizată pentru viteză)
   const currentTable = useMemo(() => {
-    const tableIdFromURL = searchParams.get('t');
-    const tableNumFromURL = searchParams.get('table');
+    const tId = searchParams.get('t');
+    const tNum = searchParams.get('table');
     return barData?.tables?.find((t: any) => 
-      t.id === tableIdFromURL || t.table_number === Number(tableNumFromURL)
+      t.id === tId || t.table_number === Number(tNum)
     );
   }, [barData, searchParams]);
 
@@ -40,7 +40,7 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
     orderHistory.reduce((sum, o) => sum + (Number(o.price) * o.quantity), 0), 
   [orderHistory]);
 
-  // 6. Sincronizare Istoric Comenzi
+  // 5. Sincronizare Istoric
   const refreshHistory = async () => {
     if (currentTable?.id) {
       const history = await orderService.fetchHistory(currentTable.id);
@@ -52,9 +52,9 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
     if (currentTable?.id) refreshHistory();
   }, [currentTable]);
 
-  // 7. Handlere Acțiuni (Folosesc Serviciile)
+  // 6. Handlere Acțiuni
   const handleSendOrder = async () => {
-    if (!barData?.id || !currentTable?.id) return alert("Eroare identificare!");
+    if (!barData?.id || !currentTable?.id) return alert("Eroare identificare masă!");
 
     const payload = {
       bar_id: barData.id,
@@ -88,7 +88,6 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
     }
   };
 
-  // State-uri de Loading
   if (menuLoading || !barData) {
     return (
       <div className="p-10 text-white bg-black h-screen flex items-center justify-center font-black animate-pulse uppercase tracking-[0.5em]">
@@ -114,7 +113,7 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
         </div>
       </div>
 
-      {/* LISTA PRODUSE PE CATEGORII */}
+      {/* LISTA PRODUSE */}
       <div className="p-4 space-y-10 mt-4">
         {barData.categories?.map((cat: any) => (
           <div key={cat.id}>
@@ -135,7 +134,6 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
         ))}
       </div>
 
-      {/* ACTION BAR (Barul de jos) */}
       <FloatingActionBar 
         totalItems={totalItems} 
         totalAmount={totalAmount} 
@@ -147,26 +145,27 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
         isServiceModalOpen={isServiceModalOpen}
       />
 
-      {/* MODALURI (Condiționale) */}
-      {isCartOpen && (
-        <CartModal 
-          cart={cart} 
-          history={orderHistory} 
-          onUpdate={updateQuantity} 
-          onSend={handleSendOrder} 
-          onClose={() => setIsCartOpen(false)}
-          primaryColor={barData.primary_color}
-          totalAmount={totalAmount}
-          historyTotal={historyTotal}
-        />
-      )}
+      <AnimatePresence>
+        {isCartOpen && (
+          <CartModal 
+            cart={cart} 
+            history={orderHistory} 
+            onUpdate={updateQuantity} 
+            onSend={handleSendOrder} 
+            onClose={() => setIsCartOpen(false)}
+            primaryColor={barData.primary_color}
+            totalAmount={totalAmount}
+            historyTotal={historyTotal}
+          />
+        )}
 
-      {isServiceModalOpen && (
-        <ServiceModal 
-          onSendRequest={handleSendRequest}
-          onClose={() => setIsServiceModalOpen(false)}
-        />
-      )}
+        {isServiceModalOpen && (
+          <ServiceModal 
+            onSendRequest={handleSendRequest}
+            onClose={() => setIsServiceModalOpen(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
