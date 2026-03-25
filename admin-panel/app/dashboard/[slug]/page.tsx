@@ -20,11 +20,22 @@
  * - Implementare efecte vizuale pentru a atrage atentia personalului asupra comenzilor noi sau urgente (ex: animații, schimbare culori).
  */
 
-"use client";
-import { useRef, useEffect, useState, use } from "react";
-import { ThemeToggle } from "@/components/ThemeToggle";
+// "use client";
+// import { useRef, useEffect, useState, use } from "react";
+// import { ThemeToggle } from "@/components/ThemeToggle";
+// import { useDashboardSummary } from "@/shared/hooks/useDashboardSummary";
+// import { useBarData } from "@/shared/hooks/useBarData"; 
 
-// Această componentă este destinată exclusiv barmanilor pentru a gestiona comenzile și stocul în timp real.
+
+"use client";
+import { useState, use } from "react";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { useDashboardSummary } from "@/shared/hooks/useDashboardSummary";
+import { useBarData } from "@/shared/hooks/useBarData";
+import { useAudioAlerts } from "@/shared/hooks/useAudioAlert"; // Hook-ul nou
+import { dashboardService } from "@/shared/services/dashboardService"; // Service-ul nou
+import { stockService } from "@/shared/services/stockService"; // Service-ul nou
+
 
 export default function BartenderDashboard({
   params,
@@ -33,19 +44,23 @@ export default function BartenderDashboard({
 }) {
   const { slug } = use(params);
   const [activeTab, setActiveTab] = useState<"orders" | "stock">("orders");
-  const [barData, setBarData] = useState<any>(null);
-  const [tableGroups, setTableGroups] = useState<any[]>([]);
 
-  // 1. Fetch & Polling
-  const fetchSummary = (barId: string) => {
-    if (!barId) return;
-    fetch(`http://localhost:3001/dashboard/summary/${barId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setTableGroups(Array.isArray(data) ? data : []);
-      })
-      .catch(() => setTableGroups([]));
-  };
+  // ✅ PASUL A: Aduce datele generale despre bar (nume, id, etc.)
+  // Folosim un hook separat pentru asta conform SRP
+  const { barData, loading: barLoading } = useBarData(slug);
+
+  // ✅ PASUL B: Aduce grupurile de mese și comenzile
+  // Folosim direct numele 'tableGroups' ca să nu mai modifici restul codului de mai jos
+  const { 
+    tableGroups, 
+    loading: dashboardLoading, 
+    refresh 
+  } = useDashboardSummary(barData?.id || null);
+
+  // ❌ Șterge aceste rânduri dacă existau, nu mai avem nevoie de ele aici:
+  // const [tableGroups, setTableGroups] = useState<any[]>([]); 
+  // const fetchSummary = ...
+
   // Inițial, încărcăm datele barului și apoi setăm un interval pentru a actualiza comenzile în timp real.
   useEffect(() => {
     fetch(`http://localhost:3001/menu-complete/${slug}`)
