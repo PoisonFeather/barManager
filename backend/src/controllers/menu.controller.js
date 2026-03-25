@@ -4,6 +4,8 @@ import {
   getCompleteMenuBySlug,
   getMenuBySlug,
 } from "../services/menu.service.js";
+import { v4 as uuidv4 } from "uuid";
+import { pool as db } from "../db/pool.js";
 
 function resolveStatus(error, fallback = 500) {
   return Number.isInteger(error?.status) ? error.status : fallback;
@@ -54,8 +56,30 @@ export async function getCompleteMenuHandler(req, res) {
 export const getTableStatusHandler = async (req, res) => {
   try {
     const { tableId } = req.params;
-    // Logica ta pentru statusul mesei...
-    res.json({ status: "active" });
+
+    // 1. Căutăm masa
+    const result = await db.query(
+      "SELECT current_session_token FROM tables WHERE id = $1",
+      [tableId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Masa nu există" });
+    }
+
+    let token = result.rows[0].current_session_token;
+
+    // 2. Dacă masa e "închisă" (token NULL), generăm unul nou
+    if (!token) {
+      token = uuidv4();
+      await db.query(
+        "UPDATE tables SET current_session_token = $1 WHERE id = $2",
+        [token, tableId]
+      );
+      console.log(`✅ Sesiune nouă generată pentru masa ${tableId}`);
+    }
+
+    res.json({ sessionToken: token });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -52,6 +52,28 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
     if (currentTable?.id) refreshHistory();
   }, [currentTable]);
 
+  // Securizare sesiune  - token generat de backend pentru a preveni accesul neautorizat la comenzi (în special dacă cineva încearcă să acceseze direct API-ul fără token)
+  useEffect(() => {
+    const syncSession = async () => {
+      // 🚩 Dacă nu avem masă, nu cerem token
+      if (!currentTable?.id) return;
+  
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/table-status/${currentTable.id}`);
+        const data = await res.json();
+        
+        if (data.sessionToken) {
+          // Îl punem în buzunarul browserului
+          localStorage.setItem(`session_${currentTable.id}`, data.sessionToken);
+          console.log("🔐 Sesiune securizată: ", data.sessionToken);
+        }
+      } catch (err) {
+        console.error("❌ Eroare la securizarea sesiunii:", err);
+      }
+    };
+  
+    syncSession();
+  }, [currentTable?.id]);
   // 6. Handlere Acțiuni
   const handleSendOrder = async () => {
     if (!barData?.id || !currentTable?.id) return alert("Eroare identificare masă!");

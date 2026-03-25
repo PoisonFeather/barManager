@@ -27,3 +27,31 @@ export async function toggleProductAvailabilityHandler(req, res) {
     return res.status(resolveStatus(error)).json({ error: error.message });
   }
 }
+export const closeTableHandler = async (req, res) => {
+  const { tableId } = req.params;
+
+  try {
+    // 1. Ștergem token-ul de sesiune din baza de date
+    // Asta face ca orice token deținut de client în LocalStorage să devină INVALID
+    await db.query(
+      "UPDATE tables SET current_session_token = NULL WHERE id = $1",
+      [tableId]
+    );
+
+    // 2. Opțional: Poți marca și comenzile ca fiind arhivate/plătite aici
+    // await db.query("UPDATE orders SET status = 'paid' WHERE table_id = $1", [tableId]);
+
+    // 3. Trimitem semnalul prin Socket
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("new-data", { type: "TABLE_CLOSED", tableId });
+    }
+
+    res.json({
+      success: true,
+      message: "Masa a fost închisă și sesiunea a expirat.",
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

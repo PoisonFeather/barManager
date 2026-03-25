@@ -15,17 +15,18 @@ export const orderService = {
 
   // Trimite coșul de cumpărături către backend
   sendOrder: async (payload: any) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/orders`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      return await response.json();
-    } catch (err) {
-      console.error("Order Service Error:", err);
-      return { success: false };
-    }
+    // Mergem la buzunarul unde am pus cheia în page.tsx
+    const token = localStorage.getItem(`session_${payload.table_id}`);
+  
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        ...payload, 
+        session_token: token // 🔑 Aici punem cheia în plic
+      })
+    });
+    return res.json();
   },
 
   // Trimite cereri speciale (Chelner sau Notă)
