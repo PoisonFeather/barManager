@@ -37,164 +37,54 @@ import { dashboardService } from "@/shared/services/dashboardService"; // Servic
 import { stockService } from "@/shared/services/stockService"; // Service-ul nou
 
 
-export default function BartenderDashboard({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default function BartenderDashboard({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const [activeTab, setActiveTab] = useState<"orders" | "stock">("orders");
 
-  // ✅ PASUL A: Aduce datele generale despre bar (nume, id, etc.)
-  // Folosim un hook separat pentru asta conform SRP
-  const { barData, loading: barLoading } = useBarData(slug);
+  // 1. DATE & POLLING (Gestionate de hook-uri)
+  const { barData, setBarData } = useBarData(slug); 
+  const { tableGroups, refresh } = useDashboardSummary(barData?.id || null);
 
-  // ✅ PASUL B: Aduce grupurile de mese și comenzile
-  // Folosim direct numele 'tableGroups' ca să nu mai modifici restul codului de mai jos
-  const { 
-    tableGroups, 
-    loading: dashboardLoading, 
-    refresh 
-  } = useDashboardSummary(barData?.id || null);
+  // 2. AUDIO (Gestionat de hook-ul useAudioAlerts)
+  const { isAudioEnabled, enableAudio } = useAudioAlerts(tableGroups);
 
-  // ❌ Șterge aceste rânduri dacă existau, nu mai avem nevoie de ele aici:
-  // const [tableGroups, setTableGroups] = useState<any[]>([]); 
-  // const fetchSummary = ...
-
-  // Inițial, încărcăm datele barului și apoi setăm un interval pentru a actualiza comenzile în timp real.
-  useEffect(() => {
-    fetch(`http://localhost:3001/menu-complete/${slug}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setBarData(data);
-        fetchSummary(data.id);
-      });
-
-    const interval = setInterval(() => {
-      if (barData?.id) fetchSummary(barData.id);
-    }, 5000); // Polling la 5 secunde pentru a fi "live" fără a suprasolicita serverul.
-
-    return () => clearInterval(interval);
-  }, [slug, barData?.id]);
-
-  // 2. Acțiuni Chelner / Barman
-  const completeRequest = async (requestId: string) => {
-    try {
-      const res = await fetch(
-        `http://localhost:3001/requests/${requestId}/complete`,
-        { method: "PATCH" }
-      );
-      if (res.ok) fetchSummary(barData.id); // REFRESH INSTANT
-    } catch (err) {
-      console.error(err);
-    }
+  // 3. ACȚIUNI (Folosesc serviciile și dau refresh)
+  const handleCompleteRequest = async (id: string) => {
+    const ok = await dashboardService.completeRequest(id);
+    const success = await dashboardService.completeRequest(id); // Marchez și cererea ca completă
+    if (success) refresh();
+    else alert("Eroare la  finalizarea cererii.");
   };
-  // 2. Acțiuni Barman
-  const serveItem = async (itemId: string) => {
-    try {
-      const res = await fetch(
-        `http://localhost:3001/order-items/${itemId}/serve`,
-        { method: "PATCH" }
-      );
-      if (res.ok) fetchSummary(barData.id);
-    } catch (err) {
-      alert("Eroare la servire.");
+
+  const handleServeItem = async (id: string) => {
+    const ok = await dashboardService.serveItem(id);
+    const success = await dashboardService.serveItem(id); // Marchez și cererea ca completă
+    if (success) refresh();
+    else alert("Eroare la servirea produsului.");
+  };
+
+  const handleCloseTable = async (id: string) => {
+    if (!confirm("Sigur închizi masa?")) return;
+    const ok = await dashboardService.closeTable(id);
+    if (ok) refresh();
+  };
+  
+  const handleToggleStock = async (prodId: string, currentStatus: boolean) => {
+    const updatedProd = await stockService.toggleStock(prodId, !currentStatus);
+    if (updatedProd) {
+      // Update local la starea barData (opțional, dacă vrei update instant în UI)
+      setBarData((prev: any) => ({
+        ...prev,
+        categories: prev.categories.map((cat: any) => ({
+          ...cat,
+          products: cat.products.map((p: any) =>
+            p.id === prodId ? { ...p, is_available: !currentStatus } : p
+          ),
+        })),
+      }));
     }
   };
 
-  // 3. Închidere masă (doar dacă toate produsele sunt servite)
-  const closeTable = async (tableId: string) => {
-    if (
-      !confirm("Sigur închizi masa? Toate comenzile vor fi marcate ca plătite.")
-    )
-      return;
-    try {
-      const res = await fetch(`http://localhost:3001/tables/${tableId}/close`, {
-        method: "PATCH",
-      });
-      if (res.ok) fetchSummary(barData.id);
-    } catch (err) {
-      alert("Eroare la închidere.");
-    }
-  };
-  // 4. Toggle stoc produs (doar pentru barman, nu afectează comenzile deja plasate, doar dacă e disponibil sau nu pentru viitor)
-  const toggleStock = async (prodId: string, currentStatus: boolean) => {
-    const newStatus = !currentStatus;
-    try {
-      const res = await fetch(
-        `http://localhost:3001/products/${prodId}/toggle`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ is_available: newStatus }),
-        }
-      );
-      if (res.ok) {
-        setBarData((prev: any) => ({
-          ...prev,
-          categories: prev.categories.map((cat: any) => ({
-            ...cat,
-            products: cat.products.map((p: any) =>
-              p.id === prodId ? { ...p, is_available: newStatus } : p
-            ),
-          })),
-        }));
-      }
-    } catch (err) {
-      alert("Eroare stoc.");
-    }
-  };
-  const prevTotalAlerts = useRef(0);
-
-  // 1. Adaugă o stare pentru activare sus în componentă
-  const [isAudioEnabled, setIsAudioEnabled] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  // 2. Inițializăm audio-ul o singură dată
-  useEffect(() => {
-    audioRef.current = new Audio("/ding.mp3");
-    audioRef.current.load();
-  }, []);
-
-  // 3. Funcția de deblocare (TREBUIE chemată la click)
-  const enableAudio = () => {
-    if (audioRef.current) {
-      // Redăm sunetul 0.1 secunde și dăm PAUSE imediat.
-      // Asta "convinge" browserul că utilizatorul vrea sunet pe pagina asta.
-      audioRef.current
-        .play()
-        .then(() => {
-          audioRef.current?.pause();
-          if (audioRef.current) audioRef.current.currentTime = 0;
-          setIsAudioEnabled(true);
-        })
-        .catch((err) => console.error("Eroare deblocare:", err));
-    }
-  };
-
-  // 4. Modifică useEffect-ul de "Ding"
-  useEffect(() => {
-    if (!tableGroups || tableGroups.length === 0 || !isAudioEnabled) return;
-
-    const currentTotal = tableGroups.reduce((acc, group) => {
-      return (
-        acc +
-        (group.pending_items?.length || 0) +
-        (group.active_requests?.length || 0)
-      );
-    }, 0);
-
-    if (
-      currentTotal > prevTotalAlerts.current &&
-      prevTotalAlerts.current !== 0
-    ) {
-      if (audioRef.current) {
-        audioRef.current.currentTime = 0;
-        audioRef.current.play().catch((e) => console.log("Tot e blocat:", e));
-      }
-    }
-    prevTotalAlerts.current = currentTotal;
-  }, [tableGroups, isAudioEnabled]);
 
   if (!barData)
     return (
@@ -321,7 +211,7 @@ export default function BartenderDashboard({
                           </div>
                         </div>
                         <button
-                          onClick={() => completeRequest(req.id)}
+                          onClick={() => handleCompleteRequest(req.id)}
                           className="bg-white/20 hover:bg-white/40 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all"
                         >
                           OK
@@ -343,7 +233,7 @@ export default function BartenderDashboard({
                           {item.qty}x {item.name}
                         </span>
                         <button
-                          onClick={() => serveItem(item.item_id)}
+                          onClick={() => handleServeItem(item.item_id)}
                           className="bg-green-600 hover:bg-green-500 text-white w-10 h-10 flex items-center justify-center rounded-xl transition-all shadow-lg"
                         >
                           ✓
@@ -360,7 +250,7 @@ export default function BartenderDashboard({
                 </div>
 
                 <button
-                  onClick={() => closeTable(group.table_id)}
+                  onClick={() => handleCloseTable(group.table_id)}
                   className={`w-full p-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${
                     group.pending_items?.length === 0
                       ? "bg-zinc-900 dark:bg-white text-white dark:text-black hover:scale-[1.02]"
@@ -408,7 +298,7 @@ export default function BartenderDashboard({
                       </p>
                     </div>
                     <button
-                      onClick={() => toggleStock(prod.id, prod.is_available)}
+                      onClick={() => handleToggleStock(prod.id, prod.is_available)}
                       className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
                         prod.is_available
                           ? "bg-green-600 text-white shadow-lg"

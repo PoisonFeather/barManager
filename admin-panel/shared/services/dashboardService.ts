@@ -14,21 +14,21 @@ export const dashboardService = {
   },
 
   completeRequest: async (itemId: string) => {
-    const res = await fetch("${API_BASE_URL}/requests/${requestId}/complete", {
+    const res = await fetch(`${API_BASE_URL}/requests/${itemId}/complete`, {
       method: "PATCH",
     });
     return res.ok;
   },
   serveItem: async (itemId: string) => {
-    const res = await fetch("${API_BASE_URL}/order-items/${itemId}/serve", {
-      method: "PATCH",
-    });
+    const res = await fetch(`${API_BASE_URL}/order-items/${itemId}/serve`, { 
+        method: "PATCH" 
+      });
     return res.ok;
   },
   closeTable: async (tableId: string) => {
-    const res = await fetch("${API_BASE_URL}/tables/${tableId}/close", {
-      method: "PATCH",
-    });
+    const res = await fetch(`${API_BASE_URL}/tables/${tableId}/close`, { 
+        method: "PATCH" 
+      });
     return res.ok;
   },
 };
