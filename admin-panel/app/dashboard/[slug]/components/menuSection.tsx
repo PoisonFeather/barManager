@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 interface MenuEditorProps {
   categories: any[];
-  refreshData: () => void; // Funcția pe care o apelezi ca să tragi iar datele de la backend după ce modifici ceva
+  refreshData: () => void; 
 }
 
 export function MenuSection({ categories, refreshData }: MenuEditorProps) {
@@ -175,7 +175,7 @@ export function MenuSection({ categories, refreshData }: MenuEditorProps) {
                   <textarea 
                     value={editingProduct.description || ""}
                     onChange={(e) => setEditingProduct({...editingProduct, description: e.target.value})}
-                    className="w-full p-4 bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl focus:outline-none focus:border-orange-500 transition-colors min-h-[100px] resize-none"
+                    className="w-full p-4 bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl focus:outline-none focus:border-orange-500 transition-colors min-h-25 resize-none"
                     placeholder="Ex: 200ml, lămâie, gheață..."
                   />
                 </div>
