@@ -8,7 +8,7 @@ import {
   deleteProductHandler,
   addProductHandler,
 } from "../controllers/dashboard.controller.js";
-console.log(typeof approveTableHandler);
+//console.log(typeof approveTableHandler);
 import { validateToggleProductPayload } from "../middleware/validation.js";
 
 const router = Router();
