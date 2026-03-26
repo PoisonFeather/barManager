@@ -16,20 +16,32 @@ export function MenuSection({ categories, refreshData }: MenuEditorProps) {
     e.preventDefault();
     setIsLoading(true);
 
+    // Verificăm dacă e produs NOU (isNew) sau EDITARE (are id)
+    const isNewProduct = editingProduct.isNew;
+    const url = isNewProduct 
+      ? `http://localhost:3001/dashboard/products` 
+      : `http://localhost:3001/dashboard/products/${editingProduct.id}`;
+    
+    const method = isNewProduct ? "POST" : "PUT";
+
+    // Dacă e produs nou, trebuie să trimitem și category_id
+    const bodyData = {
+      name: editingProduct.name,
+      price: Number(editingProduct.price),
+      description: editingProduct.description,
+      ...(isNewProduct && { category_id: editingProduct.category_id })
+    };
+
     try {
-      const res = await fetch(`http://localhost:3001/dashboard/products/${editingProduct.id}`, {
-        method: "PUT",
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: editingProduct.name,
-          price: Number(editingProduct.price),
-          description: editingProduct.description,
-        }),
+        body: JSON.stringify(bodyData),
       });
 
       if (res.ok) {
-        refreshData(); // Tragem datele noi din backend
-        setEditingProduct(null); // Închidem modalul
+        refreshData(); 
+        setEditingProduct(null); 
       } else {
         const error = await res.json();
         alert(error.error || "Eroare la salvare");
@@ -103,9 +115,24 @@ export function MenuSection({ categories, refreshData }: MenuEditorProps) {
                 </div>
               </div>
             ))}
+            {/* 👈 BUTONUL DE ADAUGĂ E AICI, ÎN INTERIORUL GRID-ULUI */}
+            <button
+              onClick={() => setEditingProduct({ 
+                isNew: true, 
+                category_id: cat.id, 
+                name: "", 
+                price: "", 
+                description: "" 
+              })}
+              className="bg-zinc-50 dark:bg-zinc-900/30 border-2 border-dashed border-zinc-300 dark:border-zinc-800 hover:border-orange-500 hover:text-orange-500 text-zinc-400 p-5 rounded-2xl flex flex-col items-center justify-center transition-all min-h-40 group"
+            >
+              <span className="text-3xl mb-2 group-hover:scale-125 transition-transform">+</span>
+              <span className="text-xs font-black uppercase tracking-widest">Adaugă Produs</span>
+            </button>
           </div>
         </div>
       ))}
+      
 
       {/* MODALUL DE EDITARE (Apare doar când dai click pe "Editează") */}
       <AnimatePresence>

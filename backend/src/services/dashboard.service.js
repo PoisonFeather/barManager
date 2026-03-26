@@ -6,6 +6,7 @@ import {
   updateProductAvailability,
   updateProductDetails,
   deleteProduct,
+  addProductToCategory,
 } from "../repositories/dashboard.repository.js";
 
 // 1. SUMAR (Datele pentru mesele colorate)
@@ -57,4 +58,9 @@ export async function editProductDetails(productId, payload) {
 export async function removeProduct(productId) {
   await deleteProduct(productId);
   return { success: true };
+}
+// 7. ADAUGARE PRODUS NOU ÎNTR-O CATEGORIE (Dacă vrem să adăugăm un produs nou, trebuie să știm în ce categorie să-l băgăm, deci primim categoryId separat)
+export async function addNewProduct(categoryId, payload) {
+  const newProduct = await addProductToCategory(categoryId, payload);
+  return { success: true, product: newProduct };
 }

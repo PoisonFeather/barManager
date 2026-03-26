@@ -6,6 +6,7 @@ import {
   rejectTableHandler,
   editProductHandler,
   deleteProductHandler,
+  addProductHandler,
 } from "../controllers/dashboard.controller.js";
 console.log(typeof approveTableHandler);
 import { validateToggleProductPayload } from "../middleware/validation.js";
@@ -29,5 +30,5 @@ router.patch(
 
 router.put("/products/:productId", editProductHandler);
 router.delete("/products/:productId", deleteProductHandler);
-
+router.post("/products", addProductHandler);
 export default router;

@@ -77,3 +77,15 @@ export async function deleteProduct(productId) {
   // putem transforma asta într-un "soft delete" mai târziu.
   await pool.query("DELETE FROM products WHERE id = $1", [productId]);
 }
+
+export async function addProductToCategory(
+  categoryId,
+  { name, price, description }
+) {
+  const result = await pool.query(
+    `INSERT INTO products (category_id, name, price, description, is_available) 
+     VALUES ($1, $2, $3, $4, true) RETURNING *`,
+    [categoryId, name, price, description]
+  );
+  return result.rows[0];
+}

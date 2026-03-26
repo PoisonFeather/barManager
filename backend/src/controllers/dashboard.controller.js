@@ -171,3 +171,28 @@ export const deleteProductHandler = async (req, res) => {
     return res.status(resolveStatus(error)).json({ error: error.message });
   }
 };
+export const addProductHandler = async (req, res) => {
+  try {
+    const { category_id, name, price, description } = req.body;
+
+    if (!category_id || !name || price === undefined) {
+      return res
+        .status(400)
+        .json({ error: "Categoria, numele și prețul sunt obligatorii!" });
+    }
+
+    const result = await dashboardService.addNewProduct(category_id, {
+      name,
+      price,
+      description,
+    });
+
+    const io = req.app.get("io");
+    if (io) io.emit("menu-updated");
+
+    return res.json(result);
+  } catch (error) {
+    console.error("💥 Eroare addProductHandler:", error);
+    return res.status(resolveStatus(error)).json({ error: error.message });
+  }
+};
