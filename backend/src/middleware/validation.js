@@ -157,10 +157,6 @@ export function validateCreateRequestPayload(req, res, next) {
   if (!isNonEmptyString(type)) {
     errors.push("type is required and must be a non-empty string");
   }
-  //if (payment_method !== undefined && !isNonEmptyString(payment_method)) {
-  //errors.push("payment_method must be a non-empty string when provided");
-  //}
-  //console.log(session_token);
   console.log(payment_method);
   if (type === "bill" && !isNonEmptyString(payment_method)) {
     errors.push("payment_method is required for bill requests");

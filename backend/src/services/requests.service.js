@@ -4,7 +4,7 @@ import {
 } from "../repositories/requests.repository.js";
 
 export async function createRequest(payload) {
-  console.log("Creating request with payload:", payload);
+  //console.log("Creating request with payload:", payload);
   return createTableRequest(payload);
 }
 

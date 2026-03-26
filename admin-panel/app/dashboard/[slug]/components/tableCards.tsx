@@ -77,20 +77,22 @@ export function TableCard({
               req.type === "bill" ? "bg-red-600 animate-pulse" : "bg-orange-500"
             } text-white shadow-lg`}
           >
-            <div className="flex flex-col">
-              <span className="font-black text-[10px] uppercase">
+            <div className="flex flex-col gap-1.5">
+              <span className="font-black text-xs uppercase opacity-90 tracking-wider">
                 {req.type === "bill" ? "🧾 NOTĂ" : "🛎️ CHELNER"}
               </span>
-              {/* AFIȘĂM METODA DE PLATĂ DACĂ EXISTĂ */}
+              
+              {/* AFIȘĂM METODA DE PLATĂ MULT MAI MARE ȘI CLARĂ */}
               {req.payment_method && (
-                <span className="text-[9px] font-bold opacity-80 uppercase italic">
-                  Plată: {req.payment_method}
+                <span className="bg-white text-zinc-900 font-black text-sm px-3 py-1 rounded-lg uppercase tracking-widest flex items-center gap-1.5 shadow-sm w-fit">
+                  {req.payment_method === 'card' ? '💳' : '💵'} {req.payment_method}
                 </span>
               )}
             </div>
+
             <button
               onClick={() => onComplete(req.id)}
-              className="bg-white/20 hover:bg-white/40 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase transition-colors"
+              className="bg-white/20 hover:bg-white/40 px-4 py-2 rounded-xl text-xs font-black uppercase transition-colors shadow-inner"
             >
               OK
             </button>
