@@ -65,7 +65,7 @@ export async function createOrderHandler(req, res) {
       type: "HISTORY_UPDATE",
       message: "Altcineva a adăugat produse!",
     });
-    console.log("added order and emitted socket event");
+    //console.log("added order and emitted socket event");
     return res.json(result);
   } catch (error) {
     res.status(error.status || 500).json({ error: error.message });

@@ -17,6 +17,11 @@ export function ProductCard({ prod, onAdd, primaryColor }: ProductCardProps) {
     >
       <div className="flex-1 pr-4">
         <h3 className="font-bold text-lg dark:text-zinc-100">{prod.name}</h3>
+        {prod.description && (
+          <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1 mb-2 line-clamp-2 leading-snug">
+            {prod.description}
+          </p>
+        )}
         <span className="text-zinc-500 dark:text-zinc-400 font-black text-sm">
           {Number(prod.price).toFixed(2)} RON
         </span>

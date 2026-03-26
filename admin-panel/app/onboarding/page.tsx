@@ -89,7 +89,7 @@ export default function OnboardingPage() {
   return (
     <div className="p-4 md:p-8 bg-zinc-950 min-h-screen text-white font-sans max-w-5xl mx-auto">
       <div className="mb-10">
-        <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500 uppercase tracking-tighter">
+        <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-linear-to-r from-red-500 to-orange-500 uppercase tracking-tighter">
           Setup Locație Nouă
         </h1>
         <p className="text-zinc-400 mt-2 font-medium">Configurează detaliile barului și meniul inițial.</p>
@@ -196,7 +196,7 @@ export default function OnboardingPage() {
           onClick={handleOnboarding} 
           disabled={isLoading}
           className={`w-full p-5 rounded-2xl font-black text-xl uppercase tracking-widest shadow-2xl transition-all
-            ${isLoading ? 'bg-zinc-700 text-zinc-400 cursor-not-allowed' : 'bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white hover:scale-[1.01]'}`}
+            ${isLoading ? 'bg-zinc-700 text-zinc-400 cursor-not-allowed' : 'bg-linear-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white hover:scale-[1.01]'}`}
         >
           {isLoading ? 'Se lansează sistemul...' : 'LANSEAZĂ BARUL PE PLATFORMĂ'}
         </button>
