@@ -111,3 +111,63 @@ export const openTableHandler = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// 7. EDITARE PRODUS (Nume, Preț, Descriere)
+export const editProductHandler = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const { name, price, description } = req.body;
+
+    if (!name || price === undefined) {
+      return res
+        .status(400)
+        .json({ error: "Numele și prețul sunt obligatorii!" });
+    }
+
+    const result = await dashboardService.editProductDetails(productId, {
+      name,
+      price,
+      description,
+    });
+
+    // 📢 Anunțăm toate telefoanele și tabletele că s-a modificat meniul
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("menu-updated");
+    }
+
+    return res.json(result);
+  } catch (error) {
+    console.error("💥 Eroare editProductHandler:", error);
+    return res.status(resolveStatus(error)).json({ error: error.message });
+  }
+};
+
+// 8. ȘTERGERE PRODUS (Delete)
+export const deleteProductHandler = async (req, res) => {
+  try {
+    const { productId } = req.params;
+
+    const result = await dashboardService.removeProduct(productId);
+
+    // 📢 Anunțăm clienții că a dispărut un produs
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("menu-updated");
+    }
+
+    return res.json(result);
+  } catch (error) {
+    console.error("💥 Eroare deleteProductHandler:", error);
+
+    // Eroare de Foreign Key (produsul e deja pe o notă veche)
+    if (error.code === "23503") {
+      return res.status(400).json({
+        error:
+          "Nu poți șterge un produs care a fost deja comandat. Folosește dezactivarea stocului!",
+      });
+    }
+
+    return res.status(resolveStatus(error)).json({ error: error.message });
+  }
+};

@@ -3,8 +3,8 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface Props {
   barName: string;
-  activeTab: "orders" | "stock";
-  setActiveTab: (tab: "orders" | "stock") => void;
+  activeTab: "orders" | "stock" | "menu";
+  setActiveTab: (tab: "orders" | "stock" | "menu") => void;
   tableCount: number;
   isAudioEnabled: boolean;
   onEnableAudio: () => void;
@@ -36,6 +36,12 @@ export function DashboardHeader({ barName, activeTab, setActiveTab, tableCount, 
           </button>
           <button onClick={() => setActiveTab("stock")} className={`flex-1 md:flex-none px-6 py-2 rounded-xl font-black text-[10px] uppercase ${activeTab === "stock" ? "bg-white dark:bg-zinc-800 shadow-lg" : "text-zinc-500"}`}>
             Stoc
+          </button>
+          <button 
+            onClick={() => setActiveTab("menu")} 
+            className={`flex-1 md:flex-none px-6 py-2 rounded-xl font-black text-[10px] uppercase transition-all ${activeTab === "menu" ? "bg-white dark:bg-zinc-800 shadow-lg text-zinc-900 dark:text-white" : "text-zinc-500"}`}
+          >
+            Meniu
           </button>
         </div>
       </div>

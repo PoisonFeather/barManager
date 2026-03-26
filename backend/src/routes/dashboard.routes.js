@@ -4,6 +4,8 @@ import {
   toggleProductAvailabilityHandler,
   approveTableHandler,
   rejectTableHandler,
+  editProductHandler,
+  deleteProductHandler,
 } from "../controllers/dashboard.controller.js";
 console.log(typeof approveTableHandler);
 import { validateToggleProductPayload } from "../middleware/validation.js";
@@ -24,5 +26,8 @@ router.patch(
   validateToggleProductPayload,
   toggleProductAvailabilityHandler
 );
+
+router.put("/products/:productId", editProductHandler);
+router.delete("/products/:productId", deleteProductHandler);
 
 export default router;

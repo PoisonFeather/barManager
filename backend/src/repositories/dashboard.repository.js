@@ -56,3 +56,24 @@ export async function updateProductAvailability(productId, isAvailable) {
     productId,
   ]);
 }
+
+export async function updateProductDetails(
+  productId,
+  { name, price, description }
+) {
+  const result = await pool.query(
+    `UPDATE products 
+     SET name = $1, price = $2, description = $3 
+     WHERE id = $4 
+     RETURNING *`,
+    [name, price, description, productId]
+  );
+  return result.rows[0];
+}
+
+// 🗑️ Ștergere definitivă produs
+export async function deleteProduct(productId) {
+  // Aici facem un delete simplu. Dacă ai foreign keys restrictive pe comenzi,
+  // putem transforma asta într-un "soft delete" mai târziu.
+  await pool.query("DELETE FROM products WHERE id = $1", [productId]);
+}

@@ -10,10 +10,11 @@ import { useSocket } from "@/shared/hooks/useSocket";
 import { DashboardHeader } from "./components/dashboardHeader";
 import { TableCard } from "./components/tableCards";
 import { StockSection } from "./components/stockSection";
+import { MenuSection } from "./components/menuSection";
 
 export default function BartenderDashboard({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
-  const [activeTab, setActiveTab] = useState<"orders" | "stock">("orders");
+  const [activeTab, setActiveTab] = useState<"orders" | "stock" | "menu">("orders") ;
 
   const { barData, setBarData } = useBarData(slug);
   
@@ -59,7 +60,8 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
         onEnableAudio={enableAudio}
       />
 
-      {activeTab === "orders" ? (
+      {/* 1. TAB-UL DE MESE */}
+      {activeTab === "orders" && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in duration-700">
           {tableGroups.length === 0 ? (
             <div className="col-span-full py-32 text-center border-2 border-dashed border-zinc-200 dark:border-zinc-900 rounded-[4rem]">
@@ -79,8 +81,19 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
             ))
           )}
         </div>
-      ) : (
+      )}
+
+      {/* 2. TAB-UL DE STOC */}
+      {activeTab === "stock" && (
         <StockSection barData={barData} setBarData={setBarData} />
+      )}
+
+      {/* 3. TAB-UL DE MENIU (NOU!) */}
+      {activeTab === "menu" && (
+        <MenuSection 
+          categories={barData?.categories || []} 
+          refreshData={refresh} 
+        />
       )}
     </div>
   );
