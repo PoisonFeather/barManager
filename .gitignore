@@ -6,3 +6,5 @@ build/
 # Docker data (dacă ai pus volumul în folderul proiectului)
 pgdata/
 TODO.local.md
+.continue/agents/new-config-1.yaml
+.continue/agents/new-config.yaml

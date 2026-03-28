@@ -1,4 +1,5 @@
 import { pool } from "../db/pool.js";
+import { v4 as uuidv4 } from "uuid";
 
 export async function getDashboardSummaryByBar(barId) {
   const query = `
@@ -88,4 +89,24 @@ export async function addProductToCategory(
     [categoryId, name, price, description]
   );
   return result.rows[0];
+}
+
+export async function approveTable_db(tableId, token) {
+  //A. marcam masa ca fiind deschisa si ii dam token-ul de sesiune primit ca si parametru din service
+  await pool.query(
+    "UPDATE tables SET status = 'open', current_session_token = $1 WHERE id = $2",
+    [token, tableId]
+  );
+  // B. Toate produsele comandate de client "trec" de la pending la confirmed
+  await pool.query(
+    "UPDATE orders SET status = 'confirmed' WHERE table_id = $1 AND status = 'pending_approval'",
+    [tableId]
+  );
+}
+
+export async function rejectTable_db(tableId) {
+  await pool.query(
+    "DELETE FROM orders WHERE table_id = $1 AND status = 'pending_approval'",
+    [tableId]
+  );
 }

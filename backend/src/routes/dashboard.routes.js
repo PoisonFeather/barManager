@@ -31,4 +31,9 @@ router.patch(
 router.put("/products/:productId", editProductHandler);
 router.delete("/products/:productId", deleteProductHandler);
 router.post("/products", addProductHandler);
+
+router.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send("Something broke!");
+});
 export default router;

@@ -131,7 +131,7 @@ export function MenuSection({ categories, refreshData }: MenuEditorProps) {
             </button>
           </div>
         </div>
-      ))}
+      ))};
       
 
       {/* MODALUL DE EDITARE (Apare doar când dai click pe "Editează") */}
