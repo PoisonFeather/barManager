@@ -6,7 +6,7 @@ export const barService = {
   getBarBySlug: async (slug: string) => {
     try {
       const res = await fetch(`${API_BASE_URL}/menu-complete/${slug}`);
-      if (!res.ok) throw new Error("Barul nu a fost găsit");
+      if (!res.ok) throw new Error('Barul nu a fost găsit ${res.status}');
       return await res.json();
     } catch (error) {
       console.error("Bar Service Error:", error);

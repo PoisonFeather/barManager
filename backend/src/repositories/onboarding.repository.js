@@ -44,3 +44,14 @@ export async function insertTable(client, { barId, tableNumber }) {
     [barId, tableNumber]
   );
 }
+
+export async function insertUser(client, { barId, username, passwordHash }) {
+  const query = `
+    INSERT INTO users (bar_id, username, password_hash)
+    VALUES ($1, $2, $3)
+    RETURNING id
+  `;
+  const values = [barId, username, passwordHash];
+  const result = await client.query(query, values);
+  return result.rows[0].id;
+}
