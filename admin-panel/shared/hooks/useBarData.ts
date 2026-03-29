@@ -1,4 +1,3 @@
-// shared/hooks/useBarData.ts
 import { useState, useEffect } from 'react';
 import { barService } from '../services/barService';
 

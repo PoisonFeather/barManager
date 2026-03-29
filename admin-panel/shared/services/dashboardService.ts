@@ -5,6 +5,7 @@ export const dashboardService = {
   getSummary: async (barId: string) => {
     try {
       const res = await fetch(`${API_BASE_URL}/dashboard/summary/${barId}`);
+      console.log("Dashboard Summary Response:", res);
       if (!res.ok) throw new Error("Eroare la server");
       return await res.json();
     } catch (error) {
