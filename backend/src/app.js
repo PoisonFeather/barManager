@@ -6,6 +6,7 @@ import ordersRoutes from "./routes/orders.routes.js";
 import dashboardRoutes from "./routes/dashboard.routes.js";
 import requestsRoutes from "./routes/requests.routes.js";
 import healthRoutes from "./routes/health.routes.js";
+import authRoutes from "./routes/auth.routes.js";
 
 /**
  * Express app factory.
@@ -30,6 +31,7 @@ export function createApp() {
   //app.use(dashboardRoutes);
   app.use(requestsRoutes);
   app.use(healthRoutes);
+  app.use("/auth", authRoutes);
 
   return app;
 }
