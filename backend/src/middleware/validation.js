@@ -32,44 +32,63 @@ function isValidEntityId(value) {
 }
 
 export function validateOnboardingPayload(req, res, next) {
-  const { bar_name, slug, menu } = req.body ?? {};
+  // 1. Am adăugat noile câmpuri aici
+  const { bar_name, slug, menu, username, password, bar_number_tables } =
+    req.body ?? {};
   const errors = [];
 
+  // --- VALIDĂRI DATE BAR ---
   if (!isNonEmptyString(bar_name)) {
-    errors.push("bar_name is required and must be a non-empty string");
+    errors.push("Numele barului (bar_name) este obligatoriu.");
   }
-
   if (!isNonEmptyString(slug)) {
-    errors.push("slug is required and must be a non-empty string");
+    errors.push("Link-ul (slug) este obligatoriu.");
+  }
+  if (!isPositiveIntegerLike(bar_number_tables)) {
+    errors.push("Numărul de mese trebuie să fie un număr întreg pozitiv.");
   }
 
-  if (!Array.isArray(menu)) {
-    errors.push("menu is required and must be an array");
+  // --- VALIDĂRI CONT ADMINISTRATOR ---
+  if (!isNonEmptyString(username)) {
+    errors.push("Numele de utilizator este obligatoriu.");
+  }
+  if (!isNonEmptyString(password)) {
+    errors.push("Parola este obligatorie.");
+  }
+
+  // --- VALIDĂRI MENIU ---
+  if (!Array.isArray(menu) || menu.length === 0) {
+    errors.push(
+      "Meniul este obligatoriu și trebuie să conțină cel puțin o categorie."
+    );
   } else {
     menu.forEach((categoryItem, categoryIndex) => {
       if (!isNonEmptyString(categoryItem?.category)) {
-        errors.push(
-          `menu[${categoryIndex}].category must be a non-empty string`
-        );
+        errors.push(`Categoria #${categoryIndex + 1} trebuie să aibă un nume.`);
       }
 
       if (
-        categoryItem?.products !== undefined &&
-        !Array.isArray(categoryItem.products)
+        !Array.isArray(categoryItem?.products) ||
+        categoryItem.products.length === 0
       ) {
-        errors.push(`menu[${categoryIndex}].products must be an array`);
-      }
-
-      if (Array.isArray(categoryItem?.products)) {
+        errors.push(
+          `Categoria '${
+            categoryItem?.category || categoryIndex
+          }' trebuie să aibă cel puțin un produs.`
+        );
+      } else {
         categoryItem.products.forEach((product, productIndex) => {
           if (!isNonEmptyString(product?.name)) {
             errors.push(
-              `menu[${categoryIndex}].products[${productIndex}].name must be a non-empty string`
+              `Un produs din categoria '${categoryItem.category}' nu are nume completat.`
             );
           }
-          if (!isPositiveNumber(product?.price)) {
+          if (!isPositiveNumberLike(product?.price)) {
+            // 👈 Am schimbat în isPositiveNumberLike ca să fim mai flexibili dacă vine string din greșeală
             errors.push(
-              `menu[${categoryIndex}].products[${productIndex}].price must be a positive number`
+              `Produsul '${
+                product?.name || "fără nume"
+              }' trebuie să aibă un preț valid mai mare ca 0.`
             );
           }
         });
@@ -80,6 +99,16 @@ export function validateOnboardingPayload(req, res, next) {
   if (errors.length > 0) {
     return fail(res, "Invalid onboarding payload", errors);
   }
+
+  // Convertim la tipurile corecte ca să ajuți Service-ul
+  req.body.bar_number_tables = Number(bar_number_tables);
+  req.body.menu = menu.map((cat) => ({
+    ...cat,
+    products: cat.products.map((prod) => ({
+      ...prod,
+      price: Number(prod.price),
+    })),
+  }));
 
   return next();
 }

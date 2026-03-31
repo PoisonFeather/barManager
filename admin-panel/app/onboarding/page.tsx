@@ -1,15 +1,19 @@
 "use client";
 import { useState } from 'react';
+import { useRouter } from 'next/navigation'; // 👈 NOU: Adăugat pentru redirect
 
 export default function OnboardingPage() {
+  const router = useRouter(); // 👈 NOU: Inițializăm router-ul
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', message: '' });
 
   const [barData, setBarData] = useState({
     bar_name: '',
     slug: '',
-    primary_color: '#ff4500', // Un default mai viu
-    bar_number_tables: '', // Lăsăm gol inițial ca să nu apară "0" inestetic
+    primary_color: '#ff4500',
+    bar_number_tables: '',
+    username: '', // 👈 NOU: Câmp pentru username
+    password: '', // 👈 NOU: Câmp pentru parolă
     menu: [{ category: '', products: [{ name: '', price: '', description: '' }] }]
   });
 
@@ -50,21 +54,12 @@ export default function OnboardingPage() {
     newMenu[catIdx].products[prodIdx] = { ...newMenu[catIdx].products[prodIdx], [field]: value };
     setBarData({ ...barData, menu: newMenu });
   };
-  // --- VALIDARE & FEEDBACK ---
-  // TODO : implementare validare pe toate câmpurile (ex: preț să fie număr pozitiv, nume produs să nu fie gol etc.)
-  //        - poate afișăm erori lângă câmpurile respective în loc de un mesaj general la final?
-
-
-
-  // --- Creare cont API call ---
-  // TODO: implementare si redirect dupa
-
 
   // --- TRIMITE DATELE ---
   const handleOnboarding = async () => {
-    // Validare de bază
-    if (!barData.bar_name || !barData.slug || !barData.bar_number_tables) {
-      setFeedback({ type: 'error', message: 'Te rog completează datele de bază ale barului!' });
+    // 👈 NOU: Am adăugat validare și pentru username/parolă
+    if (!barData.bar_name || !barData.slug || !barData.bar_number_tables || !barData.username || !barData.password) {
+      setFeedback({ type: 'error', message: 'Te rog completează datele barului și contul de administrator!' });
       return;
     }
 
@@ -77,13 +72,17 @@ export default function OnboardingPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...barData,
-          bar_number_tables: Number(barData.bar_number_tables) // Ne asigurăm că trimitem număr
+          bar_number_tables: Number(barData.bar_number_tables)
         })
       });
       
       if (response.ok) {
-        setFeedback({ type: 'success', message: '🚀 Barul a fost lansat cu succes!' });
-        // Aici poți face un router.push('/admin/dashboard') după 2 secunde
+        setFeedback({ type: 'success', message: '🚀 Barul a fost lansat cu succes! Te redirecționăm la login...' });
+        
+        // 👈 NOU: Redirect spre login după 2 secunde ca să aibă timp să vadă mesajul de succes
+        setTimeout(() => {
+          router.push('/login');
+        }, 2000);
         
       } else {
         const errData = await response.json();
@@ -104,7 +103,7 @@ export default function OnboardingPage() {
         </h1>
         <p className="text-zinc-400 mt-2 font-medium">Configurează detaliile barului și meniul inițial.</p>
       </div>
-      
+
       {/* --- DATE BAR --- */}
       <div className="bg-zinc-900 border border-zinc-800 p-6 md:p-8 rounded-3xl mb-10 shadow-xl">
         <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
@@ -140,6 +139,35 @@ export default function OnboardingPage() {
         </div>
       </div>
 
+      {/* 👈 NOU: SECȚIUNEA PENTRU CONT ADMINISTRATOR */}
+      <div className="bg-zinc-900 border border-zinc-800 p-6 md:p-8 rounded-3xl mb-10 shadow-xl">
+        <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+          <span className="bg-zinc-800 p-2 rounded-lg text-red-500">🔐</span> Cont Administrator
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Nume Utilizator *</label>
+            <input 
+              placeholder="Ex: patron_central" 
+              className="p-4 bg-zinc-950 border border-zinc-800 rounded-xl focus:outline-none focus:border-red-500 transition-colors" 
+              value={barData.username} 
+              onChange={e => setBarData({...barData, username: e.target.value.trim().toLowerCase()})} 
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Parolă *</label>
+            <input 
+              type="password" 
+              placeholder="••••••••" 
+              className="p-4 bg-zinc-950 border border-zinc-800 rounded-xl focus:outline-none focus:border-red-500 transition-colors" 
+              value={barData.password} 
+              onChange={e => setBarData({...barData, password: e.target.value})} 
+            />
+          </div>
+        </div>
+      </div>
+
       {/* --- MENIU DINAMIC --- */}
       <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
         <span className="bg-zinc-800 p-2 rounded-lg text-red-500">🍔</span> Configurare Meniu
@@ -147,7 +175,6 @@ export default function OnboardingPage() {
 
       {barData.menu.map((cat, catIdx) => (
         <div key={catIdx} className="mb-8 border border-zinc-800 bg-zinc-900 rounded-3xl overflow-hidden shadow-lg transition-all">
-          {/* Header Categorie */}
           <div className="bg-zinc-800/50 p-6 flex justify-between items-center border-b border-zinc-800">
             <input 
               placeholder="Nume Categorie (ex: Cafea)" 
@@ -160,7 +187,6 @@ export default function OnboardingPage() {
             </button>
           </div>
           
-          {/* Lista Produse */}
           <div className="p-6 space-y-4">
             {cat.products.map((prod, prodIdx) => (
               <div key={prodIdx} className="flex flex-col md:flex-row gap-3 items-start md:items-center bg-zinc-950 p-4 rounded-2xl border border-zinc-800/50">
