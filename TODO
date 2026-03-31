@@ -1,0 +1,44 @@
+## Si asta trebuie updatata dar in mare parte e ok
+
+### 🛠 Faza 1: Baza de date și Onboarding (Verificare)
+
+- [ ] **Test final Onboarding:** Rulează un flux complet de creare bar din interfață. Verifică în baza de date dacă:
+  - Barul s-a creat.
+  - Mesele sunt acolo (1-10 default).
+  - Utilizatorul a fost inserat în tabelul `users` cu parola criptată.
+- [ ] **Curățare:** Șterge scripturile temporare (gen `seed-user.js`) sau datele de test "murdare" din DB care nu au UUID-uri valide.
+
+### 🔑 Faza 2: Autentificare (Login-ul)
+
+- [ ] **Frontend Login UI:** Finalizează pagina de `/login` cu state-ul de eroare și loading.
+- [ ] **Token Management:** Asigură-te că `authService.ts` salvează corect `token`-ul în `localStorage` după un login reușit.
+- [ ] **Redirect logic:** După login, verifică dacă patronul este aruncat fix pe slug-ul lui: `/dashboard/nume-bar`.
+- [ ] **Logout:** Adaugă un buton de "Ieșire" în Header-ul dashboard-ului care să facă `localStorage.removeItem('token')`.
+
+### 🛡 Faza 3: Securitate & Autorizare (Paznicul)
+
+- [ ] **Backend Middleware:** Scrie funcția `isAuth` în Express care:
+  - Verifică header-ul `Authorization`.
+  - Decodează JWT-ul.
+  - Pune `req.user = decoded` pe cerere.
+- [ ] **Protejarea Rutelor:** Aplică middleware-ul pe rutele sensibile:
+  - `PATCH` (toggle stoc)
+  - `PUT` (editare produs)
+  - `DELETE` (ștergere produs)
+  - `POST` (adăugare produs)
+- [ ] **Validare pe Bar ID:** Modifică interogările SQL de UPDATE/DELETE să includă `AND bar_id = req.user.barId` (pentru ca un patron să nu poată șterge produsele altui bar prin Postman).
+
+### 🚀 Faza 4: UX & Polish (Interfața)
+
+- [ ] **Intercepție Globală:** Configurează un wrapper peste `fetch` (sau o funcție utilitară) care să pună automat token-ul în headere dacă acesta există în `localStorage`.
+- [ ] **Protected Routes (Frontend):** În Next.js, dacă un user intră pe `/dashboard` fără token, trimite-l instant la `/login`.
+- [ ] **Feedback vizual:** Adaugă un sistem simplu de notificări (Toast) pentru:
+  - "Produs salvat cu succes!"
+  - "Eroare la ștergere."
+
+### 📝 Faza 5: "The Big Move" (Mai târziu)
+
+- [ ] **Mutați Validările:** Mută toate check-urile de `username` și `password` în `validation.js` pentru a păstra Service-ul curat (SRP).
+- [ ] **JWT Secret:** Mută cheia secretă a token-ului din cod în fișierul `.env`.
+
+**Cu ce vrei să începi prima dată din lista asta după ce reușești să te loghezi?**
