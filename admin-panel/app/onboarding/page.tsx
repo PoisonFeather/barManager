@@ -50,6 +50,15 @@ export default function OnboardingPage() {
     newMenu[catIdx].products[prodIdx] = { ...newMenu[catIdx].products[prodIdx], [field]: value };
     setBarData({ ...barData, menu: newMenu });
   };
+  // --- VALIDARE & FEEDBACK ---
+  // TODO : implementare validare pe toate câmpurile (ex: preț să fie număr pozitiv, nume produs să nu fie gol etc.)
+  //        - poate afișăm erori lângă câmpurile respective în loc de un mesaj general la final?
+
+
+
+  // --- Creare cont API call ---
+  // TODO: implementare si redirect dupa
+
 
   // --- TRIMITE DATELE ---
   const handleOnboarding = async () => {
@@ -75,6 +84,7 @@ export default function OnboardingPage() {
       if (response.ok) {
         setFeedback({ type: 'success', message: '🚀 Barul a fost lansat cu succes!' });
         // Aici poți face un router.push('/admin/dashboard') după 2 secunde
+        
       } else {
         const errData = await response.json();
         setFeedback({ type: 'error', message: errData.error || 'Eroare la decolare. Verifică datele.' });

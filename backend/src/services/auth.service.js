@@ -33,6 +33,10 @@ export async function loginUser(username, password) {
     { expiresIn: "24h" } // Token-ul expiră după o zi (patronul trebuie să se relogheze mâine)
   );
 
+  console.log(
+    `✅ User '${username}' s-a logat cu succes. Token generat: ${token}. JWT_SECRET folosit: ${JWT_SECRET}`
+  );
+
   // 4. Returnăm token-ul și slug-ul către Controller
   return {
     success: true,
