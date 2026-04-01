@@ -1,7 +1,15 @@
 "use client";
 import { useState, use } from "react";
 
-import { DndContext, closestCenter, DragEndEvent } from "@dnd-kit/core"; 
+import { 
+  DndContext, 
+  closestCenter, 
+  DragEndEvent,
+  useSensor,       
+  useSensors,      
+  MouseSensor,     
+  TouchSensor      
+} from "@dnd-kit/core";
 
 import { useDashboardSummary } from "@/shared/hooks/useDashboardSummary";
 import { useBarData } from "@/shared/hooks/useBarData";
@@ -23,6 +31,22 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
   
   useSocket(refresh);
   const { isAudioEnabled, enableAudio } = useAudioAlerts(tableGroups);
+
+  const sensors = useSensors(
+    useSensor(MouseSensor, {
+      // Pentru mouse pe laptop: trebuie să tragi de masa măcar 10px ca să se activeze
+      activationConstraint: {
+        distance: 10,
+      },
+    }),
+    useSensor(TouchSensor, {
+      // Pentru tablete/telefoane: trebuie să ții apăsat 250ms ca să se prindă masa
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5, // Îi dă voie degetului să tremure 5px fără să anuleze acțiunea
+      },
+    })
+  );
 
   // Handlere normale
   const handleComplete = async (id: string) => (await dashboardService.completeRequest(id)) && refresh();
@@ -72,7 +96,7 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
 
       {/* 3. ÎNVELIM GRID-UL ÎN DndContext */}
       {activeTab === "orders" && (
-        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in duration-700">
             {tableGroups.length === 0 ? (
               <div className="col-span-full py-32 text-center border-2 border-dashed border-zinc-200 dark:border-zinc-900 rounded-[4rem]">

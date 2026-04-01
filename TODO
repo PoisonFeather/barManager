@@ -1,3 +1,5 @@
+Nu se updateaza comenzile intre clienti la mese combinate
+Nu se valideaza daca masa e deschisa daca a fost combinata cu una inainte (poti pune comenzi daca barmanul trage masa inainte sa ii dea accept)
 🟢 Faza 1: Autentificare & Securitate (Prioritate Maximă)
 Obiectiv: Nimeni nu intră în Dashboard fără bilet de voie.
 
@@ -17,7 +19,7 @@ Obiectiv: Nimeni nu intră în Dashboard fără bilet de voie.
 
 [ ] Environment Security: Mutarea JWT_SECRET și a url-urilor de DB din cod în fișierul .env.
 
-[ ] Drag and drop la mese (baza de date - dashboard - logica validare)
+[x] Drag and drop la mese (baza de date - dashboard - logica validare)
 🏗️ Faza 2: Refactorizare Arhitecturală (Strict SRP)
 Obiectiv: Cod curat, modular și ușor de testat.
 
