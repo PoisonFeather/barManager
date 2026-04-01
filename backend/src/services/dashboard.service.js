@@ -50,7 +50,7 @@ export async function editProductDetails(productId, payload) {
   return { success: true, product: updatedProduct };
 }
 
-// 👇 6. ȘTERGERE PRODUS
+//  6. ȘTERGERE PRODUS
 export async function removeProduct(productId) {
   await deleteProduct(productId);
   return { success: true };

@@ -17,7 +17,8 @@ export const orderService = {
   sendOrder: async (payload: any) => {
     // Mergem la buzunarul unde am pus cheia în page.tsx
     const token = localStorage.getItem(`session_${payload.table_id}`);
-  
+    //console.log("Order Payload:", payload);
+    //console.log(localStorage);
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

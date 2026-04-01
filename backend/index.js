@@ -32,10 +32,10 @@ const io = new Server(httpServer, {
 // });
 app.set("io", io);
 io.on("connection", (socket) => {
-  console.log("🔌 Client conectat la Socket:", socket.id);
+  //console.log("🔌 Client conectat la Socket:", socket.id);
 
   socket.on("disconnect", () => {
-    console.log("❌ Client deconectat");
+    //console.log("❌ Client deconectat");
   });
 });
 

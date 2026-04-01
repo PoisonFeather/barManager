@@ -91,7 +91,7 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/table-status/${currentTable.id}`);
         const data = await res.json();
-        
+        //console.log(data.sessionToken);
         if (data.sessionToken) {
           // Îl punem în buzunarul browserului
           localStorage.setItem(`session_${currentTable.id}`, data.sessionToken);
