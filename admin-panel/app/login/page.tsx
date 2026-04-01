@@ -55,7 +55,7 @@ export default function LoginPage() {
                         <input 
                             type="text" 
                             value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            onChange={(e) => setUsername(e.target.value.trim().toLowerCase)}
                             className="w-full p-4 bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl focus:outline-none focus:border-orange-500 transition-colors text-zinc-900 dark:text-white"
                             placeholder="Ex: patron_central"
                             required
