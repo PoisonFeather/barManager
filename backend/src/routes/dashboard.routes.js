@@ -7,6 +7,7 @@ import {
   editProductHandler,
   deleteProductHandler,
   addProductHandler,
+  mergeTablesHandler,
 } from "../controllers/dashboard.controller.js";
 //console.log(typeof approveTableHandler);
 import { validateToggleProductPayload } from "../middleware/validation.js";
@@ -31,6 +32,7 @@ router.patch(
 router.put("/products/:productId", editProductHandler);
 router.delete("/products/:productId", deleteProductHandler);
 router.post("/products", addProductHandler);
+router.post("/merge-tables", mergeTablesHandler);
 
 router.use((err, req, res, next) => {
   console.error(err.stack);

@@ -48,4 +48,20 @@ export const dashboardService = {
     });
     return res.ok;
   },
+  mergeTables: async (payload: { sourceId: string; targetId: string ; bar_id : string}) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/dashboard/merge-tables`, { // Asigură-te că pui URL-ul tău corect
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem('token')}` // dacă folosești auth deja
+        },
+        body: JSON.stringify(payload),
+      });
+      return res.ok;
+    } catch (error) {
+      console.error("Eroare la unire mese:", error);
+      return false;
+    }
+  },
 };

@@ -6,13 +6,11 @@ export async function getDashboardSummaryByBar(barId) {
     SELECT 
       t.id as table_id,
       t.table_number,
-      -- 🛡️ LOGICA DE STATUS: Dacă există o comandă 'pending_approval', masa devine GALBENĂ
       CASE 
         WHEN EXISTS (SELECT 1 FROM orders WHERE table_id = t.id AND status = 'pending_approval') THEN 'pending_approval'
         ELSE t.status 
       END as status,
       
-      -- 🚨 CORECTAT AICI: cheia payment_method și COALESCE
       COALESCE(
         (
           SELECT jsonb_agg(jsonb_build_object(
@@ -36,14 +34,20 @@ export async function getDashboardSummaryByBar(barId) {
         '[]'::jsonb
       ) as pending_items,
       
-      -- Luăm ID-ul ultimei comenzi neaprobate (ne trebuie pentru butonul de Approve)
       (SELECT id FROM orders WHERE table_id = t.id AND status = 'pending_approval' LIMIT 1) as last_order_id,
-      COALESCE(SUM(oi.quantity * oi.price_at_time) FILTER (WHERE o.status = 'confirmed'), 0) as total_to_pay
+      COALESCE(SUM(oi.quantity * oi.price_at_time) FILTER (WHERE o.status = 'confirmed'), 0) as total_to_pay,
+
+      -- 👇 NOU 1: Adunăm numerele meselor copil ca să apară pe ecusonul albastru (+ Mesele: 5, 6)
+      COALESCE((SELECT json_agg(child.table_number) FROM tables child WHERE child.merged_into_id = t.id), '[]'::json) as merged_children
+
     FROM tables t
     LEFT JOIN orders o ON o.table_id = t.id AND o.is_paid = FALSE
     LEFT JOIN order_items oi ON oi.order_id = o.id
     LEFT JOIN products p ON oi.product_id = p.id
-    WHERE t.bar_id = $1
+    
+    -- 👇 NOU 2: ASCUNDEM MESELE COPIL DIN LISTA PRINCIPALĂ
+    WHERE t.bar_id = $1 AND t.merged_into_id IS NULL 
+    
     GROUP BY t.id, t.table_number, t.status
     ORDER BY t.table_number ASC;
   `;
@@ -108,5 +112,38 @@ export async function rejectTable_db(tableId) {
   await pool.query(
     "DELETE FROM orders WHERE table_id = $1 AND status = 'pending_approval'",
     [tableId]
+  );
+}
+
+export async function executeTableMerge(client, { sourceId, targetId, barId }) {
+  // 1. Marcăm Masa Sursă (ex: 5) ca fiind absorbită de Masa Destinație (ex: 1)
+  await client.query(
+    `
+    UPDATE tables 
+    SET merged_into_id = $1 
+    WHERE id = $2 AND bar_id = $3
+  `,
+    [targetId, sourceId, barId]
+  );
+
+  // 2. Mutăm toate COMENZILE active de pe masa veche pe aia nouă
+  // *Aici adaptezi dacă statusurile tale din DB sunt altele (ex: 'pending', 'open')
+  await client.query(
+    `
+    UPDATE orders 
+    SET table_id = $1 
+    WHERE table_id = $2 AND bar_id = $3 AND status != 'closed'
+  `,
+    [targetId, sourceId, barId]
+  );
+
+  // 3. Mutăm și CERERILE (ex: chemare ospătar, cerere notă) ca barmanul să știe unde să se ducă
+  await client.query(
+    `
+    UPDATE requests 
+    SET table_id = $1 
+    WHERE table_id = $2 AND bar_id = $3 AND status != 'resolved'
+  `,
+    [targetId, sourceId, barId]
   );
 }

@@ -1,6 +1,6 @@
 // backend/src/controllers/dashboard.controller.js
 import * as dashboardService from "../services/dashboard.service.js";
-
+import { mergeTablesService } from "../services/dashboard.service.js";
 /**
  * Funcție helper pentru gestionarea codurilor de eroare
  */
@@ -194,5 +194,32 @@ export const addProductHandler = async (req, res) => {
   } catch (error) {
     console.error("💥 Eroare addProductHandler:", error);
     return res.status(resolveStatus(error)).json({ error: error.message });
+  }
+};
+
+// 9. UNIRE MESE (Masa 1 + Masa 5 => Masa 1, iar Masa 5 dispare din peisaj)
+
+export const mergeTablesHandler = async (req, res, next) => {
+  try {
+    const { sourceId, targetId } = req.body;
+
+    // Luăm barId din token-ul de autorizare (presupunând că ai middleware-ul pus)
+    // Dacă nu l-ai pus încă, îl poți trimite momentan din req.body pentru teste
+    const barId = req.user?.barId || req.body.bar_id;
+
+    if (!sourceId || !targetId || !barId) {
+      return res.status(400).json({ error: "Date incomplete pentru unire." });
+    }
+
+    const result = await mergeTablesService({ sourceId, targetId, barId });
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("new-data", { type: "TABLES_MERGED", sourceId, targetId });
+    }
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error("💥 Eroare la unirea meselor:", error);
+    const status = error.status || 500;
+    return res.status(status).json({ error: error.message });
   }
 };

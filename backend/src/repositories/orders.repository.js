@@ -20,8 +20,15 @@ export async function insertOrder(
   { bar_id, table_id, total_amount, status }
 ) {
   const orderRes = await client.query(
-    "INSERT INTO orders (bar_id, table_id, total_amount, status) VALUES ($1, $2, $3, $4) RETURNING id",
-    [bar_id, table_id, total_amount, status] // <--- Aici folosim status-ul din payload!
+    `INSERT INTO orders (bar_id, table_id, total_amount, status) 
+     VALUES (
+       $1, 
+       --  Redirecționăm comanda nouă direct pe masa Părinte (dacă există)
+       COALESCE((SELECT merged_into_id FROM tables WHERE id = $2), $2), 
+       $3, 
+       $4
+     ) RETURNING id`,
+    [bar_id, table_id, total_amount, status]
   );
   return orderRes.rows[0].id;
 }
@@ -66,7 +73,11 @@ export async function getUnpaidTableHistory(tableId) {
     FROM orders o
     JOIN order_items oi ON oi.order_id = o.id
     JOIN products p ON oi.product_id = p.id
-    WHERE o.table_id = $1 AND o.is_paid = FALSE
+    WHERE o.table_id = COALESCE(
+      (SELECT merged_into_id FROM tables WHERE id = $1), 
+      $1
+    ) 
+    AND o.is_paid = FALSE
     ORDER BY oi.id ASC;
   `;
   const result = await pool.query(query, [tableId]);
@@ -80,14 +91,21 @@ export async function markOrderItemServed(itemId) {
 }
 
 export async function closeTableOrders(tableId) {
-  // Folosim un mic query multiplu sau o tranzacție
-  // Trebuie să închidem comenzile ȘI să resetăm masa
+  // 1. Închidem comenzile (marcate ca plătite)
   await pool.query(
     "UPDATE orders SET is_paid = TRUE WHERE table_id = $1 AND is_paid = FALSE",
     [tableId]
   );
+
+  // 2. Resetăm masa principală (Părintele)
   await pool.query(
     "UPDATE tables SET status = 'closed', current_session_token = NULL WHERE id = $1",
+    [tableId]
+  );
+
+  // 3. Eliberăm mesele Copil (rupem legătura) - CORECTAT AICI cu `pool`
+  await pool.query(
+    "UPDATE tables SET merged_into_id = NULL WHERE merged_into_id = $1",
     [tableId]
   );
 }
@@ -101,7 +119,15 @@ export async function insertRequest({
 }) {
   const query = `
     INSERT INTO requests (bar_id, table_id, type, payment_method, session_token, status)
-    VALUES ($1, $2, $3, $4, $5, 'pending')
+    VALUES (
+      $1, 
+      --  Redirecționăm cererea (Ospătar/Notă) direct pe masa Părinte
+      COALESCE((SELECT merged_into_id FROM tables WHERE id = $2), $2), 
+      $3, 
+      $4, 
+      $5, 
+      'pending'
+    )
     RETURNING id;
   `;
   const result = await pool.query(query, [

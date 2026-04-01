@@ -2,9 +2,9 @@
 Obiectiv: Nimeni nu intră în Dashboard fără bilet de voie.
 
 [x] Test End-to-End Onboarding: Creare bar nou -> Verificare users (parolă hash-uită) și bars în DB.
-
-[ ] Finalizare Login UI: Adăugat trim().toLowerCase() pe username și gestionarea stărilor de loading/error.
-
+[ ] Validare token cu atuh (daca este un token vechi apare forbiden (cum implementez asta fara sa fut restul))
+[x] Finalizare Login UI: Adăugat trim().toLowerCase() pe username și gestionarea stărilor de loading/error.
+[ ] Nu se updateaza toatul la masa parinte
 [ ] Backend isAuth Middleware:
 
 [ ] Extragere token din header-ul Authorization: Bearer <token>.
@@ -17,6 +17,7 @@ Obiectiv: Nimeni nu intră în Dashboard fără bilet de voie.
 
 [ ] Environment Security: Mutarea JWT_SECRET și a url-urilor de DB din cod în fișierul .env.
 
+[ ] Drag and drop la mese (baza de date - dashboard - logica validare)
 🏗️ Faza 2: Refactorizare Arhitecturală (Strict SRP)
 Obiectiv: Cod curat, modular și ușor de testat.
 
@@ -66,8 +67,17 @@ Obiectiv: Să dormi liniștit când faci deploy.
 [ ] Cleanup DB: Ștergerea scripturilor de tip seed-user.js și eliminarea datelor de test fără UUID-uri valide.
 
 [ ] Fallback la TOT
-✅ Completed (Done)
-[x] Refactorizare rute orders, menu, onboarding, dashboard și requests pe structura Controller -> Service -> Repository.
+
+Faza 6 Analytics
+[ ] vanzari - zi
+[ ] timp asteptare
+[ ] produse top
+
+Faza 7 Upsell
+
+- Cand adaugi gen un burger in cos, primesti mini notificare cu un upsell
+  ✅ Completed (Done)
+  [x] Refactorizare rute orders, menu, onboarding, dashboard și requests pe structura Controller -> Service -> Repository.
 
 [x] Implementare validare payload pentru onboarding, comenzi și cereri.
 

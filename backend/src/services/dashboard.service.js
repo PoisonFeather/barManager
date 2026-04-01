@@ -8,7 +8,9 @@ import {
   addProductToCategory,
   approveTable_db,
   rejectTable_db,
+  executeTableMerge,
 } from "../repositories/dashboard.repository.js";
+import { withTransaction } from "../repositories/onboarding.repository.js";
 
 // 1. SUMAR (Datele pentru mesele colorate)
 export async function getDashboardSummary(barId) {
@@ -59,4 +61,25 @@ export async function removeProduct(productId) {
 export async function addNewProduct(categoryId, payload) {
   const newProduct = await addProductToCategory(categoryId, payload);
   return { success: true, product: newProduct };
+}
+
+// 8. UNIRE MĂSE (Masa 1 + Masa 5 => Masa 1, iar Masa 5 dispare din peisaj)
+export async function mergeTablesService(payload) {
+  const { sourceId, targetId, barId } = payload;
+
+  if (sourceId === targetId) {
+    const error = new Error("Nu poți uni o masă cu ea însăși!");
+    error.status = 400;
+    throw error;
+  }
+
+  // Folosim helper-ul tău tanc pentru tranzacții
+  await withTransaction(async (client) => {
+    await executeTableMerge(client, { sourceId, targetId, barId });
+  });
+
+  return {
+    success: true,
+    message: "Mesele au fost unite cu succes!",
+  };
 }

@@ -1,36 +1,77 @@
-// components/TableCard.tsx
+import { useDraggable, useDroppable } from "@dnd-kit/core";
+import { CSS } from "@dnd-kit/utilities";
 
 export function TableCard({
   group,
   onComplete,
   onServe,
   onClose,
-  onApprove, // Funcție nouă pentru acceptarea primei comenzi/mese
-  onReject, // Funcție nouă pentru respingere prank
+  onApprove,
+  onReject,
 }: any) {
-  // Stări de prioritate pentru culori
+  // 1. Hook pentru a face cardul DESTINAȚIE (Droppable)
+  const { isOver, setNodeRef: setDroppableRef } = useDroppable({
+    id: group.table_id,
+  });
+
+  // 2. Hook pentru a face cardul Sursă (Draggable) - Doar de mâner
+  const { attributes, listeners, setNodeRef: setDraggableRef, transform, isDragging } = useDraggable({
+    id: group.table_id,
+  });
+
   const isPendingApproval = group.status === "pending_approval";
   const isUrgent = group.active_requests?.some((r: any) => r.type === "bill");
   const hasOrders = group.pending_items?.length > 0;
 
-  // Alegem culoarea bordurii în funcție de gravitate
+  // Culoarea bordurii (Aici schimbăm și când tragi o altă masă peste ea)
   const getBorderColor = () => {
-    if (isPendingApproval)
-      return "border-yellow-400 shadow-[0_0_40px_rgba(250,204,21,0.3)] animate-pulse";
+    if (isOver) return "border-blue-500 shadow-[0_0_40px_rgba(59,130,246,0.5)] scale-105 z-50"; // Efect vizual de primire
+    if (isPendingApproval) return "border-yellow-400 shadow-[0_0_40px_rgba(250,204,21,0.3)] animate-pulse";
     if (isUrgent) return "border-red-600";
     if (hasOrders) return "border-orange-500";
     return "border-zinc-200 dark:border-zinc-800 opacity-90";
   };
 
+  // Stilul care mișcă cardul pe ecran când îl tragi
+  const dragStyle = {
+    transform: CSS.Translate.toString(transform),
+    opacity: isDragging ? 0.4 : 1,
+    zIndex: isDragging ? 100 : "auto",
+  };
+
   return (
     <div
-      className={`bg-white dark:bg-zinc-900 rounded-[2.5rem] p-7 border-t-8 shadow-2xl flex flex-col transition-all duration-500 ${getBorderColor()}`}
+      ref={setDroppableRef} // Aici aterizează alte mese
+      style={dragStyle}
+      className={`relative bg-white dark:bg-zinc-900 rounded-[2.5rem] p-7 border-t-8 shadow-2xl flex flex-col transition-all duration-300 ${getBorderColor()}`}
     >
       <div className="flex justify-between items-start mb-6">
         <div>
-          <h3 className="text-4xl font-black italic tracking-tighter uppercase leading-none">
-            Masa {group.table_number}
-          </h3>
+          <div className="flex items-center gap-3">
+            <h3 className="text-4xl font-black italic tracking-tighter uppercase leading-none">
+              Masa {group.table_number}
+            </h3>
+            {/* MÂNERUL DE DRAG & DROP */}
+            <div
+              ref={setDraggableRef}
+              {...listeners}
+              {...attributes}
+              className="cursor-grab active:cursor-grabbing p-2 bg-zinc-100 dark:bg-zinc-800 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors text-zinc-500"
+              title="Trage peste altă masă pentru a le uni"
+            >
+              🖐️
+            </div>
+          </div>
+
+          {/* AFISĂM MESELE UNITE (Dacă există) */}
+          {group.merged_children && group.merged_children.length > 0 && (
+            <div className="mt-2 flex gap-1 flex-wrap">
+              <span className="bg-blue-500/20 text-blue-500 text-[10px] font-black px-2 py-0.5 rounded-md uppercase">
+                + Mesele: {group.merged_children.join(", ")}
+              </span>
+            </div>
+          )}
+
           <p className="text-[10px] font-bold text-zinc-500 uppercase mt-2">
             Total acumulat:{" "}
             <span className="text-zinc-900 dark:text-white font-black">
@@ -38,6 +79,7 @@ export function TableCard({
             </span>
           </p>
         </div>
+        
         {isPendingApproval && (
           <span className="bg-yellow-400 text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-tighter">
             Așteaptă Aprobare
@@ -81,15 +123,12 @@ export function TableCard({
               <span className="font-black text-xs uppercase opacity-90 tracking-wider">
                 {req.type === "bill" ? "🧾 NOTĂ" : "🛎️ CHELNER"}
               </span>
-              
-              {/* AFIȘĂM METODA DE PLATĂ MULT MAI MARE ȘI CLARĂ */}
               {req.payment_method && (
                 <span className="bg-white text-zinc-900 font-black text-sm px-3 py-1 rounded-lg uppercase tracking-widest flex items-center gap-1.5 shadow-sm w-fit">
                   {req.payment_method === 'card' ? '💳' : '💵'} {req.payment_method}
                 </span>
               )}
             </div>
-
             <button
               onClick={() => onComplete(req.id)}
               className="bg-white/20 hover:bg-white/40 px-4 py-2 rounded-xl text-xs font-black uppercase transition-colors shadow-inner"
@@ -99,6 +138,7 @@ export function TableCard({
           </div>
         ))}
       </div>
+
       {/* PRODUSE DE SERVIT */}
       <div className="flex-1 space-y-3 mb-8">
         <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest ml-2">
