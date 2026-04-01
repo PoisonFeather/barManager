@@ -1,7 +1,7 @@
 🟢 Faza 1: Autentificare & Securitate (Prioritate Maximă)
 Obiectiv: Nimeni nu intră în Dashboard fără bilet de voie.
 
-[ ] Test End-to-End Onboarding: Creare bar nou -> Verificare users (parolă hash-uită) și bars în DB.
+[x] Test End-to-End Onboarding: Creare bar nou -> Verificare users (parolă hash-uită) și bars în DB.
 
 [ ] Finalizare Login UI: Adăugat trim().toLowerCase() pe username și gestionarea stărilor de loading/error.
 
@@ -65,6 +65,7 @@ Obiectiv: Să dormi liniștit când faci deploy.
 
 [ ] Cleanup DB: Ștergerea scripturilor de tip seed-user.js și eliminarea datelor de test fără UUID-uri valide.
 
+[ ] Fallback la TOT
 ✅ Completed (Done)
 [x] Refactorizare rute orders, menu, onboarding, dashboard și requests pe structura Controller -> Service -> Repository.
 

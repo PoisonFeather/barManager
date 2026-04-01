@@ -1,9 +1,9 @@
 "use client";
 import { useState } from 'react';
-import { useRouter } from 'next/navigation'; // 👈 NOU: Adăugat pentru redirect
+import { useRouter } from 'next/navigation'; 
 
 export default function OnboardingPage() {
-  const router = useRouter(); // 👈 NOU: Inițializăm router-ul
+  const router = useRouter(); 
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', message: '' });
 
@@ -12,8 +12,8 @@ export default function OnboardingPage() {
     slug: '',
     primary_color: '#ff4500',
     bar_number_tables: '',
-    username: '', // 👈 NOU: Câmp pentru username
-    password: '', // 👈 NOU: Câmp pentru parolă
+    username: '', 
+    password: '', 
     menu: [{ category: '', products: [{ name: '', price: '', description: '' }] }]
   });
 
@@ -57,7 +57,7 @@ export default function OnboardingPage() {
 
   // --- TRIMITE DATELE ---
   const handleOnboarding = async () => {
-    // 👈 NOU: Am adăugat validare și pentru username/parolă
+    // validare și pentru username/parolă
     if (!barData.bar_name || !barData.slug || !barData.bar_number_tables || !barData.username || !barData.password) {
       setFeedback({ type: 'error', message: 'Te rog completează datele barului și contul de administrator!' });
       return;
@@ -79,7 +79,6 @@ export default function OnboardingPage() {
       if (response.ok) {
         setFeedback({ type: 'success', message: '🚀 Barul a fost lansat cu succes! Te redirecționăm la login...' });
         
-        // 👈 NOU: Redirect spre login după 2 secunde ca să aibă timp să vadă mesajul de succes
         setTimeout(() => {
           router.push('/login');
         }, 2000);
@@ -139,7 +138,7 @@ export default function OnboardingPage() {
         </div>
       </div>
 
-      {/* 👈 NOU: SECȚIUNEA PENTRU CONT ADMINISTRATOR */}
+      {/* CONT ADMINISTRATOR */}
       <div className="bg-zinc-900 border border-zinc-800 p-6 md:p-8 rounded-3xl mb-10 shadow-xl">
         <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
           <span className="bg-zinc-800 p-2 rounded-lg text-red-500">🔐</span> Cont Administrator
