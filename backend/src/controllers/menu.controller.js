@@ -25,9 +25,9 @@ export async function createCategoryHandler(req, res) {
   try {
     // 🔒 Security: Forțăm ca bar_id-ul din payload să fie fix bar-ul user-ului logat (previne IDOR)
     req.body.bar_id = req.user.barId;
-    
+
     if (!req.body.name || !req.body.bar_id) {
-        return res.status(400).json({ error: "Numele categoriei și bar_id sunt obligatorii." });
+      return res.status(400).json({ error: "Numele categoriei și bar_id sunt obligatorii." });
     }
 
     const created = await createCategory(req.body);
@@ -89,13 +89,14 @@ export const getTableStatusHandler = async (req, res) => {
         const startedAt = new Date(session_started_at).getTime();
         const now = Date.now();
         const diffMinutes = (now - startedAt) / (1000 * 60);
-
-        if (diffMinutes <= 15) {
-           // Încă e în fereastra de 15 minute, îi dăm token-ul fără probleme
-           return res.json({ status: "open", sessionToken: current_session_token });
+        // va fi schimbat after testing
+        if (diffMinutes <= 1) {
+          // Încă e în fereastra de 15 minute, îi dăm token-ul fără probleme
+          return res.json({ status: "open", sessionToken: current_session_token });
         } else {
-           // A depășit fereastra! Nu îi returnăm token, îi returnăm status "locked" (403)
-           return res.status(403).json({ error: "Masa e blocată. Chemați un prieten conectat să o deblocheze.", status: "locked" });
+          // A depășit fereastra! Nu îi returnăm token, îi returnăm status "locked" (403)
+          req.app.get("io")?.emit(`table-join-attempt-${tableId}`, { message: "Un prieten a scanat codul și este blocat!" });
+          return res.status(403).json({ error: "Masa e blocată. Chemați un prieten conectat să o deblocheze.", status: "locked" });
         }
       } else {
         // Fallback-siguranță dacă din vreun motiv a rămas session_started_at null la o masă open

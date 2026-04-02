@@ -30,6 +30,7 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const [orderHistory, setOrderHistory] = useState<any[]>([]);
   const [isSessionLocked, setIsSessionLocked] = useState(false);
+  const [showUnlockRequest, setShowUnlockRequest] = useState(false);
 
   // 4. Identificare Masă (Memoizată pentru viteză)
   const currentTable = useMemo(() => {
@@ -72,11 +73,22 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
       refreshHistory(); //  Asta trage datele noi și updatează istoric/total pe laptop!
     });
 
-    // 3. Ascultăm și dacă cineva deblochează masa
+    // 3. Ascultăm și dacă cineva deblochează masa (ca omul blocat să dea refresh ascuns)
     const unlockEvent = `table-unlocked-${currentTable.id}`;
     socket.on(unlockEvent, () => {
-      setIsSessionLocked(false);
-      // Eventual putem rula și syncSession din nou, dar state-ul ajunge
+      // S-a dat deblocare! Dăm simplu reload ca să intre normal clientul
+      if (isSessionLocked) {
+        window.location.reload();
+      }
+    });
+
+    // 4. Cineva a scanat și a fost blocat
+    const attemptEvent = `table-join-attempt-${currentTable.id}`;
+    socket.on(attemptEvent, () => {
+      // Dacă nu cumva suntem noi înșine cei blocați:
+      if (!isSessionLocked) {
+        setShowUnlockRequest(true);
+      }
     });
   
     // Curățenie când închizi pagina
@@ -84,8 +96,9 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
       socket.off(approvalEvent);
       socket.off(updateEvent); 
       socket.off(unlockEvent);
+      socket.off(attemptEvent);
     };
-  }, [socket, currentTable?.id]);
+  }, [socket, currentTable?.id, isSessionLocked]);
 
   useEffect(() => {
     if (currentTable?.id) refreshHistory();
@@ -164,6 +177,7 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
     const ok = await orderService.unlockTable(currentTable.id);
     if (ok) {
       alert("Timpul de acces a fost extins cu 15 minute! Prietenii se pot conecta acum.");
+      setShowUnlockRequest(false);
     } else {
       alert("Eroare la extinderea timpului.");
     }
@@ -244,6 +258,7 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
         onOpenCart={() => setIsCartOpen(true)}
         onOpenService={() => setIsServiceModalOpen(true)}
         onUnlock={handleUnlockTable}
+        showUnlockRequest={showUnlockRequest}
         primaryColor={barData.primary_color}
         isCartOpen={isCartOpen}
         isServiceModalOpen={isServiceModalOpen}

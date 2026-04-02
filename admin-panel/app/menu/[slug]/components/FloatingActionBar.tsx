@@ -5,13 +5,14 @@ interface Props {
   onOpenCart: () => void;
   onOpenService: () => void;
   onUnlock: () => void;
+  showUnlockRequest: boolean;
   primaryColor: string;
   isCartOpen: boolean;
   isServiceModalOpen: boolean;
 }
 
 export function FloatingActionBar({ 
-  totalItems, totalAmount, historyTotal, onOpenCart, onOpenService, onUnlock, primaryColor, isCartOpen, isServiceModalOpen 
+  totalItems, totalAmount, historyTotal, onOpenCart, onOpenService, onUnlock, showUnlockRequest, primaryColor, isCartOpen, isServiceModalOpen 
 }: Props) {
   
   // Nu afișăm bara dacă modalurile sunt deschise (ca să nu se suprapună)
@@ -20,14 +21,16 @@ export function FloatingActionBar({
   return (
     <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[92%] max-w-md z-40 flex gap-2 animate-in fade-in slide-in-from-bottom duration-500">
       {/* Buton Deblocare Masa */}
-      <button 
-        onClick={onUnlock} 
-        className="w-12 h-16 rounded-3xl bg-zinc-800 border border-zinc-700 flex flex-col items-center justify-center text-sm shadow-xl active:scale-95 transition-transform shrink-0"
-        title="Primiți persoana la masă"
-      >
-        <span className="text-xl">🔓</span>
-        <span className="text-[7px] text-zinc-400 font-bold uppercase mt-1">Acceptă</span>
-      </button>
+      {showUnlockRequest && (
+        <button 
+          onClick={onUnlock} 
+          className="w-12 h-16 rounded-3xl bg-red-500 border border-red-400 flex flex-col items-center justify-center text-sm shadow-[0_0_15px_rgba(239,68,68,0.5)] active:scale-95 transition-transform shrink-0 animate-pulse text-white"
+          title="Primiți persoana la masă"
+        >
+          <span className="text-xl">🔓</span>
+          <span className="text-[7px] font-black uppercase mt-1">Acceptă</span>
+        </button>
+      )}
 
       {/* Buton Servicii */}
       <button 

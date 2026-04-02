@@ -136,6 +136,8 @@ export async function unlockTableHandler(req, res) {
     );
     const table = tableResult.rows[0];
 
+    console.log("Unlock Attempt:", { provided: session_token, db: table?.current_session_token, status: table?.status });
+
     if (!table || table.status !== "open" || table.current_session_token !== session_token) {
       return res.status(403).json({ error: "Sesiune invalidă pentru deblocare!" });
     }
