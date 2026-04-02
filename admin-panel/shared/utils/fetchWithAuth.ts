@@ -24,8 +24,8 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}) {
 
   const response = await fetch(url, { ...options, headers });
 
-  // Dacă token-ul a expirat sau este invalid
-  if (response.status === 401) {
+  // Dacă token-ul a expirat sau este invalid, ori accesează alt bar (403)
+  if (response.status === 401 || response.status === 403) {
     if (typeof window !== "undefined") {
       localStorage.removeItem("token");
       window.location.href = "/login";
