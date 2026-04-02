@@ -11,6 +11,7 @@ import {
   addProductHandler,
   mergeTablesHandler,
 } from "../controllers/dashboard.controller.js";
+import { getAnalyticsHandler } from "../controllers/analytics.controller.js";
 import { validateToggleProductPayload } from "../middleware/validation.js";
 import { checkProductOwnership, checkCategoryOwnership, checkTableOwnership } from "../middleware/authorization.js";
 
@@ -20,6 +21,7 @@ router.use(verifyToken);
 // 1. SCOATEM "/dashboard" din rute (dacă e deja prefixat în app.js)
 // Altfel, URL-ul tău ar fi fost: /dashboard/dashboard/summary/...
 router.get("/summary/:barId", dashboardSummaryHandler);
+router.get("/analytics/:barId", getAnalyticsHandler);
 
 // 2. ADĂUGĂM RUTELE POST (Tabele)
 router.post("/approve-table", checkTableOwnership, approveTableHandler);

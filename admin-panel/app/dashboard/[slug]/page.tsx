@@ -22,11 +22,14 @@ import { DashboardHeader } from "./components/dashboardHeader";
 import { TableCard } from "./components/tableCards"; 
 import { StockSection } from "./components/stockSection";
 import { MenuSection } from "./components/menuSection";
+import { Sidebar } from "./components/Sidebar";
+import { AnalyticsSection } from "./components/analyticsSection";
 
 export default function BartenderDashboard({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"orders" | "stock" | "menu">("orders");
+  const [mainView, setMainView] = useState<"workspace" | "analytics">("workspace");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -95,43 +98,54 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
   if (!barData) return <div className="min-h-screen bg-black flex items-center justify-center text-white font-black animate-pulse uppercase tracking-[0.5em]">Conectare...</div>;
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white p-4 md:p-8 transition-colors duration-500">
-      <DashboardHeader 
-        barName={barData.name} 
-        activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
-        tableCount={tableGroups.length}
-        isAudioEnabled={isAudioEnabled}
-        onEnableAudio={enableAudio}
-      />
+    <div className="flex min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white transition-colors duration-500">
+      <Sidebar mainView={mainView} setMainView={setMainView} />
+      
+      {/* Wrapper principal cu padding pentru mobile naavigation bottom si pt conținutul paginii */}
+      <div className="flex-1 w-full p-4 pb-24 md:p-8 overflow-y-auto">
+        {mainView === "workspace" ? (
+          <>
+            <DashboardHeader 
+              barName={barData.name} 
+              activeTab={activeTab} 
+              setActiveTab={setActiveTab} 
+              tableCount={tableGroups.length}
+              isAudioEnabled={isAudioEnabled}
+              onEnableAudio={enableAudio}
+            />
 
-      {/* 3. ÎNVELIM GRID-UL ÎN DndContext */}
-      {activeTab === "orders" && (
-        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in duration-700">
-            {tableGroups.length === 0 ? (
-              <div className="col-span-full py-32 text-center border-2 border-dashed border-zinc-200 dark:border-zinc-900 rounded-[4rem]">
-                <p className="text-zinc-400 font-black uppercase tracking-widest text-sm italic">Nicio masă activă</p>
-              </div>
-            ) : (
-              tableGroups.map(group => (
-                <TableCard 
-                  key={group.table_id} 
-                  group={group} 
-                  onComplete={handleComplete} 
-                  onServe={handleServe} 
-                  onClose={handleClose} 
-                  onApprove={handleApprove}
-                  onReject={handleReject}
-                />
-              ))
+            {/* 3. ÎNVELIM GRID-UL ÎN DndContext */}
+            {activeTab === "orders" && (
+              <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in duration-700">
+                  {tableGroups.length === 0 ? (
+                    <div className="col-span-full py-32 text-center border-2 border-dashed border-zinc-200 dark:border-zinc-900 rounded-[4rem]">
+                      <p className="text-zinc-400 font-black uppercase tracking-widest text-sm italic">Nicio masă activă</p>
+                    </div>
+                  ) : (
+                    tableGroups.map(group => (
+                      <TableCard 
+                        key={group.table_id} 
+                        group={group} 
+                        onComplete={handleComplete} 
+                        onServe={handleServe} 
+                        onClose={handleClose} 
+                        onApprove={handleApprove}
+                        onReject={handleReject}
+                      />
+                    ))
+                  )}
+                </div>
+              </DndContext>
             )}
-          </div>
-        </DndContext>
-      )}
 
-      {activeTab === "stock" && <StockSection barData={barData} setBarData={setBarData} />}
-      {activeTab === "menu" && <MenuSection categories={barData?.categories || []} refreshData={refresh} barId={barData?.id} />}
+            {activeTab === "stock" && <StockSection barData={barData} setBarData={setBarData} />}
+            {activeTab === "menu" && <MenuSection categories={barData?.categories || []} refreshData={refresh} barId={barData?.id} />}
+          </>
+        ) : (
+          <AnalyticsSection barId={barData.id} />
+        )}
+      </div>
     </div>
   );
 }

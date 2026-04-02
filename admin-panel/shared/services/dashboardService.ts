@@ -15,6 +15,12 @@ export const dashboardService = {
     }
   },
 
+  getAnalytics: async (barId: string, period: string) => {
+    const res = await fetchWithAuth(`${API_BASE_URL}/dashboard/analytics/${barId}?period=${period}`);
+    if (!res.ok) throw new Error("Eroare la server");
+    return await res.json();
+  },
+
   completeRequest: async (itemId: string) => {
     const res = await fetchWithAuth(`${API_BASE_URL}/requests/${itemId}/complete`, {
       method: "PATCH",
