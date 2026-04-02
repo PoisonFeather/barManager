@@ -1,5 +1,6 @@
 "use client";
-import { useState, use } from "react";
+import { useState, use, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 import { 
   DndContext, 
@@ -24,7 +25,17 @@ import { MenuSection } from "./components/menuSection";
 
 export default function BartenderDashboard({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<"orders" | "stock" | "menu">("orders");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        router.push("/login");
+      }
+    }
+  }, [router]);
 
   const { barData, setBarData } = useBarData(slug);
   const { tableGroups, refresh } = useDashboardSummary(barData?.id || null);

@@ -8,7 +8,9 @@ import { authService } from "@/shared/services/authService";
 export default function LoginPage() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [demoSlug, setDemoSlug] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [isDemoLoading, setIsDemoLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState("");
     
     const router = useRouter();
@@ -33,6 +35,26 @@ export default function LoginPage() {
             setErrorMsg(error.message || "A apărut o eroare la conectare.");
         } finally {
             setIsLoading(false);
+        }
+    }
+
+    const handleDemoLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsDemoLoading(true);
+        setErrorMsg("");
+
+        try {
+            const data = await authService.demoLogin(demoSlug.trim().toLowerCase());
+            if (data.barSlug) {
+                router.push(`/dashboard/${data.barSlug}`);
+            } else {
+                router.push("/dashboard");
+            }
+        } catch (error: any) {
+            console.error("Demo Login error:", error);
+            setErrorMsg(error.message || "A apărut o eroare la demo login.");
+        } finally {
+            setIsDemoLoading(false);
         }
     }
 
@@ -91,6 +113,32 @@ export default function LoginPage() {
                         {isLoading ? "Se conectează..." : "Intră în cont"}
                     </button>
                 </form>
+
+                <div className="mt-8 border-t border-zinc-200 dark:border-zinc-800 pt-6">
+                    <div className="text-center mb-4">
+                        <h2 className="text-sm font-black uppercase text-zinc-900 dark:text-white">Testează fără cont</h2>
+                    </div>
+                    <form onSubmit={handleDemoLogin} className="space-y-4">
+                        <div className="space-y-1">
+                            <input 
+                                type="text" 
+                                value={demoSlug}
+                                onChange={(e) => setDemoSlug(e.target.value)}
+                                className="w-full p-4 bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl focus:outline-none focus:border-orange-500 transition-colors text-zinc-900 dark:text-white"
+                                placeholder="bar-slug (ex: pub123)"
+                                required
+                                disabled={isDemoLoading}
+                            />
+                        </div>
+                        <button 
+                            type="submit" 
+                            disabled={isDemoLoading}
+                            className="w-full mt-2 p-4 rounded-2xl font-black text-sm uppercase bg-zinc-800 hover:bg-zinc-700 text-white shadow-lg transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+                        >
+                            {isDemoLoading ? "Se accesează..." : "Demo Login"}
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     );

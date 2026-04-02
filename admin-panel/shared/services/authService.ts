@@ -23,6 +23,26 @@ export const authService = {
     return data; // Returnăm datele (ex: barSlug) către UI
   },
 
+  demoLogin: async (barSlug: string) => {
+    const res = await fetch(`${API_BASE_URL}/auth/demo-login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ barSlug }),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.error || "Eroare la demo login.");
+    }
+
+    const data = await res.json();
+    if (data.token) {
+      localStorage.setItem("token", data.token);
+    }
+
+    return data;
+  },
+
   logout: () => {
     localStorage.removeItem("token");
     window.location.href = "/login";

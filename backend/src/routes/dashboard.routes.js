@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { verifyToken } from "../middleware/auth.js";
 import {
   dashboardSummaryHandler,
   toggleProductAvailabilityHandler,
@@ -13,6 +14,7 @@ import {
 import { validateToggleProductPayload } from "../middleware/validation.js";
 
 const router = Router();
+router.use(verifyToken);
 
 // 1. SCOATEM "/dashboard" din rute (dacă e deja prefixat în app.js)
 // Altfel, URL-ul tău ar fi fost: /dashboard/dashboard/summary/...

@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { getUserByUsername } from "../repositories/auth.repository.js";
+import { getUserByUsername, getBarWithUserCount } from "../repositories/auth.repository.js";
 
 // În producție, asta TREBUIE să fie în fișierul .env (ex: JWT_SECRET=parola_mea_super_secreta)
 const JWT_SECRET =
@@ -42,5 +42,35 @@ export async function loginUser(username, password) {
     success: true,
     token,
     barSlug: user.bar_slug,
+  };
+}
+
+export async function demoLoginUser(barSlug) {
+  const bar = await getBarWithUserCount(barSlug);
+  if (!bar) {
+    const error = new Error("Barul nu a fost găsit!");
+    error.status = 404;
+    throw error;
+  }
+  
+  if (parseInt(bar.user_count) > 0) {
+    const error = new Error("Acest bar are cont. Folosiți autentificarea standard.");
+    error.status = 403;
+    throw error;
+  }
+
+  const token = jwt.sign(
+    {
+      userId: "demo-user",
+      barId: bar.bar_id,
+    },
+    JWT_SECRET,
+    { expiresIn: "24h" }
+  );
+
+  return {
+    success: true,
+    token,
+    barSlug: bar.bar_slug,
   };
 }

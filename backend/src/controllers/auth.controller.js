@@ -19,3 +19,18 @@ export const loginHandler = async (req, res) => {
     return res.status(status).json({ error: error.message });
   }
 };
+
+export const demoLoginHandler = async (req, res) => {
+  try {
+    const { barSlug } = req.body;
+    if (!barSlug) {
+      return res.status(400).json({ error: "barSlug este obligatoriu!" });
+    }
+    const result = await authService.demoLoginUser(barSlug);
+    return res.json(result);
+  } catch (error) {
+    console.error("💥 Eroare la demo login:", error.message);
+    const status = error.status || 500;
+    return res.status(status).json({ error: error.message });
+  }
+};

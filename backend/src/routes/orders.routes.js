@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { verifyToken } from "../middleware/auth.js";
 import {
   closeTableHandler,
   createOrderHandler,
@@ -11,11 +12,14 @@ import { validateCreateOrderPayload } from "../middleware/validation.js";
 
 const router = Router();
 
+// Public route for customers
 router.post("/orders", validateCreateOrderPayload, createOrderHandler);
-router.get("/orders/:barId", listActiveOrdersHandler);
-router.patch("/orders/:orderId/status", updateOrderStatusHandler);
-router.get("/table-history/:tableId", tableHistoryHandler);
-router.patch("/order-items/:itemId/serve", serveOrderItemHandler);
-router.patch("/tables/:tableId/close", closeTableHandler);
+
+// Protected routes for admins
+router.get("/orders/:barId", verifyToken, listActiveOrdersHandler);
+router.patch("/orders/:orderId/status", verifyToken, updateOrderStatusHandler);
+router.get("/table-history/:tableId", verifyToken, tableHistoryHandler);
+router.patch("/order-items/:itemId/serve", verifyToken, serveOrderItemHandler);
+router.patch("/tables/:tableId/close", verifyToken, closeTableHandler);
 
 export default router;
