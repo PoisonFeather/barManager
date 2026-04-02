@@ -20,8 +20,8 @@ import { ServiceModal } from "./components/ServiceModal";
 export default function ClientMenu({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const searchParams = useSearchParams();
-  
-  
+
+
   // 3. Hook-uri de Date și Coș (Toată logica e izolată aici)
   const { barData, loading: menuLoading } = useBarData(slug);
   const { cart, addToCart, updateQuantity, clearCart, totalAmount, totalItems } = useCart();
@@ -36,14 +36,14 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
   const currentTable = useMemo(() => {
     const tId = searchParams.get('t');
     const tNum = searchParams.get('table');
-    return barData?.tables?.find((t: any) => 
+    return barData?.tables?.find((t: any) =>
       t.id === tId || t.table_number === Number(tNum)
     );
   }, [barData, searchParams]);
 
-  const historyTotal = useMemo(() => 
-    orderHistory.reduce((sum, o) => sum + (Number(o.price) * o.quantity), 0), 
-  [orderHistory]);
+  const historyTotal = useMemo(() =>
+    orderHistory.reduce((sum, o) => sum + (Number(o.price) * o.quantity), 0),
+    [orderHistory]);
 
   // 5. Sincronizare Istoric
   const refreshHistory = async () => {
@@ -55,11 +55,12 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
   const { socket } = useSocket(refreshHistory);
 
   useEffect(() => {
+    console.log("[DEBUG] page.tsx useEffect running. isSessionLocked:", isSessionLocked, "socket:", !!socket);
     if (!socket || !currentTable?.id) return;
-  
+
     const approvalEvent = `table-approved-${currentTable.id}`;
-    const updateEvent = `table-updated-${currentTable.id}`; 
-  
+    const updateEvent = `table-updated-${currentTable.id}`;
+
     // 1. Ascultăm când Barmanul aprobă masa
     socket.on(approvalEvent, (data: { token: string }) => {
       console.log("🎉 Masa a fost aprobată LIVE! Token:", data.token);
@@ -85,16 +86,17 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
     // 4. Cineva a scanat și a fost blocat
     const attemptEvent = `table-join-attempt-${currentTable.id}`;
     socket.on(attemptEvent, () => {
+      console.log(`[Socket] Am primit alerta de JOIN ATTEMPT! isSessionLocked = ${isSessionLocked}`);
       // Dacă nu cumva suntem noi înșine cei blocați:
       if (!isSessionLocked) {
         setShowUnlockRequest(true);
       }
     });
-  
+
     // Curățenie când închizi pagina
     return () => {
       socket.off(approvalEvent);
-      socket.off(updateEvent); 
+      socket.off(updateEvent);
       socket.off(unlockEvent);
       socket.off(attemptEvent);
     };
@@ -109,13 +111,13 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
     const syncSession = async () => {
       // 🚩 Dacă nu avem masă, nu cerem token
       if (!currentTable?.id) return;
-  
+
       try {
         const storedToken = localStorage.getItem(`session_${currentTable.id}`) || '';
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/table-status/${currentTable.id}?token=${storedToken}`, {
           headers: { 'Cache-Control': 'no-cache' }
         });
-        
+
         if (res.status === 403) {
           setIsSessionLocked(true);
           return;
@@ -133,7 +135,7 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
         console.error("❌ Eroare la securizarea sesiunii:", err);
       }
     };
-  
+
     syncSession();
   }, [currentTable?.id]);
   // 6. Handlere Acțiuni
@@ -149,6 +151,9 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
 
     const result = await orderService.sendOrder(payload);
     if (result.success) {
+      if (result.sessionToken) {
+         localStorage.setItem(`session_${currentTable.id}`, result.sessionToken);
+      }
       alert("Comanda a plecat! 🚀");
       clearCart();
       setIsCartOpen(false);
@@ -200,12 +205,12 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
         <div className="w-24 h-24 bg-red-500/20 rounded-full flex items-center justify-center mb-6">
           <span className="text-5xl">🔒</span>
         </div>
-        <h1 className="text-white text-2xl font-black uppercase tracking-widest mb-4">Sesiune Încuiată</h1>
+        <h1 className="text-white text-2xl font-black uppercase tracking-widest mb-4">Sesiune Blocată</h1>
         <p className="text-zinc-400 text-sm mb-8 font-bold leading-relaxed max-w-sm">
-          Pentru siguranță, mesele se încuie după 15 minute. <br/><br/>
-          Rugați un prieten conectat să apese butonul de <b>Primit la Masă</b> din meniul lui.
+          Pentru siguranță, mesele se blochează după 15 minute. <br /><br />
+          Rugați un prieten conectat să apese butonul de <b>Primiți la Masă</b> din meniul lui.
         </p>
-        <button 
+        <button
           onClick={() => window.location.reload()}
           className="px-8 py-4 bg-zinc-800 text-white rounded-2xl font-black uppercase text-xs tracking-widest active:scale-95 transition-transform"
         >
@@ -217,7 +222,7 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-black text-zinc-900 dark:text-white pb-32 relative transition-colors duration-300">
-      
+
       {/* HEADER */}
       <div className="sticky top-0 z-40 p-5 backdrop-blur-xl border-b border-zinc-200 dark:border-white/10 flex justify-between items-center bg-white/80 dark:bg-black/80" style={{ borderBottomColor: barData.primary_color + '44' }}>
         <div>
@@ -241,11 +246,11 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
             </h2>
             <div className="grid gap-4">
               {cat.products?.map((prod: any) => (
-                <ProductCard 
-                  key={prod.id} 
-                  prod={prod} 
-                  onAdd={addToCart} 
-                  primaryColor={barData.primary_color} 
+                <ProductCard
+                  key={prod.id}
+                  prod={prod}
+                  onAdd={addToCart}
+                  primaryColor={barData.primary_color}
                 />
               ))}
             </div>
@@ -253,9 +258,11 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
         ))}
       </div>
 
-      <FloatingActionBar 
-        totalItems={totalItems} 
-        totalAmount={totalAmount} 
+      {/* Floating Action Bar */}
+      {(historyTotal > 0 || totalItems > 0 || showUnlockRequest) && (
+        <FloatingActionBar
+          totalItems={totalItems}
+        totalAmount={totalAmount}
         historyTotal={historyTotal}
         onOpenCart={() => setIsCartOpen(true)}
         onOpenService={() => setIsServiceModalOpen(true)}
@@ -265,14 +272,15 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
         isCartOpen={isCartOpen}
         isServiceModalOpen={isServiceModalOpen}
       />
+      )}
 
       <AnimatePresence>
         {isCartOpen && (
-          <CartModal 
-            cart={cart} 
-            history={orderHistory} 
-            onUpdate={updateQuantity} 
-            onSend={handleSendOrder} 
+          <CartModal
+            cart={cart}
+            history={orderHistory}
+            onUpdate={updateQuantity}
+            onSend={handleSendOrder}
             onClose={() => setIsCartOpen(false)}
             primaryColor={barData.primary_color}
             totalAmount={totalAmount}
@@ -281,7 +289,7 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
         )}
 
         {isServiceModalOpen && (
-          <ServiceModal 
+          <ServiceModal
             onSendRequest={handleSendRequest}
             onClose={() => setIsServiceModalOpen(false)}
           />

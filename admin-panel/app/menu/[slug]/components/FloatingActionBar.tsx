@@ -14,7 +14,7 @@ interface Props {
 export function FloatingActionBar({ 
   totalItems, totalAmount, historyTotal, onOpenCart, onOpenService, onUnlock, showUnlockRequest, primaryColor, isCartOpen, isServiceModalOpen 
 }: Props) {
-  
+  console.log("[DEBUG] FloatingActionBar rendered! showUnlockRequest =", showUnlockRequest);
   // Nu afișăm bara dacă modalurile sunt deschise (ca să nu se suprapună)
   if (isCartOpen || isServiceModalOpen) return null;
 

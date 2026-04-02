@@ -14,6 +14,7 @@ import {
 import { unlockTable_db } from "../repositories/orders.repository.js";
 
 import { pool as db } from "../db/pool.js";
+import { v4 as uuidv4 } from "uuid";
 function resolveStatus(error, fallback = 500) {
   return Number.isInteger(error?.status) ? error.status : fallback;
 }
@@ -30,6 +31,8 @@ export async function createOrderHandler(req, res) {
     const table = tableResult.rows[0];
 
     let orderStatus = "pending_approval";
+    let newTokenProvided = null;
+
     if (
       table?.status === "open" &&
       table.current_session_token === session_token
@@ -44,9 +47,19 @@ export async function createOrderHandler(req, res) {
       );
       //console.log(table.current_session_token, session_token);
       return res.status(403).json({ error: "Sesiune invalidă!" });
+    } else if (table?.status === "closed") {
+      // Daca masa e inchisa si cineva plaseaza prima comanda, noi ar trebui
+      // sa ii pre-alocam un session token clientului ca sa nu si-l piarda daca
+      // se deconecteaza de la socket.
+      if (!table.current_session_token) {
+        newTokenProvided = uuidv4();
+        await db.query("UPDATE tables SET current_session_token = $1 WHERE id = $2", [newTokenProvided, table_id]);
+      } else {
+        newTokenProvided = table.current_session_token;
+      }
     }
 
-    // 🚀 2. Apelăm SERVICIUL (cel cu tranzacția)
+    //  2. Apelăm SERVICIUL (cel cu tranzacția)
     const result = await createOrder({
       bar_id,
       table_id,
@@ -68,7 +81,12 @@ export async function createOrderHandler(req, res) {
       message: "Altcineva a adăugat produse!",
     });
     //console.log("added order and emitted socket event");
-    return res.json(result);
+    return res.json({
+      success: true,
+      orderId: result.orderId,
+      sessionToken: newTokenProvided, // Returnam pre-tokenul ca barmanul să poată aproba, iar clientul să aibă deja cheia!
+      message: result.message,
+    });
   } catch (error) {
     res.status(error.status || 500).json({ error: error.message });
   }

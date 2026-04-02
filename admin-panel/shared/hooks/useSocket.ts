@@ -7,10 +7,16 @@ export function useSocket(onNewData?: () => void) {
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    const s: Socket = io(SOCKET_URL);
+    // Dacă SOCKET_URL este o rută relativă (ex. '/api'), înseamnă că folosim proxy-ul Next.js 
+    // pe același domeniu. Trimitem 'undefined' ca să se conecteze la origin-ul curent pe ROOT namespace, nu pe namespace-ul '/api'.
+    const isRelative = SOCKET_URL.startsWith('/');
+    const s: Socket = io(isRelative ? undefined : SOCKET_URL, {
+      path: isRelative ? '/api/socket' : '/socket.io'
+    });
+    
     setSocket(s);
 
-    s.on('connect', () => console.log('🔌 Conectat la Socket Server'));
+    s.on('connect', () => console.log('🔌 Conectat la Socket Server pe ROOT'));
 
     if (onNewData) {
       s.on('new-data', (data) => {
