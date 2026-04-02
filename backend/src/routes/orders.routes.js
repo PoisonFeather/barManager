@@ -14,11 +14,11 @@ const router = Router();
 
 // Public route for customers
 router.post("/orders", validateCreateOrderPayload, createOrderHandler);
+router.get("/table-history/:tableId", tableHistoryHandler);
 
 // Protected routes for admins
 router.get("/orders/:barId", verifyToken, listActiveOrdersHandler);
 router.patch("/orders/:orderId/status", verifyToken, updateOrderStatusHandler);
-router.get("/table-history/:tableId", verifyToken, tableHistoryHandler);
 router.patch("/order-items/:itemId/serve", verifyToken, serveOrderItemHandler);
 router.patch("/tables/:tableId/close", verifyToken, closeTableHandler);
 

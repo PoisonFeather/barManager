@@ -15,7 +15,7 @@ export async function getAnalyticsDataByBar(barId, period) {
       COUNT(DISTINCT o.id) as total_orders,
       COALESCE(SUM(o.total_amount), 0) as total_revenue
     FROM orders o
-    WHERE o.bar_id = $1 AND o.status = 'closed' ${dateFilter}
+    WHERE o.bar_id = $1 AND o.is_paid = TRUE ${dateFilter}
   `;
 
   const productsQuery = `
@@ -27,7 +27,7 @@ export async function getAnalyticsDataByBar(barId, period) {
     FROM order_items oi
     JOIN orders o ON o.id = oi.order_id
     JOIN products p ON p.id = oi.product_id
-    WHERE o.bar_id = $1 AND o.status = 'closed' ${dateFilter}
+    WHERE o.bar_id = $1 AND o.is_paid = TRUE ${dateFilter}
     GROUP BY p.id, p.name
     ORDER BY total_quantity DESC, total_revenue DESC
   `;

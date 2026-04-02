@@ -15,6 +15,9 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}) {
     (headers as any)["Content-Type"] = "application/json";
   }
 
+  // Previn un bug faimos din Next.js Rewrites (304 Not Modified) când se lovește proxy-ul prin Ngrok
+  (headers as any)["Cache-Control"] = "no-cache";
+
   if (token) {
     (headers as any)["Authorization"] = `Bearer ${token}`;
   }
