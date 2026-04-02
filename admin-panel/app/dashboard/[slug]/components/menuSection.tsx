@@ -1,14 +1,18 @@
 "use client";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { dashboardService } from "@/shared/services/dashboardService";
 
 interface MenuEditorProps {
   categories: any[];
-  refreshData: () => void; 
+  refreshData: () => void;
+  barId: string;
 }
 
-export function MenuSection({ categories, refreshData }: MenuEditorProps) {
+export function MenuSection({ categories, refreshData, barId }: MenuEditorProps) {
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
+  const [showAddCategory, setShowAddCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   // --- HANDLERE PENTRU API ---
@@ -16,15 +20,7 @@ export function MenuSection({ categories, refreshData }: MenuEditorProps) {
     e.preventDefault();
     setIsLoading(true);
 
-    // Verificăm dacă e produs NOU (isNew) sau EDITARE (are id)
     const isNewProduct = editingProduct.isNew;
-    const url = isNewProduct 
-      ? `http://localhost:3001/dashboard/products` 
-      : `http://localhost:3001/dashboard/products/${editingProduct.id}`;
-    
-    const method = isNewProduct ? "POST" : "PUT";
-
-    // Dacă e produs nou, trebuie să trimitem și category_id
     const bodyData = {
       name: editingProduct.name,
       price: Number(editingProduct.price),
@@ -33,21 +29,15 @@ export function MenuSection({ categories, refreshData }: MenuEditorProps) {
     };
 
     try {
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(bodyData),
-      });
-
-      if (res.ok) {
-        refreshData(); 
-        setEditingProduct(null); 
+      if (isNewProduct) {
+        await dashboardService.createProduct(bodyData);
       } else {
-        const error = await res.json();
-        alert(error.error || "Eroare la salvare");
+        await dashboardService.updateProduct(editingProduct.id, bodyData);
       }
-    } catch (err) {
-      alert("Eroare de conexiune cu serverul.");
+      refreshData();
+      setEditingProduct(null);
+    } catch (err: any) {
+      alert(err.message || "Eroare la salvare");
     } finally {
       setIsLoading(false);
     }
@@ -57,18 +47,26 @@ export function MenuSection({ categories, refreshData }: MenuEditorProps) {
     if (!confirm("⚠️ Ești sigur că vrei să ștergi definitiv acest produs? Nu va mai apărea în meniu.")) return;
 
     try {
-      const res = await fetch(`http://localhost:3001/dashboard/products/${productId}`, {
-        method: "DELETE",
-      });
+      await dashboardService.deleteProduct(productId);
+      refreshData();
+    } catch (err: any) {
+      alert(err.message || "Eroare de conexiune cu serverul.");
+    }
+  };
 
-      if (res.ok) {
-        refreshData();
-      } else {
-        const error = await res.json();
-        alert(error.error || "Nu s-a putut șterge produsul.");
-      }
-    } catch (err) {
-      alert("Eroare de conexiune cu serverul.");
+  const handleAddCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCategoryName.trim()) return;
+    setIsLoading(true);
+    try {
+      await dashboardService.createCategory({ bar_id: barId, name: newCategoryName });
+      setNewCategoryName("");
+      setShowAddCategory(false);
+      refreshData();
+    } catch (err: any) {
+      alert(err.message || "Eroare la crearea categoriei");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -131,10 +129,19 @@ export function MenuSection({ categories, refreshData }: MenuEditorProps) {
             </button>
           </div>
         </div>
-      ))};
+      ))}
       
+      {/* BUTON ADĂUGARE CATEGORIE */}
+      <div className="flex justify-center mt-6">
+        <button
+          onClick={() => setShowAddCategory(true)}
+          className="bg-orange-500 hover:bg-orange-600 text-black px-6 py-3 rounded-2xl font-black uppercase tracking-widest text-sm shadow-xl transition-all active:scale-95"
+        >
+          + Adaugă Categorie
+        </button>
+      </div>
 
-      {/* MODALUL DE EDITARE (Apare doar când dai click pe "Editează") */}
+      {/* MODALUL DE EDITARE (Apare doar când dai click pe "Editează" sau "Adaugă Produs") */}
       <AnimatePresence>
         {editingProduct && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -191,9 +198,53 @@ export function MenuSection({ categories, refreshData }: MenuEditorProps) {
                   <button 
                     type="submit" 
                     disabled={isLoading}
-                    className="flex-1 p-4 rounded-2xl font-black text-xs uppercase bg-orange-500 hover:bg-orange-600 text-black shadow-lg transition-transform active:scale-95 disabled:opacity-50"
+                    className="flex-1 p-4 rounded-2xl font-black text-xs uppercase bg-orange-500 hover:bg-orange-600 text-black shadow-lg shadow-orange-500/20 transition-transform active:scale-95 disabled:opacity-50"
                   >
                     {isLoading ? "Se salvează..." : "✔️ Salvează"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+
+        {/* MODALUL PENTRU CATEGORIE NOUĂ */}
+        {showAddCategory && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white dark:bg-zinc-900 w-full max-w-sm p-6 rounded-[2.5rem] shadow-2xl border border-zinc-200 dark:border-white/10"
+            >
+              <h2 className="text-xl font-black uppercase mb-6">📂 Categorie Nouă</h2>
+              
+              <form onSubmit={handleAddCategory} className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-2">Nume (ex: Băuturi)</label>
+                  <input 
+                    type="text" 
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    className="w-full p-4 bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl focus:outline-none focus:border-orange-500 transition-colors"
+                    required
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button 
+                    type="button" 
+                    onClick={() => { setShowAddCategory(false); setNewCategoryName(""); }}
+                    className="flex-1 p-4 rounded-2xl font-black text-xs uppercase bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors"
+                  >
+                    Anulează
+                  </button>
+                  <button 
+                    type="submit" 
+                    disabled={isLoading || !newCategoryName.trim()}
+                    className="flex-1 p-4 rounded-2xl font-black text-xs uppercase bg-orange-500 hover:bg-orange-600 text-black shadow-lg shadow-orange-500/20 transition-transform active:scale-95 disabled:opacity-50"
+                  >
+                    {isLoading ? "Se adaugă..." : "+ Adaugă"}
                   </button>
                 </div>
               </form>

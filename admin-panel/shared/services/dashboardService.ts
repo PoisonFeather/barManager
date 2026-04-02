@@ -60,4 +60,54 @@ export const dashboardService = {
       return false;
     }
   },
+
+  createCategory: async (payload: { bar_id: string; name: string }) => {
+    const res = await fetchWithAuth(`${API_BASE_URL}/categories`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.error || "Eroare la salvarea categoriei");
+    }
+    return res.json();
+  },
+
+  createProduct: async (payload: any) => {
+    const res = await fetchWithAuth(`${API_BASE_URL}/dashboard/products`, { // Wait, wait. Product POST endpoint?
+      // Wait, is it /dashboard/products or /products? Look at dashboard.routes.js: router.post("/products", addProductHandler); Yes it is /dashboard/products.
+      // And in menu.routes.js: router.post("/products", createProductHandler);
+      // Let's use /dashboard/products since it was already used by menuSection.tsx
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.error || "Eroare la adăugare produs");
+    }
+    return res.json();
+  },
+
+  updateProduct: async (id: string, payload: any) => {
+    const res = await fetchWithAuth(`${API_BASE_URL}/dashboard/products/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+       const error = await res.json().catch(() => ({}));
+       throw new Error(error.error || "Eroare la actualizare produs");
+    }
+    return res.json();
+  },
+
+  deleteProduct: async (id: string) => {
+    const res = await fetchWithAuth(`${API_BASE_URL}/dashboard/products/${id}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) {
+       const error = await res.json().catch(() => ({}));
+       throw new Error(error.error || "Nu s-a putut șterge produsul");
+    }
+    return res.json();
+  }
 };

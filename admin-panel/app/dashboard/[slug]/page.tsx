@@ -131,7 +131,7 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
       )}
 
       {activeTab === "stock" && <StockSection barData={barData} setBarData={setBarData} />}
-      {activeTab === "menu" && <MenuSection categories={barData?.categories || []} refreshData={refresh} />}
+      {activeTab === "menu" && <MenuSection categories={barData?.categories || []} refreshData={refresh} barId={barData?.id} />}
     </div>
   );
 }
