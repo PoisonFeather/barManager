@@ -100,9 +100,9 @@ export async function addProductToCategory(
 }
 
 export async function approveTable_db(tableId, token) {
-  //A. marcam masa ca fiind deschisa si ii dam token-ul de sesiune primit ca si parametru din service
+  //A. marcam masa ca fiind deschisa si ii dam token-ul de sesiune primit ca si parametru din service, și resetăm timpul
   await pool.query(
-    "UPDATE tables SET status = 'open', current_session_token = $1 WHERE id = $2",
+    "UPDATE tables SET status = 'open', current_session_token = $1, session_started_at = NOW() WHERE id = $2",
     [token, tableId]
   );
   // B. Toate produsele comandate de client "trec" de la pending la confirmed

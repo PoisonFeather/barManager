@@ -11,6 +11,8 @@ import {
   completeRequest,
 } from "../services/requests.service.js";
 
+import { unlockTable_db } from "../repositories/orders.repository.js";
+
 import { pool as db } from "../db/pool.js";
 function resolveStatus(error, fallback = 500) {
   return Number.isInteger(error?.status) ? error.status : fallback;
@@ -117,6 +119,34 @@ export async function closeTableHandler(req, res) {
     const { tableId } = req.params;
     const response = await closeTable(tableId);
     return res.json(response);
+  } catch (error) {
+    return res.status(resolveStatus(error)).json({ error: error.message });
+  }
+}
+
+export async function unlockTableHandler(req, res) {
+  try {
+    const { tableId } = req.params;
+    const { session_token } = req.body;
+
+    // A. Verificăm dacă clientul are token-ul corect pentru masa respectivă
+    const tableResult = await db.query(
+      "SELECT status, current_session_token FROM tables WHERE id = $1",
+      [tableId]
+    );
+    const table = tableResult.rows[0];
+
+    if (!table || table.status !== "open" || table.current_session_token !== session_token) {
+      return res.status(403).json({ error: "Sesiune invalidă pentru deblocare!" });
+    }
+
+    // B. Re-setăm cronometrul cu data/ora curentă pentru a extinde fereastra
+    await unlockTable_db(tableId);
+
+    // C. Notificăm realtime toate telefoanele să dea refresh dacă cumva unele stăteau în fața lacătului
+    req.app.get("io").emit(`table-unlocked-${tableId}`, { message: "Masa a fost deblocată!" });
+
+    return res.json({ success: true, message: "Timpul mesei a fost prelungit!" });
   } catch (error) {
     return res.status(resolveStatus(error)).json({ error: error.message });
   }

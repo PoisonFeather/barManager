@@ -97,9 +97,9 @@ export async function closeTableOrders(tableId) {
     [tableId]
   );
 
-  // 2. Resetăm masa principală (Părintele)
+  // 2. Resetăm masa principală (Părintele) și ștergem ora de pornire a sesiunii
   await pool.query(
-    "UPDATE tables SET status = 'closed', current_session_token = NULL WHERE id = $1",
+    "UPDATE tables SET status = 'closed', current_session_token = NULL, session_started_at = NULL WHERE id = $1",
     [tableId]
   );
 
@@ -108,6 +108,13 @@ export async function closeTableOrders(tableId) {
     "UPDATE tables SET merged_into_id = NULL WHERE merged_into_id = $1",
     [tableId]
   );
+}
+
+export async function unlockTable_db(tableId) {
+  // Resetăm cronometrul cu timpul curent pentru a da un nou "boost" de 15 minute
+  await pool.query("UPDATE tables SET session_started_at = NOW() WHERE id = $1", [
+    tableId,
+  ]);
 }
 
 export async function insertRequest({

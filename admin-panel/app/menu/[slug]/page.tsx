@@ -29,6 +29,7 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const [orderHistory, setOrderHistory] = useState<any[]>([]);
+  const [isSessionLocked, setIsSessionLocked] = useState(false);
 
   // 4. Identificare Masă (Memoizată pentru viteză)
   const currentTable = useMemo(() => {
@@ -70,11 +71,19 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
       console.log("update socket for new order at the same table!", data);
       refreshHistory(); //  Asta trage datele noi și updatează istoric/total pe laptop!
     });
+
+    // 3. Ascultăm și dacă cineva deblochează masa
+    const unlockEvent = `table-unlocked-${currentTable.id}`;
+    socket.on(unlockEvent, () => {
+      setIsSessionLocked(false);
+      // Eventual putem rula și syncSession din nou, dar state-ul ajunge
+    });
   
     // Curățenie când închizi pagina
     return () => {
       socket.off(approvalEvent);
       socket.off(updateEvent); 
+      socket.off(unlockEvent);
     };
   }, [socket, currentTable?.id]);
 
@@ -89,12 +98,20 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
       if (!currentTable?.id) return;
   
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/table-status/${currentTable.id}`);
+        const storedToken = localStorage.getItem(`session_${currentTable.id}`) || '';
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/table-status/${currentTable.id}?token=${storedToken}`);
+        
+        if (res.status === 403) {
+          setIsSessionLocked(true);
+          return;
+        }
+
         const data = await res.json();
         //console.log(data.sessionToken);
         if (data.sessionToken) {
           // Îl punem în buzunarul browserului
           localStorage.setItem(`session_${currentTable.id}`, data.sessionToken);
+          setIsSessionLocked(false); // Token valid, scoatem lacătul
           console.log("🔐 Sesiune securizată: ", data.sessionToken);
         }
       } catch (err) {
@@ -142,10 +159,42 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
     }
   };
 
+  const handleUnlockTable = async () => {
+    if (!currentTable?.id) return;
+    const ok = await orderService.unlockTable(currentTable.id);
+    if (ok) {
+      alert("Timpul de acces a fost extins cu 15 minute! Prietenii se pot conecta acum.");
+    } else {
+      alert("Eroare la extinderea timpului.");
+    }
+  };
+
   if (menuLoading || !barData) {
     return (
       <div className="p-10 text-white bg-black h-screen flex items-center justify-center font-black animate-pulse uppercase tracking-[0.5em]">
         Conectare Satelit...
+      </div>
+    );
+  }
+
+  // ECRAN DE BLOCARE 403 (Auto-Join)
+  if (isSessionLocked) {
+    return (
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-500">
+        <div className="w-24 h-24 bg-red-500/20 rounded-full flex items-center justify-center mb-6">
+          <span className="text-5xl">🔒</span>
+        </div>
+        <h1 className="text-white text-2xl font-black uppercase tracking-widest mb-4">Sesiune Încuiată</h1>
+        <p className="text-zinc-400 text-sm mb-8 font-bold leading-relaxed max-w-sm">
+          Pentru siguranță, mesele se încuie după 15 minute. <br/><br/>
+          Rugați un prieten conectat să apese butonul de <b>Primit la Masă</b> din meniul lui.
+        </p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="px-8 py-4 bg-zinc-800 text-white rounded-2xl font-black uppercase text-xs tracking-widest active:scale-95 transition-transform"
+        >
+          Reîncearcă Conexiunea
+        </button>
       </div>
     );
   }
@@ -194,6 +243,7 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
         historyTotal={historyTotal}
         onOpenCart={() => setIsCartOpen(true)}
         onOpenService={() => setIsServiceModalOpen(true)}
+        onUnlock={handleUnlockTable}
         primaryColor={barData.primary_color}
         isCartOpen={isCartOpen}
         isServiceModalOpen={isServiceModalOpen}

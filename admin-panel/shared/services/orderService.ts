@@ -46,5 +46,23 @@ export const orderService = {
       console.error("Request Service Error:", err);
       return false;
     }
+  },
+
+  // Deblochează o masă când un "prieten" a întârziat peste sfertul academic
+  unlockTable: async (tableId: string) => {
+    try {
+      const token = localStorage.getItem(`session_${tableId}`);
+      if (!token) return false;
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/tables/${tableId}/unlock`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
+        body: JSON.stringify({ session_token: token })
+      });
+      return res.ok;
+    } catch (err) {
+      console.error("Unlock Error:", err);
+      return false;
+    }
   }
 };

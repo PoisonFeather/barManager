@@ -4,24 +4,35 @@ interface Props {
   historyTotal: number;
   onOpenCart: () => void;
   onOpenService: () => void;
+  onUnlock: () => void;
   primaryColor: string;
   isCartOpen: boolean;
   isServiceModalOpen: boolean;
 }
 
 export function FloatingActionBar({ 
-  totalItems, totalAmount, historyTotal, onOpenCart, onOpenService, primaryColor, isCartOpen, isServiceModalOpen 
+  totalItems, totalAmount, historyTotal, onOpenCart, onOpenService, onUnlock, primaryColor, isCartOpen, isServiceModalOpen 
 }: Props) {
   
   // Nu afișăm bara dacă modalurile sunt deschise (ca să nu se suprapună)
   if (isCartOpen || isServiceModalOpen) return null;
 
   return (
-    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[92%] max-w-md z-40 flex gap-3 animate-in fade-in slide-in-from-bottom duration-500">
+    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[92%] max-w-md z-40 flex gap-2 animate-in fade-in slide-in-from-bottom duration-500">
+      {/* Buton Deblocare Masa */}
+      <button 
+        onClick={onUnlock} 
+        className="w-12 h-16 rounded-3xl bg-zinc-800 border border-zinc-700 flex flex-col items-center justify-center text-sm shadow-xl active:scale-95 transition-transform shrink-0"
+        title="Primiți persoana la masă"
+      >
+        <span className="text-xl">🔓</span>
+        <span className="text-[7px] text-zinc-400 font-bold uppercase mt-1">Acceptă</span>
+      </button>
+
       {/* Buton Servicii */}
       <button 
         onClick={onOpenService} 
-        className="w-16 h-16 rounded-4xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 flex items-center justify-center text-xl shadow-2xl active:scale-95 transition-transform"
+        className="w-16 h-16 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 flex items-center justify-center text-xl shadow-2xl active:scale-95 transition-transform shrink-0"
       >
         🛎️
       </button>
