@@ -39,11 +39,18 @@ export function TableCard({
     zIndex: isDragging ? 100 : "auto",
   };
 
+  const setNodeRef = (node: HTMLDivElement | null) => {
+    setDroppableRef(node);
+    setDraggableRef(node);
+  };
+
   return (
     <div
-      ref={setDroppableRef} // Aici aterizează alte mese
+      ref={setNodeRef} // Aici aterizează alte mese și de aici tragem
+      {...listeners}
+      {...attributes}
       style={dragStyle}
-      className={`relative bg-white dark:bg-zinc-900 rounded-[2.5rem] p-7 border-t-8 shadow-2xl flex flex-col transition-all duration-300 ${getBorderColor()}`}
+      className={`relative cursor-grab active:cursor-grabbing bg-white dark:bg-zinc-900 rounded-[2.5rem] p-7 border-t-8 shadow-2xl flex flex-col transition-all duration-300 ${getBorderColor()}`}
     >
       <div className="flex justify-between items-start mb-6">
         <div>
@@ -51,16 +58,6 @@ export function TableCard({
             <h3 className="text-4xl font-black italic tracking-tighter uppercase leading-none">
               Masa {group.table_number}
             </h3>
-            {/* MÂNERUL DE DRAG & DROP */}
-            <div
-              ref={setDraggableRef}
-              {...listeners}
-              {...attributes}
-              className="cursor-grab active:cursor-grabbing p-2 bg-zinc-100 dark:bg-zinc-800 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors text-zinc-500"
-              title="Trage peste altă masă pentru a le uni"
-            >
-              🖐️
-            </div>
           </div>
 
           {/* AFISĂM MESELE UNITE (Dacă există) */}
