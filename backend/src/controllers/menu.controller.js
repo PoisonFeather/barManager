@@ -77,10 +77,15 @@ export const getTableStatusHandler = async (req, res) => {
 
     const { status, current_session_token, session_started_at } = result.rows[0];
 
+    console.log(`[Status Handler] Masa: ${tableId}`);
+    console.log(`[Status Handler] Token trimis de client: "${token}"`);
+    console.log(`[Status Handler] Token in DB: "${current_session_token}"`);
+
     // 2. Logică de răspuns bazată pe status
     if (status === "open") {
       // Regula A: Dacă clientul are DEJA token-ul corect la el, e clar că s-a alăturat legit, așa că îi acordăm acces.
       if (token && token === current_session_token) {
+        console.log(`[Status Handler] Acces Acordat! Token-ul se potrivește.`);
         return res.json({ status: "open", sessionToken: current_session_token });
       }
 
@@ -89,6 +94,7 @@ export const getTableStatusHandler = async (req, res) => {
         const startedAt = new Date(session_started_at).getTime();
         const now = Date.now();
         const diffMinutes = (now - startedAt) / (1000 * 60);
+        console.log(`[Status Handler] Timp scurs: ${diffMinutes} minute. Max: 1`);
         // va fi schimbat after testing
         if (diffMinutes <= 1) {
           // Încă e în fereastra de 15 minute, îi dăm token-ul fără probleme

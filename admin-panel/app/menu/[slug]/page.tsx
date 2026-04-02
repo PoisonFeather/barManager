@@ -112,7 +112,9 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
   
       try {
         const storedToken = localStorage.getItem(`session_${currentTable.id}`) || '';
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/table-status/${currentTable.id}?token=${storedToken}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/table-status/${currentTable.id}?token=${storedToken}`, {
+          headers: { 'Cache-Control': 'no-cache' }
+        });
         
         if (res.status === 403) {
           setIsSessionLocked(true);
