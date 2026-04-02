@@ -171,6 +171,30 @@ export const deleteProductHandler = async (req, res) => {
     return res.status(resolveStatus(error)).json({ error: error.message });
   }
 };
+
+export const deleteCategoryHandler = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+    const result = await dashboardService.removeCategory(categoryId);
+
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("menu-updated");
+    }
+
+    return res.json(result);
+  } catch (error) {
+    console.error("💥 Eroare deleteCategoryHandler:", error);
+    
+    // Check for foreign key violation (e.g. products still exist in it)
+    if (error.code === "23503") {
+      return res.status(400).json({
+        error: "Nu poți șterge o categorie care conține produse! Șterge produsele mai întâi.",
+      });
+    }
+    return res.status(resolveStatus(error)).json({ error: error.message });
+  }
+};
 export const addProductHandler = async (req, res) => {
   try {
     const { category_id, name, price, description } = req.body;

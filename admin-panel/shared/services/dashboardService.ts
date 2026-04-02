@@ -109,5 +109,16 @@ export const dashboardService = {
        throw new Error(error.error || "Nu s-a putut șterge produsul");
     }
     return res.json();
+  },
+
+  deleteCategory: async (id: string) => {
+    const res = await fetchWithAuth(`${API_BASE_URL}/dashboard/categories/${id}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) {
+       const error = await res.json().catch(() => ({}));
+       throw new Error(error.error || "Nu s-a putut șterge categoria");
+    }
+    return res.json();
   }
 };

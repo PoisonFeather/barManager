@@ -7,11 +7,12 @@ import {
   rejectTableHandler,
   editProductHandler,
   deleteProductHandler,
+  deleteCategoryHandler,
   addProductHandler,
   mergeTablesHandler,
 } from "../controllers/dashboard.controller.js";
-//console.log(typeof approveTableHandler);
 import { validateToggleProductPayload } from "../middleware/validation.js";
+import { checkProductOwnership, checkCategoryOwnership, checkTableOwnership } from "../middleware/authorization.js";
 
 const router = Router();
 router.use(verifyToken);
@@ -20,21 +21,23 @@ router.use(verifyToken);
 // Altfel, URL-ul tău ar fi fost: /dashboard/dashboard/summary/...
 router.get("/summary/:barId", dashboardSummaryHandler);
 
-// 2. ADĂUGĂM RUTELE POST (Aici era 404-ul!)
-router.post("/approve-table", approveTableHandler);
-router.post("/reject-table", rejectTableHandler);
+// 2. ADĂUGĂM RUTELE POST (Tabele)
+router.post("/approve-table", checkTableOwnership, approveTableHandler);
+router.post("/reject-table", checkTableOwnership, rejectTableHandler);
 
 // 3. Ruta pentru stoc
 router.patch(
   "/products/:productId/toggle",
+  checkProductOwnership,
   validateToggleProductPayload,
   toggleProductAvailabilityHandler
 );
 
-router.put("/products/:productId", editProductHandler);
-router.delete("/products/:productId", deleteProductHandler);
-router.post("/products", addProductHandler);
-router.post("/merge-tables", mergeTablesHandler);
+router.put("/products/:productId", checkProductOwnership, editProductHandler);
+router.delete("/products/:productId", checkProductOwnership, deleteProductHandler);
+router.delete("/categories/:categoryId", checkCategoryOwnership, deleteCategoryHandler);
+router.post("/products", checkCategoryOwnership, addProductHandler);
+router.post("/merge-tables", checkTableOwnership, mergeTablesHandler);
 
 router.use((err, req, res, next) => {
   console.error(err.stack);

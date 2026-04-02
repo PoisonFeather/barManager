@@ -23,6 +23,13 @@ export async function getMenuHandler(req, res) {
 
 export async function createCategoryHandler(req, res) {
   try {
+    // 🔒 Security: Forțăm ca bar_id-ul din payload să fie fix bar-ul user-ului logat (previne IDOR)
+    req.body.bar_id = req.user.barId;
+    
+    if (!req.body.name || !req.body.bar_id) {
+        return res.status(400).json({ error: "Numele categoriei și bar_id sunt obligatorii." });
+    }
+
     const created = await createCategory(req.body);
     return res.json(created);
   } catch (error) {

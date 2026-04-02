@@ -83,6 +83,10 @@ export async function deleteProduct(productId) {
   await pool.query("DELETE FROM products WHERE id = $1", [productId]);
 }
 
+export async function deleteCategory(categoryId) {
+  await pool.query("DELETE FROM categories WHERE id = $1", [categoryId]);
+}
+
 export async function addProductToCategory(
   categoryId,
   { name, price, description }

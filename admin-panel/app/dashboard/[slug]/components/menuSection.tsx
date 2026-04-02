@@ -70,14 +70,37 @@ export function MenuSection({ categories, refreshData, barId }: MenuEditorProps)
     }
   };
 
+  const handleDeleteCategory = async (categoryId: string) => {
+    if (!confirm("⚠️ Ești sigur că vrei să ștergi această categorie? O poți șterge doar dacă este goală (șterge mai întâi produsele din ea).")) return;
+
+    setIsLoading(true);
+    try {
+      await dashboardService.deleteCategory(categoryId);
+      refreshData();
+    } catch (err: any) {
+      alert(err.message || "Eroare de conexiune cu serverul.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* LISTA DE CATEGORII ȘI PRODUSE */}
       {categories?.map((cat: any) => (
         <div key={cat.id} className="bg-white dark:bg-zinc-900 rounded-3xl p-6 shadow-sm border border-zinc-200 dark:border-white/5">
-          <h2 className="text-xl font-black uppercase tracking-widest text-zinc-400 mb-6 border-b border-zinc-200 dark:border-zinc-800 pb-4">
-            {cat.name}
-          </h2>
+          <div className="flex justify-between items-center mb-6 border-b border-zinc-200 dark:border-zinc-800 pb-4">
+            <h2 className="text-xl font-black uppercase tracking-widest text-zinc-400">
+              {cat.name}
+            </h2>
+            <button 
+              onClick={() => handleDeleteCategory(cat.id)}
+              className="text-red-500 hover:text-red-600 bg-red-500/10 hover:bg-red-500/20 p-2 rounded-xl transition-colors text-xs font-bold"
+              title="Șterge categoria"
+            >
+              🗑️
+            </button>
+          </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {cat.products?.map((prod: any) => (
