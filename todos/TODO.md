@@ -7,13 +7,13 @@ Obiectiv: Nimeni nu intră în Dashboard fără bilet de voie.
 [ ] Validare token cu atuh (daca este un token vechi apare forbiden (cum implementez asta fara sa fut restul))
 [x] Finalizare Login UI: Adăugat trim().toLowerCase() pe username și gestionarea stărilor de loading/error.
 [ ] Nu se updateaza toatul la masa parinte
-[ ] Backend isAuth Middleware:
+[x] Backend isAuth Middleware:
 
-[ ] Extragere token din header-ul Authorization: Bearer <token>.
+[x] Extragere token din header-ul Authorization: Bearer <token>.
 
-[ ] Validare JWT și atașare req.user = decoded (care să conțină barId și userId).
+[x] Validare JWT și atașare req.user = decoded (care să conțină barId și userId).
 
-[ ] Protejarea Rutelor (Backend): Aplicarea middleware-ului pe toate rutele de mutare date (POST, PUT, PATCH, DELETE).
+[x] Protejarea Rutelor (Backend): Aplicarea middleware-ului pe toate rutele de mutare date (POST, PUT, PATCH, DELETE).
 
 [ ] Izolare Date (Multitenancy): Modificarea query-urilor SQL în Repository pentru a include mereu WHERE bar_id = req.user.barId.
 
@@ -49,9 +49,9 @@ Obiectiv: Experiență fluidă pentru barmani și clienți.
 🎨 Faza 4: UX & Polish (Interfața Admin)
 Obiectiv: O aplicație care se simte profesională.
 
-[ ] Auth Interceptor: Crearea unui wrapper peste fetch care injectează automat token-ul din localStorage în headere.
+[x] Auth Interceptor: Crearea unui wrapper peste fetch care injectează automat token-ul din localStorage în headere.
 
-[ ] Protected Routes (Next.js): Logică de redirect la /login dacă un utilizator neautorizat încearcă să acceseze /dashboard.
+[x] Protected Routes (Next.js): Logică de redirect la /login dacă un utilizator neautorizat încearcă să acceseze /dashboard.
 
 [ ] Sistem de Toast-uri: Notificări vizuale pentru acțiuni reușite ("Produs salvat!") sau eșecuri.
 

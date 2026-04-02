@@ -4,7 +4,7 @@ Below is a breakdown of the security vulnerabilities and risks found in the code
 
 ## 🔴 Critical Risk
 
-- [ ] **Missing Authentication Middleware (Broken Access Control)**
+- [x] **Missing Authentication Middleware (Broken Access Control)**
   - **Issue**: Although `auth.service.js` generates a valid JWT token on login, the application never actually validates this token on incoming requests. All endpoints across `dashboard.routes.js`, `orders.routes.js`, `menu.routes.js`, and `requests.routes.js` are unprotected.
   - **Impact**: Anyone with basic knowledge of the API can call administrative endpoints directly to create products, answer requests, merge tables, close tables, or edit items without logging in.
   - **Fix**: Create a JWT verification middleware and apply it globally in `app.js` (for private routes) or per-route for `/dashboard`, `/orders`, etc.
@@ -19,7 +19,7 @@ Below is a breakdown of the security vulnerabilities and risks found in the code
   - **Impact**: If the `.env` file happens to be missing or misconfigured in production, the application will silently fall back to a hardcoded string. An attacker could forge valid JWT tokens and impersonate any user.
   - **Fix**: Remove the fallback. If `process.env.JWT_SECRET` is missing, the application should throw a fatal error on boot.
 
-- [ ] **Sensitive Data Leakage in Logs**
+- [x] **Sensitive Data Leakage in Logs**
   - **Issue**: Inside `auth.service.js` (line 37), the code logs `Token generat: ${token}. JWT_SECRET folosit: ${JWT_SECRET}`.
   - **Impact**: The most critical configuration string and user session tokens are printed in clear text to standard output. If server logs are consumed by third-party services (e.g. Datadog, CloudWatch), this is an extreme security breach.
   - **Fix**: Remove the console.log line immediately.
