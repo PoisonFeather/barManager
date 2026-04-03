@@ -135,7 +135,8 @@ export async function serveOrderItemHandler(req, res) {
 export async function closeTableHandler(req, res) {
   try {
     const { tableId } = req.params;
-    const response = await closeTable(tableId);
+    const { paymentMethod } = req.body; // cash or card
+    const response = await closeTable(tableId, paymentMethod);
     return res.json(response);
   } catch (error) {
     return res.status(resolveStatus(error)).json({ error: error.message });

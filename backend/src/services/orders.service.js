@@ -61,7 +61,7 @@ export async function serveOrderItem(itemId) {
   return { success: true };
 }
 
-export async function closeTable(tableId) {
-  await closeTableOrders(tableId);
+export async function closeTable(tableId, paymentMethod = 'cash') {
+  await closeTableOrders(tableId, paymentMethod);
   return { success: true };
 }

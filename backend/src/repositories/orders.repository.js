@@ -90,11 +90,11 @@ export async function markOrderItemServed(itemId) {
   ]);
 }
 
-export async function closeTableOrders(tableId) {
-  // 1. Închidem comenzile (marcate ca plătite)
+export async function closeTableOrders(tableId, paymentMethod = 'cash') {
+  // 1. Închidem comenzile (marcate ca plătite) și salvăm metoda de plată
   await pool.query(
-    "UPDATE orders SET is_paid = TRUE WHERE table_id = $1 AND is_paid = FALSE",
-    [tableId]
+    "UPDATE orders SET is_paid = TRUE, payment_method = $2 WHERE table_id = $1 AND is_paid = FALSE",
+    [tableId, paymentMethod]
   );
 
   // 2. Resetăm masa principală (Părintele) și ștergem ora de pornire a sesiunii
