@@ -8,6 +8,14 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
+        source: '/socket.io/:path*',
+        destination: 'http://localhost:3001/socket.io/:path*',
+      },
+      {
+        source: '/api/socket',
+        destination: 'http://localhost:3001/socket.io/',
+      },
+      {
         source: '/api/:path*',
         destination: 'http://localhost:3001/:path*',
       },

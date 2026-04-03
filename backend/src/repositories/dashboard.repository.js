@@ -99,17 +99,20 @@ export async function addProductToCategory(
   return result.rows[0];
 }
 
-export async function approveTable_db(tableId, token) {
-  //A. marcam masa ca fiind deschisa si ii dam token-ul de sesiune primit ca si parametru din service
-  await pool.query(
-    "UPDATE tables SET status = 'open', current_session_token = $1 WHERE id = $2",
-    [token, tableId]
+export async function approveTable_db(tableId, fallbackToken) {
+  // A. marcam masa ca fiind deschisa si setăm token-ul DAA doar dacă nu a fost deja pre-alocat
+  const res = await pool.query(
+    "UPDATE tables SET status = 'open', current_session_token = COALESCE(current_session_token, $1), session_started_at = NOW() WHERE id = $2 RETURNING current_session_token",
+    [fallbackToken, tableId]
   );
+  const actualToken = res.rows[0].current_session_token;
+
   // B. Toate produsele comandate de client "trec" de la pending la confirmed
   await pool.query(
     "UPDATE orders SET status = 'confirmed' WHERE table_id = $1 AND status = 'pending_approval'",
     [tableId]
   );
+  return actualToken;
 }
 
 export async function rejectTable_db(tableId) {

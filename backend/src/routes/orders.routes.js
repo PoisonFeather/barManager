@@ -7,6 +7,7 @@ import {
   serveOrderItemHandler,
   tableHistoryHandler,
   updateOrderStatusHandler,
+  unlockTableHandler,
 } from "../controllers/orders.controller.js";
 import { validateCreateOrderPayload } from "../middleware/validation.js";
 
@@ -15,6 +16,7 @@ const router = Router();
 // Public route for customers
 router.post("/orders", validateCreateOrderPayload, createOrderHandler);
 router.get("/table-history/:tableId", tableHistoryHandler);
+router.patch("/tables/:tableId/unlock", unlockTableHandler);
 
 // Protected routes for admins
 router.get("/orders/:barId", verifyToken, listActiveOrdersHandler);

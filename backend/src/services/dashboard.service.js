@@ -18,17 +18,16 @@ export async function getDashboardSummary(barId) {
   return getDashboardSummaryByBar(barId);
 }
 
-// 2. APROBARE (Deschide masa și confirmă comanda)
 export async function approveTable(tableId) {
-  const newToken = uuidv4();
-  console.log("Generated new session token for table approval:", newToken);
-  //Marcam masa ca fiind deschisa si ii asociem tokenul generat
+  const fallbackToken = uuidv4();
+  let actualToken = fallbackToken;
   try {
-    approveTable_db(tableId, newToken);
+    actualToken = await approveTable_db(tableId, fallbackToken);
+    console.log("Session token for table approval:", actualToken);
   } catch (error) {
     console.log("Error approving table Service:", error);
   }
-  return { success: true, token: newToken };
+  return { success: true, token: actualToken };
 }
 
 // 3. RESPINGERE (Șterge comenzile "fake")
