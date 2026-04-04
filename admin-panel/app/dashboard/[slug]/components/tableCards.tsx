@@ -167,7 +167,10 @@ export function TableCard({
 
       {/* BUTON ÎNCHIDERE NOTĂ */}
       <button
-        onClick={() => onClose(group.table_id)}
+        onClick={() => {
+          const billReq = group.active_requests?.find((r: any) => r.type === "bill");
+          onClose(group.table_id, billReq?.payment_method);
+        }}
         disabled={hasOrders || isPendingApproval}
         className={`w-full p-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all 
           ${

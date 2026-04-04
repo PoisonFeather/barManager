@@ -65,8 +65,17 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
   // Handlere normale
   const handleComplete = async (id: string) => (await dashboardService.completeRequest(id)) && refresh();
   const handleServe = async (id: string) => (await dashboardService.serveItem(id)) && refresh();
-  const handleClose = async (id: string) => {
-    const payment = prompt("Închizi masa? Scrie metoda de plată: 'cash' sau 'card'", "cash");
+  const handleClose = async (id: string, preselectedPayment?: string) => {
+    let payment: string | null | undefined = preselectedPayment;
+
+    if (payment) {
+      if (!confirm(`Închizi masa? Clientul a cerut deja nota: ${payment.toUpperCase()}.`)) {
+        return;
+      }
+    } else {
+      payment = prompt("Închizi masa? Scrie metoda de plată: 'cash' sau 'card'", "cash");
+    }
+
     if (payment === "cash" || payment === "card") {
       if (await dashboardService.closeTable(id, payment)) refresh();
     } else if (payment !== null) {
