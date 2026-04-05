@@ -55,7 +55,7 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
   const { socket } = useSocket(refreshHistory);
 
   useEffect(() => {
-    console.log("[DEBUG] page.tsx useEffect running. isSessionLocked:", isSessionLocked, "socket:", !!socket);
+    //console.log("[DEBUG] page.tsx useEffect running. isSessionLocked:", isSessionLocked, "socket:", !!socket);
     if (!socket || !currentTable?.id) return;
 
     const approvalEvent = `table-approved-${currentTable.id}`;
@@ -70,7 +70,7 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
 
     // 2. 📢 Ascultăm când ALTCINEVA de la masă pune o comandă
     socket.on(updateEvent, (data) => {
-      console.log("update socket for new order at the same table!", data);
+      //console.log("update socket for new order at the same table!", data);
       refreshHistory(); //  Asta trage datele noi și updatează istoric/total pe laptop!
     });
 
@@ -129,7 +129,7 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
           // Îl punem în buzunarul browserului
           localStorage.setItem(`session_${currentTable.id}`, data.sessionToken);
           setIsSessionLocked(false); // Token valid, scoatem lacătul
-          console.log("🔐 Sesiune securizată: ", data.sessionToken);
+          //console.log("🔐 Sesiune securizată: ", data.sessionToken);
         }
       } catch (err) {
         console.error("❌ Eroare la securizarea sesiunii:", err);

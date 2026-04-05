@@ -6,7 +6,7 @@ export const dashboardService = {
   getSummary: async (barId: string) => {
     try {
       const res = await fetchWithAuth(`${API_BASE_URL}/dashboard/summary/${barId}`);
-      console.log("Dashboard Summary Response:", res);
+      //console.log("Dashboard Summary Response:", res);
       if (!res.ok) throw new Error("Eroare la server");
       return await res.json();
     } catch (error) {
@@ -125,6 +125,19 @@ export const dashboardService = {
     if (!res.ok) {
        const error = await res.json().catch(() => ({}));
        throw new Error(error.error || "Nu s-a putut șterge categoria");
+    }
+    return res.json();
+  },
+
+
+  checkPayment: async (tableId: string) => {
+  
+    const res = await fetchWithAuth(`${API_BASE_URL}/tables/${tableId}/check-payment`, {
+      method: "GET",
+    });
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.error || "Eroare la verificarea plății");
     }
     return res.json();
   }

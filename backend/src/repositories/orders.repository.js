@@ -90,7 +90,8 @@ export async function markOrderItemServed(itemId) {
   ]);
 }
 
-export async function closeTableOrders(tableId, paymentMethod = 'cash') {
+export async function closeTableOrders(tableId, paymentMethod = "cash") {
+  //console.log(paymentMethod);
   // 1. Închidem comenzile (marcate ca plătite) și salvăm metoda de plată
   await pool.query(
     "UPDATE orders SET is_paid = TRUE, payment_method = $2 WHERE table_id = $1 AND is_paid = FALSE",
@@ -112,9 +113,10 @@ export async function closeTableOrders(tableId, paymentMethod = 'cash') {
 
 export async function unlockTable_db(tableId) {
   // Resetăm cronometrul cu timpul curent pentru a da un nou "boost" de 15 minute
-  await pool.query("UPDATE tables SET session_started_at = NOW() WHERE id = $1", [
-    tableId,
-  ]);
+  await pool.query(
+    "UPDATE tables SET session_started_at = NOW() WHERE id = $1",
+    [tableId]
+  );
 }
 
 export async function insertRequest({

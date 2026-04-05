@@ -50,14 +50,14 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
     useSensor(MouseSensor, {
       // Pentru mouse pe laptop: trebuie să tragi de masa măcar 10px ca să se activeze
       activationConstraint: {
-        distance: 10,
+        distance: 5,
       },
     }),
     useSensor(TouchSensor, {
       // Pentru tablete/telefoane: trebuie să ții apăsat 250ms ca să se prindă masa
       activationConstraint: {
-        delay: 250,
-        tolerance: 5, // Îi dă voie degetului să tremure 5px fără să anuleze acțiunea
+        delay: 200,
+        tolerance: 1, // Îi dă voie degetului să tremure 5px fără să anuleze acțiunea
       },
     })
   );
@@ -65,19 +65,47 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
   // Handlere normale
   const handleComplete = async (id: string) => (await dashboardService.completeRequest(id)) && refresh();
   const handleServe = async (id: string) => (await dashboardService.serveItem(id)) && refresh();
-  const handleClose = async (id: string, preselectedPayment?: string) => {
-    let payment: string | null | undefined = preselectedPayment;
-
+  const handleClose = async (id: string, paymentMethod?: string) => {
+    console.log("Table ID:", id); // Log pentru ID-ul mesei
+    console.log("Payment Method:", paymentMethod); // Log pentru metoda de plată primită
+  
+    // Găsește grupul mesei curente
+    const tableGroup = tableGroups.find(g => g.table_id === id);
+    console.log("Table Group:", tableGroup); // Log pentru grupul mesei
+  
+    // Combină cererile active și cele anterioare (dacă există)
+    const allRequests = [
+      ...(tableGroup?.active_requests || []), // Cererile active
+      ...(tableGroup?.requests || []) // Cererile anterioare
+    ];
+    console.log("All Requests:", allRequests); // Log pentru toate cererile combinate
+  
+    // Găsește ultima cerere de tip "bill" (nota de plată)
+    const lastBillRequest = allRequests.find((r: any) => r.type === "bill");
+    console.log("Last Bill Request:", lastBillRequest); // Log pentru ultima cerere de tip "bill"
+  
+    let payment = paymentMethod || lastBillRequest?.payment_method;
+    console.log("Final Payment Method:", payment); // Log pentru metoda de plată finală
+  
     if (payment) {
-      if (!confirm(`Închizi masa? Clientul a cerut deja nota: ${payment.toUpperCase()}.`)) {
+      const confirmClose = confirm(
+        `Închizi masa? Clientul a cerut deja nota: ${payment.toUpperCase()}.`
+      );
+      if (!confirmClose) {
         return;
       }
     } else {
-      payment = prompt("Închizi masa? Scrie metoda de plată: 'cash' sau 'card'", "cash");
+      payment = prompt(
+        "Închizi masa? Scrie metoda de plată: 'cash' sau 'card'",
+        "cash"
+      )?.toLowerCase().trim();
     }
-
+  
     if (payment === "cash" || payment === "card") {
-      if (await dashboardService.closeTable(id, payment)) refresh();
+      const success = await dashboardService.closeTable(id, payment);
+      if (success) {
+        refresh();
+      }
     } else if (payment !== null) {
       alert("Metodă invalidă. Tastează 'cash' sau 'card'.");
     }
@@ -145,9 +173,10 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
                         group={group} 
                         onComplete={handleComplete} 
                         onServe={handleServe} 
-                        onClose={handleClose} 
+                        onClose={() => handleClose(group.table_id, group.requests?.find((r: any) => r.type === "bill")?.payment_method)}
                         onApprove={handleApprove}
                         onReject={handleReject}
+                        
                       />
                     ))
                   )}
