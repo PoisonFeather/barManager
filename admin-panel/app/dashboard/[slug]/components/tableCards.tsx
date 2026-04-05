@@ -50,6 +50,7 @@ export function TableCard({
       {...listeners}
       {...attributes}
       style={dragStyle}
+      id={`table-card-${group.table_id}`}
       className={`relative cursor-grab active:cursor-grabbing bg-white dark:bg-zinc-900 rounded-[2.5rem] p-7 border-t-8 shadow-2xl flex flex-col transition-all duration-300 ${getBorderColor()}`}
     >
       <div className="flex justify-between items-start mb-6">

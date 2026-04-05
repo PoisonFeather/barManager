@@ -1,5 +1,8 @@
 Nu se updateaza comenzile intre clienti la mese combinate
 Nu se valideaza daca masa e deschisa daca a fost combinata cu una inainte (poti pune comenzi daca barmanul trage masa inainte sa ii dea accept)
+
+TODO!!!!: bug la refresh pt table card in admin-dashboard ( se da refresh pentru a nu mai arata confirmarea de request dar ramane blocata masa vizual )
+
 🟢 Faza 1: Autentificare & Securitate (Prioritate Maximă)
 Obiectiv: Nimeni nu intră în Dashboard fără bilet de voie.
 

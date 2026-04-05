@@ -66,47 +66,49 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
   const handleComplete = async (id: string) => (await dashboardService.completeRequest(id)) && refresh();
   const handleServe = async (id: string) => (await dashboardService.serveItem(id)) && refresh();
   const handleClose = async (id: string, paymentMethod?: string) => {
-    console.log("Table ID:", id); // Log pentru ID-ul mesei
-    console.log("Payment Method:", paymentMethod); // Log pentru metoda de plată primită
+    console.log("Table ID:", id);
+    console.log("Payment Method:", paymentMethod);
   
-    // Găsește grupul mesei curente
     const tableGroup = tableGroups.find(g => g.table_id === id);
-    console.log("Table Group:", tableGroup); // Log pentru grupul mesei
-  
-    // Combină cererile active și cele anterioare (dacă există)
     const allRequests = [
-      ...(tableGroup?.active_requests || []), // Cererile active
-      ...(tableGroup?.requests || []) // Cererile anterioare
+      ...(tableGroup?.active_requests || []),
+      ...(tableGroup?.requests || [])
     ];
-    console.log("All Requests:", allRequests); // Log pentru toate cererile combinate
   
-    // Găsește ultima cerere de tip "bill" (nota de plată)
     const lastBillRequest = allRequests.find((r: any) => r.type === "bill");
-    console.log("Last Bill Request:", lastBillRequest); // Log pentru ultima cerere de tip "bill"
-  
     let payment = paymentMethod || lastBillRequest?.payment_method;
-    console.log("Final Payment Method:", payment); // Log pentru metoda de plată finală
   
-    if (payment) {
-      const confirmClose = confirm(
-        `Închizi masa? Clientul a cerut deja nota: ${payment.toUpperCase()}.`
-      );
-      if (!confirmClose) {
-        return;
-      }
-    } else {
-      payment = prompt(
+    // Cerem metoda manual dacă nu a fost detectată din cereri
+    if (!payment) {
+      const userInput = prompt(
         "Închizi masa? Scrie metoda de plată: 'cash' sau 'card'",
         "cash"
-      )?.toLowerCase().trim();
+      );
+      if (userInput === null) return; // Userul a dat Cancel
+      payment = userInput.toLowerCase().trim();
     }
-  
+
+    // Curățare finală a stringului ca să fim siguri
     if (payment === "cash" || payment === "card") {
-      const success = await dashboardService.closeTable(id, payment);
-      if (success) {
-        refresh();
+      
+      // OPTIMISTIC UPDATE: Închidem instant masa din UI pentru a dispărea de pe ecran fără delay
+      // Asta șterge vizual masa până când vine refresh-ul real de la server
+      const currentTableCard = document.getElementById(`table-card-${id}`);
+      if (currentTableCard) {
+        currentTableCard.style.display = "none";
       }
-    } else if (payment !== null) {
+
+      // Acum trimitem requestul către backend
+      const success = await dashboardService.closeTable(id, payment);
+      
+      if (success) {
+        refresh(); // Refresh final de la DB
+      } else {
+        // Dacă a picat serverul, arătăm la loc masa
+        if (currentTableCard) currentTableCard.style.display = "block";
+        alert("Eroare la închiderea mesei. Încearcă din nou.");
+      }
+    } else {
       alert("Metodă invalidă. Tastează 'cash' sau 'card'.");
     }
   };
