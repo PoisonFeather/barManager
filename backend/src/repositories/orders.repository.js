@@ -109,6 +109,9 @@ export async function closeTableOrders(tableId, paymentMethod = "cash") {
     "UPDATE tables SET merged_into_id = NULL WHERE merged_into_id = $1",
     [tableId]
   );
+
+  //4. Ștergem cererile active (dacă există) pentru această masă
+  await pool.query("DELETE FROM requests WHERE table_id = $1", [tableId]);
 }
 
 export async function unlockTable_db(tableId) {

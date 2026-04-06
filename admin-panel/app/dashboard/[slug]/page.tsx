@@ -65,6 +65,9 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
   // Handlere normale
   const handleComplete = async (id: string) => (await dashboardService.completeRequest(id)) && refresh();
   const handleServe = async (id: string) => (await dashboardService.serveItem(id)) && refresh();
+
+
+
   const handleClose = async (id: string, paymentMethod?: string) => {
     console.log("Table ID:", id);
     console.log("Payment Method:", paymentMethod);
@@ -94,13 +97,9 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
       // OPTIMISTIC UPDATE: Închidem instant masa din UI pentru a dispărea de pe ecran fără delay
       // Asta șterge vizual masa până când vine refresh-ul real de la server
       const currentTableCard = document.getElementById(`table-card-${id}`);
-      if (currentTableCard) {
-        currentTableCard.style.display = "none";
-      }
-
+      
       // Acum trimitem requestul către backend
       const success = await dashboardService.closeTable(id, payment);
-      
       if (success) {
         refresh(); // Refresh final de la DB
       } else {

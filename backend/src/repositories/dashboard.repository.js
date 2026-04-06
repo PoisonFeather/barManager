@@ -41,7 +41,7 @@ export async function getDashboardSummaryByBar(barId) {
       COALESCE((SELECT json_agg(child.table_number) FROM tables child WHERE child.merged_into_id = t.id), '[]'::json) as merged_children
 
     FROM tables t
-    LEFT JOIN orders o ON o.table_id = t.id AND o.is_paid = FALSE
+    LEFT JOIN orders o ON (o.table_id = t.id OR o.table_id IN (SELECT id FROM tables WHERE merged_into_id = t.id)) AND o.is_paid = FALSE
     LEFT JOIN order_items oi ON oi.order_id = o.id
     LEFT JOIN products p ON oi.product_id = p.id
     
