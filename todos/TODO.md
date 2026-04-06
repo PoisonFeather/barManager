@@ -1,6 +1,8 @@
 Nu se updateaza comenzile intre clienti la mese combinate
 Nu se valideaza daca masa e deschisa daca a fost combinata cu una inainte (poti pune comenzi daca barmanul trage masa inainte sa ii dea accept)
 
+Reservations - intrii pe barmanager.ro/alba-iulia/ cauti framm's si dai rezervare de la 8 pentru 10 persoane, pui un mail, barul o confirma, primesti confirmarea pe mail/telefon -> link cu meniul ca sa il trimiti la grup sau asa !!
+
 🟢 Faza 1: Autentificare & Securitate (Prioritate Maximă)
 Obiectiv: Nimeni nu intră în Dashboard fără bilet de voie.
 
