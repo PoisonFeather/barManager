@@ -2,6 +2,7 @@ import {
   changeOrderStatus,
   closeTable,
   createOrder,
+  getMyShare,
   getTableHistory,
   listActiveOrders,
   serveOrderItem,
@@ -21,7 +22,7 @@ function resolveStatus(error, fallback = 500) {
 
 export async function createOrderHandler(req, res) {
   try {
-    const { table_id, bar_id, session_token, items, total_amount } = req.body;
+    const { table_id, bar_id, session_token, personal_token, items, total_amount } = req.body;
 
     // 🛡️ 1. Validarea Sesiunii (Rămâne în controller, e treaba de "pază")
     const tableResult = await db.query(
@@ -65,7 +66,9 @@ export async function createOrderHandler(req, res) {
       table_id,
       items,
       total_amount,
-      status: orderStatus, // Îi dăm statusul calculat
+      status: orderStatus,
+      session_token,
+      personal_token,   // 🧍 Token unic per browser — pentru "Contribuția Ta"
     });
     //console.log(result);
     // 3. Socket-ul rămâne aici
@@ -168,6 +171,18 @@ export async function unlockTableHandler(req, res) {
     req.app.get("io").emit(`table-unlocked-${tableId}`, { message: "Masa a fost deblocată!" });
 
     return res.json({ success: true, message: "Timpul mesei a fost prelungit!" });
+  } catch (error) {
+    return res.status(resolveStatus(error)).json({ error: error.message });
+  }
+}
+
+export async function getPersonalHistoryHandler(req, res) {
+  try {
+    const { tableId } = req.params;
+    const { personal_token } = req.query;
+    if (!personal_token) return res.status(400).json({ error: "personal_token lipsă" });
+    const items = await getMyShare(tableId, personal_token);
+    return res.json(items);
   } catch (error) {
     return res.status(resolveStatus(error)).json({ error: error.message });
   }

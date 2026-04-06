@@ -3,6 +3,7 @@ import { verifyToken } from "../middleware/auth.js";
 import {
   closeTableHandler,
   createOrderHandler,
+  getPersonalHistoryHandler,
   listActiveOrdersHandler,
   serveOrderItemHandler,
   tableHistoryHandler,
@@ -16,6 +17,7 @@ const router = Router();
 // Public route for customers
 router.post("/orders", validateCreateOrderPayload, createOrderHandler);
 router.get("/table-history/:tableId", tableHistoryHandler);
+router.get("/tables/:tableId/my-share", getPersonalHistoryHandler);
 router.patch("/tables/:tableId/unlock", unlockTableHandler);
 
 // Protected routes for admins

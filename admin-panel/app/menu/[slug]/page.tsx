@@ -29,6 +29,7 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const [orderHistory, setOrderHistory] = useState<any[]>([]);
+  const [myShare, setMyShare] = useState<any[]>([]);
   const [isSessionLocked, setIsSessionLocked] = useState(false);
   const [showUnlockRequest, setShowUnlockRequest] = useState(false);
 
@@ -48,8 +49,12 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
   // 5. Sincronizare Istoric
   const refreshHistory = async () => {
     if (currentTable?.id) {
-      const history = await orderService.fetchHistory(currentTable.id);
+      const [history, share] = await Promise.all([
+        orderService.fetchHistory(currentTable.id),
+        orderService.fetchMyShare(currentTable.id),
+      ]);
       if (Array.isArray(history)) setOrderHistory(history);
+      if (Array.isArray(share)) setMyShare(share);
     }
   };
   const { socket } = useSocket(refreshHistory);
@@ -279,6 +284,7 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
           <CartModal
             cart={cart}
             history={orderHistory}
+            myShare={myShare}
             onUpdate={updateQuantity}
             onSend={handleSendOrder}
             onClose={() => setIsCartOpen(false)}

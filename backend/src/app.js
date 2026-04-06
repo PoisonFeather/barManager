@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import rateLimit from "express-rate-limit"; // 👈 Importul
+import rateLimit from "express-rate-limit";
 
 import menuRoutes from "./routes/menu.routes.js";
 import onboardingRoutes from "./routes/onboarding.routes.js";
@@ -15,37 +15,36 @@ import authRoutes from "./routes/auth.routes.js";
  * This module owns HTTP/middleware composition only.
  */
 
-// 1. Definim limitatoarele SUS (în afara funcției e ok, că nu depind de `app`)
+// Limiter global (fallback pentru toate rutele)
 const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minute
-  max: 150, // Maxim 150 request-uri per IP
+  windowMs: 15 * 60 * 1000,
+  max: 300,
   message: {
-    error:
-      "Prea multe cereri de la acest IP. Te rugăm să încerci din nou peste 15 minute.",
+    error: "Prea multe cereri de la acest IP. Te rugăm să încerci din nou.",
   },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
-// (Bonus) Limitator strict pentru Login/Înregistrare ca să nu-ți spargă parolele
+// Limiter strict DOAR pentru auth/onboarding (brute-force protection)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10, // Doar 10 încercări la 15 minute
+  max: 10,
   message: {
-    error:
-      "Prea multe încercări. Cont blocat temporar! Încearcă peste 15 minute.",
+    error: "Prea multe încercări. Cont blocat temporar! Încearcă peste 15 minute.",
   },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
 export function createApp() {
   const app = express();
 
-  // 2. AICI activăm trust proxy, DUPĂ ce `app` a fost creat!
   app.set("trust proxy", 1);
 
   app.use(
     cors({
-      origin: "*", // Când treci în producție, schimbă "*" cu domeniul tău real (ex: "https://barmanager.ro")
+      origin: "*",
       methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS", "PUT"],
       allowedHeaders: ["Content-Type", "Authorization"],
     })
@@ -53,21 +52,19 @@ export function createApp() {
 
   app.use(express.json());
 
-  // 3. AICI activăm limitatorul global pe TOATE rutele, înainte să definim rutele
+  // Limiter global ca baza
   app.use(globalLimiter);
 
-  // 4. (Opțional dar recomandat) Aplicăm limitatorul strict pe rutele sensibile
-  app.use("/auth", authLimiter);
-  app.use("/onboarding", authLimiter);
+  // Limiter strict EXPLICIT pe rutele de auth — montate cu prefix clar
+  app.use("/auth", authLimiter, authRoutes);
 
-  // 5. Domain route modules
+  // Rutele publice și de dashboard — montate simplu, fără authLimiter
   app.use("/dashboard", dashboardRoutes);
-  app.use(menuRoutes, authLimiter); // Protejăm rutele de meniu cu limitatorul strict, că sunt sensibile la abuz
-  app.use(onboardingRoutes, authLimiter); // Protejăm rutele de onboarding cu limitatorul strict, că sunt sensibile la abuz
-  app.use(ordersRoutes, authLimiter); // Protejăm rutele de comenzi cu limitatorul strict, că sunt sensibile la abuz
-  app.use(requestsRoutes, authLimiter); // Protejăm rutele de cereri cu limitatorul strict, că sunt sensibile la abuz
-  app.use(healthRoutes, authLimiter); // Protejăm rutele de health check cu limitatorul strict, că sunt sensibile la abuz
-  app.use("/auth", authRoutes, authLimiter); // Protejăm rutele de autentificare cu limitatorul strict, că sunt cele mai sensibile la abuz
+  app.use(onboardingRoutes);
+  app.use(menuRoutes);
+  app.use(ordersRoutes);
+  app.use(requestsRoutes);
+  app.use(healthRoutes);
 
   return app;
 }

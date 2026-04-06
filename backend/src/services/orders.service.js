@@ -1,6 +1,7 @@
 import {
   closeTableOrders,
   getActiveOrdersByBar,
+  getPersonalHistory,
   getUnpaidTableHistory,
   insertOrder,
   insertOrderItems,
@@ -12,7 +13,7 @@ import {
 } from "../repositories/orders.repository.js";
 
 export async function createOrder(payload) {
-  const { bar_id, table_id, items, total_amount, status } = payload; // am adăugat status
+  const { bar_id, table_id, items, total_amount, status, session_token, personal_token } = payload;
 
   if (!items || items.length === 0) {
     const error = new Error("Coșul e gol!");
@@ -21,12 +22,13 @@ export async function createOrder(payload) {
   }
 
   const orderId = await withTransaction(async (client) => {
-    // Atenție: insertOrder trebuie să primească și status-ul acum!
     const createdOrderId = await insertOrder(client, {
       bar_id,
       table_id,
       total_amount,
       status: status || "pending_approval",
+      session_token,
+      personal_token,
     });
 
     await insertOrderItems(client, createdOrderId, items);
@@ -54,6 +56,10 @@ export async function changeOrderStatus(orderId, status) {
 
 export async function getTableHistory(tableId) {
   return getUnpaidTableHistory(tableId);
+}
+
+export async function getMyShare(tableId, sessionToken) {
+  return getPersonalHistory(tableId, sessionToken);
 }
 
 export async function serveOrderItem(itemId) {

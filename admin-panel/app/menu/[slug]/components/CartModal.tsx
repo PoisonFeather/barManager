@@ -1,9 +1,10 @@
 // app/menu/[slug]/components/CartModal.tsx
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 interface Props {
   cart: any[];
   history: any[];
+  myShare: any[];
   onUpdate: (id: string, delta: number) => void;
   onSend: () => void;
   onClose: () => void;
@@ -12,10 +13,16 @@ interface Props {
   historyTotal: number;
 }
 
-export function CartModal({ cart, history, onUpdate, onSend, onClose, primaryColor, totalAmount, historyTotal }: Props) {
+export function CartModal({ cart, history, myShare, onUpdate, onSend, onClose, primaryColor, totalAmount, historyTotal }: Props) {
+  const myShareTotal = myShare.reduce((sum, o) => sum + (Number(o.price) * o.quantity), 0);
+  // Secțiunea "Contribuția Ta" apare DOAR dacă:
+  // 1. Avem produse personale (myShare non-gol)
+  // 2. Totalul personal diferă de totalul mesei (există alți oameni la masă)
+  const isSharedTable = myShare.length > 0 && Math.abs(myShareTotal - historyTotal) > 0.001;
+
   return (
     <div className="fixed inset-0 z-50 flex flex-col justify-end">
-      {/* Overlay cu blur */}
+      {/* Overlay */}
       <motion.div 
         initial={{ opacity: 0 }} 
         animate={{ opacity: 1 }} 
@@ -39,7 +46,7 @@ export function CartModal({ cart, history, onUpdate, onSend, onClose, primaryCol
             <button onClick={onClose} className="text-[10px] font-black uppercase text-zinc-400">Închide</button>
           </div>
 
-          {/* Produse noi în coș */}
+          {/* Produse noi în coș (neprimite încă) */}
           {cart.length > 0 && (
             <div className="space-y-3">
               <h3 className="text-zinc-400 text-[10px] font-black uppercase tracking-widest">De Comandat</h3>
@@ -59,10 +66,34 @@ export function CartModal({ cart, history, onUpdate, onSend, onClose, primaryCol
             </div>
           )}
 
-          {/* Istoric comenzi (deja servite) */}
+          {/* Contribuția personală — vizibil doar dacă ești la masă cu alții */}
+          {isSharedTable && myShare.length > 0 && (
+            <div className="pt-2">
+              <h3 className="text-[10px] font-black uppercase tracking-widest mb-3 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-indigo-500 inline-block" />
+                <span className="text-indigo-500 dark:text-indigo-400">Contribuția Ta</span>
+              </h3>
+              <div className="space-y-2 bg-indigo-50 dark:bg-indigo-950/30 p-5 rounded-3xl border border-indigo-100 dark:border-indigo-900/50">
+                {myShare.map((item, i) => (
+                  <div key={i} className="flex justify-between text-[11px] font-bold uppercase tracking-tight text-indigo-700 dark:text-indigo-300">
+                    <span>{item.quantity}x {item.name}</span>
+                    <span className="font-mono italic">{(item.quantity * item.price).toFixed(2)} RON</span>
+                  </div>
+                ))}
+                <div className="border-t border-indigo-200 dark:border-indigo-800 pt-2 mt-2 flex justify-between font-black text-sm text-indigo-700 dark:text-indigo-300">
+                  <span>Subtotal tău</span>
+                  <span>{myShareTotal.toFixed(2)} RON</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Istoricul întregii mese */}
           {history.length > 0 && (
             <div className="pt-4">
-              <h3 className="text-zinc-400 text-[10px] font-black uppercase tracking-widest mb-4 text-center">Comandate Anterior</h3>
+              <h3 className="text-zinc-400 text-[10px] font-black uppercase tracking-widest mb-4 text-center">
+                {isSharedTable ? "Total Masă" : "Comandate Anterior"}
+              </h3>
               <div className="space-y-2 bg-zinc-100 dark:bg-black/20 p-6 rounded-4xl border border-dashed border-zinc-200 dark:border-white/10">
                 {history.map((item, i) => (
                   <div key={i} className="flex justify-between text-[11px] font-bold uppercase tracking-tight text-zinc-500">

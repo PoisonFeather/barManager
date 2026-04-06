@@ -17,18 +17,20 @@ export async function withTransaction(work) {
 
 export async function insertOrder(
   client,
-  { bar_id, table_id, total_amount, status }
+  { bar_id, table_id, total_amount, status, session_token, personal_token }
 ) {
   const orderRes = await client.query(
-    `INSERT INTO orders (bar_id, table_id, total_amount, status) 
+    `INSERT INTO orders (bar_id, table_id, total_amount, status, session_token, personal_token) 
      VALUES (
        $1, 
        --  Redirecționăm comanda nouă direct pe masa Părinte (dacă există)
        COALESCE((SELECT merged_into_id FROM tables WHERE id = $2), $2), 
        $3, 
-       $4
+       $4,
+       $5,
+       $6
      ) RETURNING id`,
-    [bar_id, table_id, total_amount, status]
+    [bar_id, table_id, total_amount, status, session_token || null, personal_token || null]
   );
   return orderRes.rows[0].id;
 }
@@ -81,6 +83,24 @@ export async function getUnpaidTableHistory(tableId) {
     ORDER BY oi.id ASC;
   `;
   const result = await pool.query(query, [tableId]);
+  return result.rows;
+}
+
+export async function getPersonalHistory(tableId, personalToken) {
+  const query = `
+    SELECT oi.quantity, p.name, oi.price_at_time as price
+    FROM orders o
+    JOIN order_items oi ON oi.order_id = o.id
+    JOIN products p ON oi.product_id = p.id
+    WHERE o.table_id = COALESCE(
+      (SELECT merged_into_id FROM tables WHERE id = $1),
+      $1
+    )
+    AND o.personal_token = $2
+    AND o.is_paid = FALSE
+    ORDER BY oi.id ASC;
+  `;
+  const result = await pool.query(query, [tableId, personalToken]);
   return result.rows;
 }
 
