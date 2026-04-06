@@ -47,7 +47,7 @@ export function AnalyticsSection({ barId }: AnalyticsSectionProps) {
       <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-6 mb-10 border-b border-zinc-200 dark:border-zinc-800 pb-6">
         <div>
           <h1 className="text-3xl font-black uppercase tracking-tight text-zinc-900 dark:text-zinc-100 mb-2">
-            Rapoarte & Analytics 📈
+            Performanță & Analytics 📈
           </h1>
           <p className="text-sm font-bold text-zinc-500 uppercase tracking-widest">
             Aici vei găsi și alte informații de admin în viitor.
@@ -57,7 +57,7 @@ export function AnalyticsSection({ barId }: AnalyticsSectionProps) {
         {/* FILTRE PERIOADĂ */}
         <div className="flex bg-zinc-200 dark:bg-zinc-900 p-1 rounded-2xl w-full md:w-auto">
           {[
-            { id: "today", label: "Azi (Raport Z)" }, // Am schimbat label-ul pentru claritate
+            { id: "today", label: "Azi" }, // Am schimbat label-ul pentru claritate
             { id: "week", label: "Săptămâna" },
             { id: "month", label: "Luna" },
           ].map((tab) => (
