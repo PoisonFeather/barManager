@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, use, useMemo } from 'react';
+import { useEffect, useState, use, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { AnimatePresence } from 'framer-motion';
 
@@ -32,6 +32,9 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
   const [myShare, setMyShare] = useState<any[]>([]);
   const [isSessionLocked, setIsSessionLocked] = useState(false);
   const [showUnlockRequest, setShowUnlockRequest] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const navRef = useRef<HTMLDivElement>(null);
+  const activePillRef = useRef<HTMLButtonElement | null>(null);
 
   // 4. Identificare Masă (Memoizată pentru viteză)
   const currentTable = useMemo(() => {
@@ -110,6 +113,44 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
   useEffect(() => {
     if (currentTable?.id) refreshHistory();
   }, [currentTable]);
+
+  // IntersectionObserver — actualizează categoria activă la scroll
+  useEffect(() => {
+    if (!barData?.categories?.length) return;
+    const observers: IntersectionObserver[] = [];
+    const onIntersect = (catId: string) => (entries: IntersectionObserverEntry[]) => {
+      if (entries[0].isIntersecting) setActiveCategory(catId);
+    };
+    barData.categories.forEach((cat: any) => {
+      const el = document.getElementById(`cat-${cat.id}`);
+      if (!el) return;
+      const obs = new IntersectionObserver(onIntersect(cat.id), {
+        rootMargin: '-30% 0px -60% 0px',
+        threshold: 0,
+      });
+      obs.observe(el);
+      observers.push(obs);
+    });
+    // Setăm prima categorie ca activă implicit
+    if (!activeCategory && barData.categories[0]) {
+      setActiveCategory(barData.categories[0].id);
+    }
+    return () => observers.forEach(o => o.disconnect());
+  }, [barData?.categories]);
+
+  // Auto-scroll pila activă în viewport
+  useEffect(() => {
+    activePillRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }, [activeCategory]);
+
+  const scrollToCategory = useCallback((catId: string) => {
+    const el = document.getElementById(`cat-${catId}`);
+    if (!el) return;
+    const offset = 120; // header + nav bar height
+    const top = el.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top, behavior: 'smooth' });
+    setActiveCategory(catId);
+  }, []);
 
   // Securizare sesiune  - token generat de backend pentru a preveni accesul neautorizat la comenzi (în special dacă cineva încearcă să acceseze direct API-ul fără token)
   useEffect(() => {
@@ -259,10 +300,38 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
         </div>
       </div>
 
+      {/* CATEGORY NAV BAR */}
+      {barData.categories?.length > 1 && (
+        <div
+          ref={navRef}
+          className="sticky top-[69px] z-30 bg-white/90 dark:bg-black/90 backdrop-blur-xl border-b border-zinc-100 dark:border-white/5 px-4 py-3"
+        >
+          <div className="flex gap-2 overflow-x-auto no-scrollbar">
+            {barData.categories.map((cat: any) => {
+              const isActive = activeCategory === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  ref={isActive ? (el) => { activePillRef.current = el; } : null}
+                  onClick={() => scrollToCategory(cat.id)}
+                  className="shrink-0 px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-all duration-200 whitespace-nowrap"
+                  style={isActive
+                    ? { backgroundColor: barData.primary_color || '#18181b', color: '#000' }
+                    : { backgroundColor: 'transparent', color: 'inherit', border: '1px solid', borderColor: 'rgba(128,128,128,0.25)' }
+                  }
+                >
+                  {cat.name}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* LISTA PRODUSE */}
       <div className="p-4 space-y-10 mt-4">
         {barData.categories?.map((cat: any) => (
-          <div key={cat.id}>
+          <div key={cat.id} id={`cat-${cat.id}`}>
             <h2 className="text-zinc-400 dark:text-zinc-600 uppercase text-[10px] font-black tracking-[0.2em] mb-5 pl-2 border-l-2 border-zinc-300 dark:border-white/20">
               {cat.name}
             </h2>

@@ -31,16 +31,16 @@ const get = (flag) => {
 };
 
 const PDF_PATH = get("--pdf");
-const SLUG     = get("--slug");
+const SLUG = get("--slug");
 const USERNAME = get("--username");
 const PASSWORD = get("--password");
-const API_URL  = get("--api-url") || process.env.BAR_API_URL || "http://localhost:3001";
+const API_URL = get("--api-url") || process.env.BAR_API_URL || "http://localhost:3001";
 const PROVIDER = (get("--provider") || "claude").toLowerCase();
-const AI_KEY   = get("--ai-key")
-  || (PROVIDER === "gemini"  ? process.env.GEMINI_API_KEY
-    : PROVIDER === "claude"  ? process.env.ANTHROPIC_API_KEY
-    : PROVIDER === "openai"  ? process.env.OPENAI_API_KEY
-    :                          process.env.GROQ_API_KEY);
+const AI_KEY = get("--ai-key")
+  || (PROVIDER === "gemini" ? process.env.GEMINI_API_KEY
+    : PROVIDER === "claude" ? process.env.ANTHROPIC_API_KEY
+      : PROVIDER === "openai" ? process.env.OPENAI_API_KEY
+        : process.env.GROQ_API_KEY);
 
 if (!PDF_PATH || !SLUG || !USERNAME || !PASSWORD) {
   console.error(`
@@ -76,7 +76,7 @@ if (!fs.existsSync(PDF_PATH)) {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const delay = (ms) => new Promise((r) => setTimeout(r, ms));
-const log   = (emoji, msg) => console.log(`${emoji}  ${msg}`);
+const log = (emoji, msg) => console.log(`${emoji}  ${msg}`);
 
 const PROMPT = `
 Ești un expert în extragerea structurată de date din meniuri de bar/restaurant.
@@ -103,6 +103,7 @@ Reguli:
 - Variante (mic/mare) → produse separate
 - Nu inventa produse care nu există
 - Păstrează diacriticele românești
+- Daca pentru un produs exista 2 preturi, unul mai mare fiind sticla, sau meniu mare sau asa, vei crea 2 produse, acelasi titlu aceasi descriere (in functie de context adica daca iti dai seama ca e pretul pentru o sticla si pretul pentru un pahar vei specifica asta in descriere) si preturi diferite. 
 `;
 
 // ─── Extract text from PDF (for text-based providers) ────────────────────────
@@ -169,10 +170,12 @@ async function extractWithClaude(base64PDF) {
     body: JSON.stringify({
       model: "claude-haiku-4-5",
       max_tokens: 8192,
-      messages: [{ role: "user", content: [
-        { type: "document", source: { type: "base64", media_type: "application/pdf", data: base64PDF } },
-        { type: "text", text: PROMPT },
-      ]}],
+      messages: [{
+        role: "user", content: [
+          { type: "document", source: { type: "base64", media_type: "application/pdf", data: base64PDF } },
+          { type: "text", text: PROMPT },
+        ]
+      }],
     }),
   });
   if (!res.ok) { const e = await res.text(); throw new Error(`Claude error ${res.status}: ${e}`); }
@@ -354,7 +357,7 @@ async function main() {
   console.log("\n🍺  Bar Manager — Import Meniu din PDF\n" + "─".repeat(45) + "\n");
 
   try {
-    const menu  = await extractMenuFromPDF(PDF_PATH);
+    const menu = await extractMenuFromPDF(PDF_PATH);
     console.log("");
 
     const token = await login();
