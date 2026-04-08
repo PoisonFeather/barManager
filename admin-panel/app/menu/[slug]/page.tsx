@@ -304,7 +304,7 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
       {barData.categories?.length > 1 && (
         <div
           ref={navRef}
-          className="sticky top-[69px] z-30 bg-white/90 dark:bg-black/90 backdrop-blur-xl border-b border-zinc-100 dark:border-white/5 px-4 py-3"
+          className="sticky top-17.25 z-30 bg-white/90 dark:bg-black/90 backdrop-blur-xl border-b border-zinc-100 dark:border-white/5 px-4 py-3"
         >
           <div className="flex gap-2 overflow-x-auto no-scrollbar">
             {barData.categories.map((cat: any) => {
