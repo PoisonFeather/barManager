@@ -96,8 +96,15 @@ export function CartModal({ cart, history, myShare, onUpdate, onSend, onClose, p
               </h3>
               <div className="space-y-2 bg-zinc-100 dark:bg-black/20 p-6 rounded-4xl border border-dashed border-zinc-200 dark:border-white/10">
                 {history.map((item, i) => (
-                  <div key={i} className="flex justify-between text-[11px] font-bold uppercase tracking-tight text-zinc-500">
-                    <span>{item.quantity}x {item.name}</span>
+                  <div key={i} className="flex justify-between items-center text-[11px] font-bold uppercase tracking-tight text-zinc-500">
+                    <div className="flex items-center gap-2">
+                      <span>{item.quantity}x {item.name}</span>
+                      {item.placed_by_staff && (
+                        <span className="bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider">
+                          🍺 Bar
+                        </span>
+                      )}
+                    </div>
                     <span className="font-mono italic">{(item.quantity * item.price).toFixed(2)}</span>
                   </div>
                 ))}

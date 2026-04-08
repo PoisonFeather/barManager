@@ -48,11 +48,13 @@ export async function createStaffOrderHandler(req, res) {
     const result = await createOrder({
       bar_id,
       table_id,
-      items,
+      // Remapăm product_id → id (format cerut de insertOrderItems)
+      items: items.map((i) => ({ id: i.product_id || i.id, quantity: i.quantity, price: i.price })),
       total_amount,
       status: "confirmed",
       session_token: sessionToken,
       personal_token: null,
+      placed_by_staff: true,
     });
 
     req.app.get("io").emit("new-data", { type: "ORDER_REQUEST", tableId: table_id, status: "confirmed" });

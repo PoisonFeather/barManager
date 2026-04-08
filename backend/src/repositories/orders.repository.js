@@ -17,20 +17,20 @@ export async function withTransaction(work) {
 
 export async function insertOrder(
   client,
-  { bar_id, table_id, total_amount, status, session_token, personal_token }
+  { bar_id, table_id, total_amount, status, session_token, personal_token, placed_by_staff = false }
 ) {
   const orderRes = await client.query(
-    `INSERT INTO orders (bar_id, table_id, total_amount, status, session_token, personal_token) 
+    `INSERT INTO orders (bar_id, table_id, total_amount, status, session_token, personal_token, placed_by_staff) 
      VALUES (
        $1, 
-       --  Redirecționăm comanda nouă direct pe masa Părinte (dacă există)
        COALESCE((SELECT merged_into_id FROM tables WHERE id = $2), $2), 
        $3, 
        $4,
        $5,
-       $6
+       $6,
+       $7
      ) RETURNING id`,
-    [bar_id, table_id, total_amount, status, session_token || null, personal_token || null]
+    [bar_id, table_id, total_amount, status, session_token || null, personal_token || null, placed_by_staff]
   );
   return orderRes.rows[0].id;
 }
@@ -71,7 +71,7 @@ export async function updateOrderStatus(orderId, status) {
 
 export async function getUnpaidTableHistory(tableId) {
   const query = `
-    SELECT oi.quantity, p.name, oi.price_at_time as price
+    SELECT oi.quantity, p.name, oi.price_at_time as price, o.placed_by_staff
     FROM orders o
     JOIN order_items oi ON oi.order_id = o.id
     JOIN products p ON oi.product_id = p.id

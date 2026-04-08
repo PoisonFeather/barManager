@@ -179,7 +179,7 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
     });
 
     if (ok) {
-      alert(type === 'waiter' ? "Chelnerul vine acum! 🛎️" : "Cererea pentru notă a fost trimisă! 🧾");
+      console.log(type === 'waiter' ? "Chelnerul vine acum! 🛎️" : "Cererea pentru notă a fost trimisă! 🧾");
       setIsServiceModalOpen(false);
     }
   };

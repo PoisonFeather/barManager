@@ -13,7 +13,7 @@ import {
 } from "../repositories/orders.repository.js";
 
 export async function createOrder(payload) {
-  const { bar_id, table_id, items, total_amount, status, session_token, personal_token } = payload;
+  const { bar_id, table_id, items, total_amount, status, session_token, personal_token, placed_by_staff = false } = payload;
 
   if (!items || items.length === 0) {
     const error = new Error("Coșul e gol!");
@@ -29,6 +29,7 @@ export async function createOrder(payload) {
       status: status || "pending_approval",
       session_token,
       personal_token,
+      placed_by_staff,
     });
 
     await insertOrderItems(client, createdOrderId, items);
