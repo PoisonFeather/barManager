@@ -20,6 +20,50 @@ function resolveStatus(error, fallback = 500) {
   return Number.isInteger(error?.status) ? error.status : fallback;
 }
 
+// Staff order — barman/chelner plasează comanda direct, fără session_token
+export async function createStaffOrderHandler(req, res) {
+  try {
+    const { table_id, bar_id, items, total_amount } = req.body;
+    if (!table_id || !bar_id || !items?.length) {
+      return res.status(400).json({ error: "Câmpuri obligatorii lipsă: table_id, bar_id, items" });
+    }
+
+    // Dacă masa e închisă o deschidem automat cu un session_token fresh
+    const tableResult = await db.query(
+      "SELECT status, current_session_token FROM tables WHERE id = $1",
+      [table_id]
+    );
+    const table = tableResult.rows[0];
+    if (!table) return res.status(404).json({ error: "Masa nu există" });
+
+    let sessionToken = table.current_session_token;
+    if (table.status === "closed" || !sessionToken) {
+      sessionToken = uuidv4();
+      await db.query(
+        "UPDATE tables SET status = 'open', current_session_token = $1 WHERE id = $2",
+        [sessionToken, table_id]
+      );
+    }
+
+    const result = await createOrder({
+      bar_id,
+      table_id,
+      items,
+      total_amount,
+      status: "confirmed",
+      session_token: sessionToken,
+      personal_token: null,
+    });
+
+    req.app.get("io").emit("new-data", { type: "ORDER_REQUEST", tableId: table_id, status: "confirmed" });
+    req.app.get("io").emit(`table-updated-${table_id}`, { type: "HISTORY_UPDATE" });
+
+    return res.json({ success: true, orderId: result.orderId });
+  } catch (error) {
+    return res.status(resolveStatus(error)).json({ error: error.message });
+  }
+}
+
 export async function createOrderHandler(req, res) {
   try {
     const { table_id, bar_id, session_token, personal_token, items, total_amount } = req.body;

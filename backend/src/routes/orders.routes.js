@@ -3,6 +3,7 @@ import { verifyToken } from "../middleware/auth.js";
 import {
   closeTableHandler,
   createOrderHandler,
+  createStaffOrderHandler,
   getPersonalHistoryHandler,
   listActiveOrdersHandler,
   serveOrderItemHandler,
@@ -21,6 +22,7 @@ router.get("/tables/:tableId/my-share", getPersonalHistoryHandler);
 router.patch("/tables/:tableId/unlock", unlockTableHandler);
 
 // Protected routes for admins
+router.post("/orders/staff", verifyToken, createStaffOrderHandler);
 router.get("/orders/:barId", verifyToken, listActiveOrdersHandler);
 router.patch("/orders/:orderId/status", verifyToken, updateOrderStatusHandler);
 router.patch("/order-items/:itemId/serve", verifyToken, serveOrderItemHandler);

@@ -24,12 +24,14 @@ import { StockSection } from "./components/stockSection";
 import { MenuSection } from "./components/menuSection";
 import { Sidebar } from "./components/Sidebar";
 import { AnalyticsSection } from "./components/analyticsSection";
+import { StaffOrderModal } from "./components/StaffOrderModal";
 
 export default function BartenderDashboard({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"orders" | "stock" | "menu">("orders");
   const [mainView, setMainView] = useState<"workspace" | "analytics">("workspace");
+  const [staffOrderTarget, setStaffOrderTarget] = useState<{ tableId: string; tableNumber: number } | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -177,7 +179,9 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
                         onClose={() => handleClose(group.table_id, group.requests?.find((r: any) => r.type === "bill")?.payment_method)}
                         onApprove={handleApprove}
                         onReject={handleReject}
-                        
+                        onAddOrder={(tableId: string, tableNumber: number) =>
+                          setStaffOrderTarget({ tableId, tableNumber })
+                        }
                       />
                     ))
                   )}
@@ -192,6 +196,18 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
           <AnalyticsSection barId={barData.id} />
         )}
       </div>
+
+      {/* Modal comandă staff */}
+      {staffOrderTarget && barData && (
+        <StaffOrderModal
+          tableId={staffOrderTarget.tableId}
+          tableNumber={staffOrderTarget.tableNumber}
+          barId={barData.id}
+          categories={barData.categories || []}
+          onClose={() => setStaffOrderTarget(null)}
+          onSuccess={refresh}
+        />
+      )}
     </div>
   );
 }

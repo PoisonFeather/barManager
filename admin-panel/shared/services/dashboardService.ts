@@ -131,7 +131,6 @@ export const dashboardService = {
 
 
   checkPayment: async (tableId: string) => {
-  
     const res = await fetchWithAuth(`${API_BASE_URL}/tables/${tableId}/check-payment`, {
       method: "GET",
     });
@@ -140,5 +139,17 @@ export const dashboardService = {
       throw new Error(error.error || "Eroare la verificarea plății");
     }
     return res.json();
-  }
+  },
+
+  placeStaffOrder: async (payload: { bar_id: string; table_id: string; items: { product_id: string; name: string; price: number; quantity: number }[]; total_amount: number }) => {
+    const res = await fetchWithAuth(`${API_BASE_URL}/orders/staff`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.error || "Eroare la plasarea comenzii");
+    }
+    return res.json();
+  },
 };

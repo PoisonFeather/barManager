@@ -237,13 +237,13 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
               <img
                 src={barData.logo_url || barData.logo_url_light}
                 alt={barData.name}
-                className="h-8 w-auto max-w-[160px] object-contain hidden dark:block"
+                className="h-8 w-auto max-w-40 object-contain hidden dark:block"
               />
               {/* Logo Light Mode — vizibil doar în light */}
               <img
                 src={barData.logo_url_light || barData.logo_url}
                 alt={barData.name}
-                className="h-8 w-auto max-w-[160px] object-contain block dark:hidden"
+                className="h-8 w-auto max-w-40 object-contain block dark:hidden"
               />
             </>
           ) : (

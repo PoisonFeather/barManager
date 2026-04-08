@@ -28,13 +28,15 @@ export function ProductCard({ prod, onAdd, primaryColor }: ProductCardProps) {
       </div>
 
       {isAvailable && (
-        <motion.button 
+        <motion.button
           whileTap={{ scale: 0.9 }}
-          onClick={() => onAdd(prod)} 
-          className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl font-light bg-zinc-100 dark:bg-white/5 transition-colors" 
-          style={{ color: primaryColor }}
+          onClick={() => onAdd(prod)}
+          className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl font-light bg-zinc-100 dark:bg-white/5 transition-colors relative overflow-hidden"
         >
-          +
+          {/* Light mode: icon întunecat */}
+          <span className="block dark:hidden text-zinc-800">+</span>
+          {/* Dark mode: icon în culoarea brandului */}
+          <span className="hidden dark:block" style={{ color: primaryColor }}>+</span>
         </motion.button>
       )}
     </motion.div>

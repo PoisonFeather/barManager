@@ -8,6 +8,7 @@ export function TableCard({
   onClose,
   onApprove,
   onReject,
+  onAddOrder,
 }: any) {
   // 1. Hook pentru a face cardul DESTINAȚIE (Droppable)
   const { isOver, setNodeRef: setDroppableRef } = useDroppable({
@@ -77,12 +78,24 @@ export function TableCard({
             </span>
           </p>
         </div>
-        
-        {isPendingApproval && (
-          <span className="bg-yellow-400 text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-tighter">
-            Așteaptă Aprobare
-          </span>
-        )}
+
+        <div className="flex items-center gap-2">
+          {/* Buton + comandă staff */}
+          <button
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => { e.stopPropagation(); onAddOrder(group.table_id, group.table_number); }}
+            title="Adaugă comandă"
+            className="w-9 h-9 rounded-xl flex items-center justify-center bg-zinc-100 dark:bg-white/10 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-black font-black text-xl transition-all active:scale-90"
+          >
+            +
+          </button>
+
+          {isPendingApproval && (
+            <span className="bg-yellow-400 text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-tighter">
+              Așteaptă Aprobare
+            </span>
+          )}
+        </div>
       </div>
 
       {/* SECȚIUNE APROBARE (Prank-Proof) */}
