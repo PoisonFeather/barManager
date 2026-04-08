@@ -42,7 +42,7 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
     }
   }, [router]);
 
-  const { barData, setBarData } = useBarData(slug);
+  const { barData, setBarData, refresh: refreshBarData } = useBarData(slug);
   const { tableGroups, refresh } = useDashboardSummary(barData?.id || null);
   
   useSocket(refresh);
@@ -190,7 +190,7 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
             )}
 
             {activeTab === "stock" && <StockSection barData={barData} setBarData={setBarData} />}
-            {activeTab === "menu" && <MenuSection categories={barData?.categories || []} refreshData={refresh} barId={barData?.id} />}
+            {activeTab === "menu" && <MenuSection categories={barData?.categories || []} refreshData={refreshBarData} barId={barData?.id} />}
           </>
         ) : (
           <AnalyticsSection barId={barData.id} />
