@@ -92,7 +92,7 @@ export function AnalyticsSection({ barId }: AnalyticsSectionProps) {
                     <div className="absolute top-0 left-0 w-full h-2 bg-orange-500"></div>
                     
                     <div className="text-center mb-8">
-                        <h2 className="text-2xl font-black uppercase tracking-widest text-white mb-1">Raport Z (Închidere)</h2>
+                        <h2 className="text-2xl font-black uppercase tracking-widest text-white mb-1">Analytics azi</h2>
                         <p className="text-zinc-500 font-mono text-sm">{new Date().toLocaleDateString('ro-RO')}</p>
                     </div>
 
