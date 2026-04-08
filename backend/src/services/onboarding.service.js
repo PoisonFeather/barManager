@@ -13,6 +13,8 @@ export async function fullSetup(payload) {
     bar_name,
     slug,
     primary_color,
+    logo_url,
+    logo_url_light,
     bar_number_tables,
     menu,
     username,
@@ -48,6 +50,8 @@ export async function fullSetup(payload) {
       bar_name,
       slug,
       primary_color,
+      logo_url,
+      logo_url_light,
     });
 
     // 2. Creăm User-ul și îl legăm de Barul proaspăt creat

@@ -10,6 +10,8 @@ export default function OnboardingPage() {
   const [barData, setBarData] = useState({
     bar_name: '',
     slug: '',
+    logo_url: '',
+    logo_url_light: '',
     primary_color: '#ff4500',
     bar_number_tables: '',
     username: '', 
@@ -133,6 +135,44 @@ export default function OnboardingPage() {
               <input type="color" className="w-12 h-10 rounded cursor-pointer bg-transparent border-0" 
                      value={barData.primary_color} onChange={e => setBarData({...barData, primary_color: e.target.value})} />
               <span className="font-mono text-zinc-400">{barData.primary_color}</span>
+            </div>
+          </div>
+
+          {/* Logo Dark Mode */}
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Logo — Dark Mode <span className="text-zinc-600 normal-case font-normal">(logo alb/deschis)</span></label>
+            <div className="flex items-center gap-3 bg-zinc-950 border border-zinc-800 rounded-xl overflow-hidden focus-within:border-red-500 transition-colors">
+              <div className="bg-zinc-900 h-full flex items-center px-3 py-3 shrink-0">
+                {barData.logo_url
+                  ? <img src={barData.logo_url} alt="preview dark" className="h-8 w-auto max-w-[80px] object-contain" onError={e => (e.currentTarget.style.display = 'none')} />
+                  : <span className="text-zinc-600 text-xs">Preview</span>
+                }
+              </div>
+              <input
+                placeholder="https://exemplu.com/logo-dark.png"
+                className="flex-1 p-4 bg-transparent border-0 focus:outline-none text-sm"
+                value={barData.logo_url}
+                onChange={e => setBarData({...barData, logo_url: e.target.value.trim()})}
+              />
+            </div>
+          </div>
+
+          {/* Logo Light Mode */}
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Logo — Light Mode <span className="text-zinc-600 normal-case font-normal">(logo închis/negru)</span></label>
+            <div className="flex items-center gap-3 bg-zinc-950 border border-zinc-800 rounded-xl overflow-hidden focus-within:border-red-500 transition-colors">
+              <div className="bg-white h-full flex items-center px-3 py-3 shrink-0">
+                {barData.logo_url_light
+                  ? <img src={barData.logo_url_light} alt="preview light" className="h-8 w-auto max-w-[80px] object-contain" onError={e => (e.currentTarget.style.display = 'none')} />
+                  : <span className="text-gray-400 text-xs">Preview</span>
+                }
+              </div>
+              <input
+                placeholder="https://exemplu.com/logo-light.png"
+                className="flex-1 p-4 bg-transparent border-0 focus:outline-none text-sm"
+                value={barData.logo_url_light}
+                onChange={e => setBarData({...barData, logo_url_light: e.target.value.trim()})}
+              />
             </div>
           </div>
         </div>

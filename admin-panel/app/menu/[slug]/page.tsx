@@ -159,7 +159,7 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
       if (result.sessionToken) {
          localStorage.setItem(`session_${currentTable.id}`, result.sessionToken);
       }
-      alert("Comanda a plecat! 🚀");
+      console.log("Comanda a plecat! 🚀");
       clearCart();
       setIsCartOpen(false);
       refreshHistory();
@@ -231,7 +231,24 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
       {/* HEADER */}
       <div className="sticky top-0 z-40 p-5 backdrop-blur-xl border-b border-zinc-200 dark:border-white/10 flex justify-between items-center bg-white/80 dark:bg-black/80" style={{ borderBottomColor: barData.primary_color + '44' }}>
         <div>
-          <h1 className="font-black text-2xl uppercase leading-none">{barData.name}</h1>
+          {(barData.logo_url || barData.logo_url_light) ? (
+            <>
+              {/* Logo Dark Mode — vizibil doar în dark */}
+              <img
+                src={barData.logo_url || barData.logo_url_light}
+                alt={barData.name}
+                className="h-8 w-auto max-w-[160px] object-contain hidden dark:block"
+              />
+              {/* Logo Light Mode — vizibil doar în light */}
+              <img
+                src={barData.logo_url_light || barData.logo_url}
+                alt={barData.name}
+                className="h-8 w-auto max-w-[160px] object-contain block dark:hidden"
+              />
+            </>
+          ) : (
+            <h1 className="font-black text-2xl uppercase leading-none">{barData.name}</h1>
+          )}
           <p className="text-[9px] text-zinc-500 font-bold uppercase mt-1 tracking-widest leading-none">Order Live System</p>
         </div>
         <div className="flex items-center gap-3">

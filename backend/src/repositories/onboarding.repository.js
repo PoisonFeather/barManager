@@ -15,10 +15,10 @@ export async function withTransaction(work) {
   }
 }
 
-export async function insertBar(client, { bar_name, slug, primary_color }) {
+export async function insertBar(client, { bar_name, slug, primary_color, logo_url, logo_url_light }) {
   const barRes = await client.query(
-    "INSERT INTO bars (name, slug, primary_color) VALUES ($1, $2, $3) RETURNING id",
-    [bar_name, slug, primary_color]
+    "INSERT INTO bars (name, slug, primary_color, logo_url, logo_url_light) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+    [bar_name, slug, primary_color, logo_url || null, logo_url_light || null]
   );
   return barRes.rows[0].id;
 }
