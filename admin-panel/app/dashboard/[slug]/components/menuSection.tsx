@@ -44,7 +44,7 @@ export function MenuSection({ categories, refreshData, barId }: MenuEditorProps)
   };
 
   const handleDelete = async (productId: string) => {
-    if (!confirm("⚠️ Ești sigur că vrei să ștergi definitiv acest produs? Nu va mai apărea în meniu.")) return;
+    //if (!confirm("⚠️ Ești sigur că vrei să ștergi definitiv acest produs? Nu va mai apărea în meniu.")) return;
 
     try {
       await dashboardService.deleteProduct(productId);

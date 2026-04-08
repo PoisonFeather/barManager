@@ -1,0 +1,7 @@
+node scripts/import-menu-from-pdf.mjs \
+  --pdf meniu.pdf \
+  --slug slug \
+  --username user \
+  --password pass \
+  --provider groq \
+  --ai-key 
