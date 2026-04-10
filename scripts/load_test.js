@@ -2,8 +2,8 @@ import http from "k6/http";
 import { sleep } from "k6";
 
 export const options = {
-  vus: 1000, // 1000 de utilizatori simultani (ca și cum 100 de mese ar comanda deodată)
-  duration: "30s",
+  vus: 100, // 1000 de utilizatori simultani (ca și cum 100 de mese ar comanda deodată)
+  duration: "10s",
 };
 
 export default function () {

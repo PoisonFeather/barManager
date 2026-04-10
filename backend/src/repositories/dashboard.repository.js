@@ -64,14 +64,14 @@ export async function updateProductAvailability(productId, isAvailable) {
 
 export async function updateProductDetails(
   productId,
-  { name, price, description }
+  { name, price, description, image_url }
 ) {
   const result = await pool.query(
     `UPDATE products 
-     SET name = $1, price = $2, description = $3 
-     WHERE id = $4 
+     SET name = $1, price = $2, description = $3, image_url = $4
+     WHERE id = $5 
      RETURNING *`,
-    [name, price, description, productId]
+    [name, price, description, image_url ?? null, productId]
   );
   return result.rows[0];
 }
@@ -89,12 +89,12 @@ export async function deleteCategory(categoryId) {
 
 export async function addProductToCategory(
   categoryId,
-  { name, price, description }
+  { name, price, description, image_url }
 ) {
   const result = await pool.query(
-    `INSERT INTO products (category_id, name, price, description, is_available) 
-     VALUES ($1, $2, $3, $4, true) RETURNING *`,
-    [categoryId, name, price, description]
+    `INSERT INTO products (category_id, name, price, description, image_url, is_available) 
+     VALUES ($1, $2, $3, $4, $5, true) RETURNING *`,
+    [categoryId, name, price, description, image_url ?? null]
   );
   return result.rows[0];
 }

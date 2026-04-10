@@ -25,6 +25,7 @@ export function MenuSection({ categories, refreshData, barId }: MenuEditorProps)
       name: editingProduct.name,
       price: Number(editingProduct.price),
       description: editingProduct.description,
+      image_url: editingProduct.image_url || null,
       ...(isNewProduct && { category_id: editingProduct.category_id })
     };
 
@@ -104,35 +105,46 @@ export function MenuSection({ categories, refreshData, barId }: MenuEditorProps)
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {cat.products?.map((prod: any) => (
-              <div key={prod.id} className="bg-zinc-50 dark:bg-zinc-950 p-5 rounded-2xl border border-zinc-200 dark:border-white/5 flex flex-col justify-between group hover:border-orange-500/50 transition-colors">
-                <div>
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-bold text-lg leading-tight dark:text-zinc-100">{prod.name}</h3>
-                    <span className="bg-zinc-200 dark:bg-zinc-800 px-2 py-1 rounded-lg text-xs font-black">
-                      {Number(prod.price).toFixed(2)}
-                    </span>
+              <div key={prod.id} className="bg-zinc-50 dark:bg-zinc-950 rounded-2xl border border-zinc-200 dark:border-white/5 flex flex-col justify-between group hover:border-orange-500/50 transition-colors overflow-hidden">
+                {/* Image thumbnail */}
+                {prod.image_url && (
+                  <img
+                    src={prod.image_url}
+                    alt={prod.name}
+                    className="w-full h-32 object-cover"
+                    onError={(e) => (e.currentTarget.style.display = 'none')}
+                  />
+                )}
+                <div className="p-5 flex-1 flex flex-col justify-between">
+                  <div>
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="font-bold text-lg leading-tight dark:text-zinc-100">{prod.name}</h3>
+                      <span className="bg-zinc-200 dark:bg-zinc-800 px-2 py-1 rounded-lg text-xs font-black">
+                        {Number(prod.price).toFixed(2)}
+                      </span>
+                    </div>
+                    {prod.description && (
+                      <p className="text-[10px] text-zinc-500 line-clamp-2 mb-4">
+                        {prod.description}
+                      </p>
+                    )}
                   </div>
-                  {prod.description && (
-                    <p className="text-[10px] text-zinc-500 line-clamp-2 mb-4">
-                      {prod.description}
-                    </p>
-                  )}
-                </div>
 
-                <div className="flex gap-2 mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-800">
-                  <button 
-                    onClick={() => setEditingProduct(prod)}
-                    className="flex-1 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-xs font-black uppercase py-2 rounded-xl transition-colors"
-                  >
-                    ✏️ Editează
-                  </button>
-                  <button 
-                    onClick={() => handleDelete(prod.id)}
-                    className="w-10 bg-red-500/10 hover:bg-red-500/20 text-red-500 flex items-center justify-center rounded-xl transition-colors"
-                    title="Șterge produs"
-                  >
-                    🗑️
-                  </button>
+                  <div className="flex gap-2 mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+                    <button 
+                      onClick={() => setEditingProduct({ ...prod, image_url: prod.image_url || '' })}
+                      className="flex-1 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-xs font-black uppercase py-2 rounded-xl transition-colors"
+                    >
+                      ✏️ Editează
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(prod.id)}
+                      className="w-10 bg-red-500/10 hover:bg-red-500/20 text-red-500 flex items-center justify-center rounded-xl transition-colors"
+                      title="Șterge produs"
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -143,7 +155,8 @@ export function MenuSection({ categories, refreshData, barId }: MenuEditorProps)
                 category_id: cat.id, 
                 name: "", 
                 price: "", 
-                description: "" 
+                description: "",
+                image_url: ""
               })}
               className="bg-zinc-50 dark:bg-zinc-900/30 border-2 border-dashed border-zinc-300 dark:border-zinc-800 hover:border-orange-500 hover:text-orange-500 text-zinc-400 p-5 rounded-2xl flex flex-col items-center justify-center transition-all min-h-40 group"
             >
@@ -208,6 +221,27 @@ export function MenuSection({ categories, refreshData, barId }: MenuEditorProps)
                     className="w-full p-4 bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl focus:outline-none focus:border-orange-500 transition-colors min-h-25 resize-none"
                     placeholder="Ex: 200ml, lămâie, gheață..."
                   />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-2">Imagine Produs <span className="text-zinc-400 normal-case font-normal">(URL, opțional)</span></label>
+                  <div className="flex gap-3 items-center">
+                    {editingProduct.image_url && (
+                      <img
+                        src={editingProduct.image_url}
+                        alt="preview"
+                        className="w-16 h-16 object-cover rounded-xl border border-zinc-200 dark:border-zinc-800 shrink-0"
+                        onError={(e) => (e.currentTarget.style.display = 'none')}
+                      />
+                    )}
+                    <input 
+                      type="url"
+                      value={editingProduct.image_url || ""}
+                      onChange={(e) => setEditingProduct({...editingProduct, image_url: e.target.value.trim()})}
+                      className="flex-1 p-4 bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl focus:outline-none focus:border-orange-500 transition-colors text-sm"
+                      placeholder="https://exemplu.com/imagine.jpg"
+                    />
+                  </div>
                 </div>
 
                 <div className="flex gap-3 pt-4">

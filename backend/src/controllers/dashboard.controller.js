@@ -116,7 +116,7 @@ export const openTableHandler = async (req, res) => {
 export const editProductHandler = async (req, res) => {
   try {
     const { productId } = req.params;
-    const { name, price, description } = req.body;
+    const { name, price, description, image_url } = req.body;
 
     if (!name || price === undefined) {
       return res
@@ -128,6 +128,7 @@ export const editProductHandler = async (req, res) => {
       name,
       price,
       description,
+      image_url,
     });
 
     // 📢 Anunțăm toate telefoanele și tabletele că s-a modificat meniul
@@ -197,7 +198,7 @@ export const deleteCategoryHandler = async (req, res) => {
 };
 export const addProductHandler = async (req, res) => {
   try {
-    const { category_id, name, price, description } = req.body;
+    const { category_id, name, price, description, image_url } = req.body;
 
     if (!category_id || !name || price === undefined) {
       return res
@@ -209,6 +210,7 @@ export const addProductHandler = async (req, res) => {
       name,
       price,
       description,
+      image_url,
     });
 
     const io = req.app.get("io");

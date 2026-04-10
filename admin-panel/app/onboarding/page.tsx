@@ -16,7 +16,7 @@ export default function OnboardingPage() {
     bar_number_tables: '',
     username: '', 
     password: '', 
-    menu: [{ category: '', products: [{ name: '', price: '', description: '' }] }]
+    menu: [{ category: '', products: [{ name: '', price: '', description: '', image_url: '' }] }]
   });
 
   // --- LOGICĂ PENTRU CATEGORII ---
@@ -41,7 +41,7 @@ export default function OnboardingPage() {
   // --- LOGICĂ PENTRU PRODUSE ---
   const addProduct = (catIdx: number) => {
     const newMenu = [...barData.menu];
-    newMenu[catIdx].products.push({ name: '', price: '', description: '' });
+    newMenu[catIdx].products.push({ name: '', price: '', description: '', image_url: '' });
     setBarData({ ...barData, menu: newMenu });
   };
 
@@ -238,6 +238,8 @@ export default function OnboardingPage() {
                   </div>
                   <input placeholder="Descriere (ex: 200ml, gheață, lapte)" className="w-full p-3 bg-zinc-900 border border-zinc-800 rounded-xl focus:outline-none focus:border-red-500 text-sm text-zinc-400" 
                          value={prod.description} onChange={e => updateProduct(catIdx, prodIdx, 'description', e.target.value)} />
+                  <input placeholder="URL Imagine (opțional)" type="url" className="w-full p-3 bg-zinc-900 border border-zinc-800 rounded-xl focus:outline-none focus:border-red-500 text-sm text-zinc-500" 
+                         value={prod.image_url} onChange={e => updateProduct(catIdx, prodIdx, 'image_url', e.target.value.trim())} />
                 </div>
                 
                 <button onClick={() => removeProduct(catIdx, prodIdx)} className="text-zinc-600 hover:text-red-500 p-3 bg-zinc-900 rounded-xl border border-zinc-800 transition-colors h-full mt-2 md:mt-0" title="Șterge produs">

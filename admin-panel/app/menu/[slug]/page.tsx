@@ -15,6 +15,7 @@ import { ProductCard } from "./components/ProductCard";
 import { FloatingActionBar } from "./components/FloatingActionBar";
 import { CartModal } from "./components/CartModal";
 import { ServiceModal } from "./components/ServiceModal";
+import { ProductDetailModal } from "./components/ProductDetailModal";
 
 
 export default function ClientMenu({ params }: { params: Promise<{ slug: string }> }) {
@@ -28,6 +29,7 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
   const [orderHistory, setOrderHistory] = useState<any[]>([]);
   const [myShare, setMyShare] = useState<any[]>([]);
   const [isSessionLocked, setIsSessionLocked] = useState(false);
@@ -341,6 +343,7 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
                   key={prod.id}
                   prod={prod}
                   onAdd={addToCart}
+                  onOpenDetail={setSelectedProduct}
                   primaryColor={barData.primary_color}
                 />
               ))}
@@ -384,6 +387,15 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
           <ServiceModal
             onSendRequest={handleSendRequest}
             onClose={() => setIsServiceModalOpen(false)}
+          />
+        )}
+
+        {selectedProduct && (
+          <ProductDetailModal
+            prod={selectedProduct}
+            primaryColor={barData.primary_color}
+            onAdd={addToCart}
+            onClose={() => setSelectedProduct(null)}
           />
         )}
       </AnimatePresence>

@@ -33,8 +33,8 @@ export async function insertCategory(client, { barId, category }) {
 
 export async function insertProduct(client, { categoryId, product }) {
   await client.query(
-    "INSERT INTO products (category_id, name, price, description) VALUES ($1, $2, $3, $4)",
-    [categoryId, product.name, product.price, product.description]
+    "INSERT INTO products (category_id, name, price, description, image_url) VALUES ($1, $2, $3, $4, $5)",
+    [categoryId, product.name, product.price, product.description, product.image_url || null]
   );
 }
 
