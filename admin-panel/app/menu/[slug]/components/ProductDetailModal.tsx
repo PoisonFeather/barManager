@@ -76,14 +76,14 @@ export function ProductDetailModal({ prod, primaryColor, onAdd, onClose }: Produ
           {prod.image_url && (
             <div className="relative w-full h-72 sm:h-80 overflow-hidden flex items-center justify-center bg-zinc-50 dark:bg-zinc-950">
               {/* Blurred Ambient Glow extracted from the image */}
-              <div 
+              <div
                 className="absolute inset-0 bg-cover bg-center opacity-40 dark:opacity-30 blur-3xl scale-125 saturate-150 mix-blend-multiply dark:mix-blend-screen"
                 style={{ backgroundImage: `url(${prod.image_url})` }}
               />
-              
+
               {/* Gradient overlay to smoothly blend the image area into the white/dark text section below */}
               <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-white via-white/60 to-transparent dark:from-zinc-900 dark:via-zinc-900/60 z-0" />
-              
+
               {/* The Product Image itself floating on top */}
               <div className="relative z-10 w-full h-full p-8 pb-4">
                 <img
@@ -117,7 +117,7 @@ export function ProductDetailModal({ prod, primaryColor, onAdd, onClose }: Produ
 
             {/* Full description */}
             {prod.description ? (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed whitespace-pre-line">
+              <p className="text-sm text-zinc-600 dark:text-zinc-600 leading-relaxed whitespace-pre-line">
                 {prod.description}
               </p>
             ) : (
