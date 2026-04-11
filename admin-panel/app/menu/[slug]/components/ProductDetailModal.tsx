@@ -1,4 +1,7 @@
+"use client";
 import { motion } from "framer-motion";
+import { useTheme } from "next-themes";
+import { useState, useEffect } from "react";
 
 interface ProductDetailModalProps {
   prod: any;
@@ -10,6 +13,35 @@ interface ProductDetailModalProps {
 export function ProductDetailModal({ prod, primaryColor, onAdd, onClose }: ProductDetailModalProps) {
   // Treat undefined/null as available — only explicit false means unavailable
   const isAvailable = prod.is_available !== false;
+
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  // Compute perceived luminance (0 = black, 1 = white)
+  const getLuminance = (hex: string): number => {
+    const c = hex.replace('#', '');
+    if (c.length !== 6) return 0.5;
+    const r = parseInt(c.slice(0, 2), 16) / 255;
+    const g = parseInt(c.slice(2, 4), 16) / 255;
+    const b = parseInt(c.slice(4, 6), 16) / 255;
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+
+  // Returns a price color with guaranteed contrast against the modal background.
+  // Light mode bg = white (~lum 1)  → color must be dark enough (lum < 0.7)
+  // Dark mode bg  = zinc-900 (~lum 0.05) → color must be light enough (lum > 0.2)
+  const getPriceColor = (): string => {
+    const isDark = mounted && resolvedTheme === 'dark';
+    const lum = getLuminance(primaryColor || '#888888');
+    if (isDark) {
+      // On dark bg: if the color is too dark, use white
+      return lum < 0.2 ? '#ffffff' : primaryColor;
+    } else {
+      // On light bg: if the color is too light, use near-black
+      return lum > 0.7 ? '#18181b' : primaryColor;
+    }
+  };
 
   const handleAdd = () => {
     onAdd(prod);
@@ -42,11 +74,11 @@ export function ProductDetailModal({ prod, primaryColor, onAdd, onClose }: Produ
         <div className="flex-1 overflow-y-auto">
           {/* Image — optional */}
           {prod.image_url && (
-            <div className="w-full h-56 sm:h-64 overflow-hidden">
+            <div className="w-full h-56 sm:h-64 bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
               <img
                 src={prod.image_url}
                 alt={prod.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
             </div>
           )}
@@ -67,7 +99,7 @@ export function ProductDetailModal({ prod, primaryColor, onAdd, onClose }: Produ
             </div>
 
             {/* Price */}
-            <p className="text-xl font-black mb-5" style={{ color: primaryColor }}>
+            <p className="text-xl font-black mb-5" style={{ color: getPriceColor() }}>
               {Number(prod.price).toFixed(2)} <span className="text-sm font-bold opacity-60">RON</span>
             </p>
 
