@@ -30,7 +30,7 @@ export async function createStaffOrderHandler(req, res) {
 
     // Dacă masa e închisă o deschidem automat cu un session_token fresh
     const tableResult = await db.query(
-      "SELECT status, current_session_token FROM tables WHERE id = $1",
+      "SELECT status, current_session_token, merged_into_id FROM tables WHERE id = $1",
       [table_id]
     );
     const table = tableResult.rows[0];
@@ -57,8 +57,17 @@ export async function createStaffOrderHandler(req, res) {
       placed_by_staff: true,
     });
 
-    req.app.get("io").emit("new-data", { type: "ORDER_REQUEST", tableId: table_id, status: "confirmed" });
-    req.app.get("io").emit(`table-updated-${table_id}`, { type: "HISTORY_UPDATE" });
+    const rootTableId = table.merged_into_id || table_id;
+    const groupResult = await db.query(
+      "SELECT id FROM tables WHERE id = $1 OR merged_into_id = $1",
+      [rootTableId]
+    );
+
+    req.app.get("io").emit("new-data", { type: "ORDER_REQUEST", tableId: rootTableId, status: "confirmed" });
+    
+    groupResult.rows.forEach(({ id }) => {
+      req.app.get("io").emit(`table-updated-${id}`, { type: "HISTORY_UPDATE" });
+    });
 
     return res.json({ success: true, orderId: result.orderId });
   } catch (error) {
@@ -72,7 +81,7 @@ export async function createOrderHandler(req, res) {
 
     // 🛡️ 1. Validarea Sesiunii (Rămâne în controller, e treaba de "pază")
     const tableResult = await db.query(
-      "SELECT status, current_session_token FROM tables WHERE id = $1",
+      "SELECT status, current_session_token, merged_into_id FROM tables WHERE id = $1",
       [table_id]
     );
     const table = tableResult.rows[0];
@@ -117,17 +126,26 @@ export async function createOrderHandler(req, res) {
       personal_token,   // 🧍 Token unic per browser — pentru "Contribuția Ta"
     });
     //console.log(result);
+    const rootTableId = table.merged_into_id || table_id;
+    const groupResult = await db.query(
+      "SELECT id FROM tables WHERE id = $1 OR merged_into_id = $1",
+      [rootTableId]
+    );
+
     // 3. Socket-ul rămâne aici
     req.app.get("io").emit("new-data", {
       type: "ORDER_REQUEST",
-      tableId: table_id,
+      tableId: rootTableId, // Trimitem doar spre tabela mare in dashboard
       status: orderStatus,
     });
+    
     // Socket-ul pentru CLIENȚI (Sincronizare live la masă)
-    // Emitem un eveniment fix pe ID-ul mesei, ca doar ei să audă
-    req.app.get("io").emit(`table-updated-${table_id}`, {
-      type: "HISTORY_UPDATE",
-      message: "Altcineva a adăugat produse!",
+    // Emitem un eveniment către TOATE mesele care alcătuiesc masa combinată
+    groupResult.rows.forEach(({ id }) => {
+      req.app.get("io").emit(`table-updated-${id}`, {
+        type: "HISTORY_UPDATE",
+        message: "Altcineva a adăugat produse!",
+      });
     });
     //console.log("added order and emitted socket event");
     return res.json({
@@ -199,7 +217,7 @@ export async function unlockTableHandler(req, res) {
 
     // A. Verificăm dacă clientul are token-ul corect pentru masa respectivă
     const tableResult = await db.query(
-      "SELECT status, current_session_token FROM tables WHERE id = $1",
+      "SELECT status, current_session_token, merged_into_id FROM tables WHERE id = $1",
       [tableId]
     );
     const table = tableResult.rows[0];
@@ -214,7 +232,11 @@ export async function unlockTableHandler(req, res) {
     await unlockTable_db(tableId);
 
     // C. Notificăm realtime toate telefoanele să dea refresh dacă cumva unele stăteau în fața lacătului
-    req.app.get("io").emit(`table-unlocked-${tableId}`, { message: "Masa a fost deblocată!" });
+    const rootTableId = table.merged_into_id || tableId;
+    const groupResult = await db.query("SELECT id FROM tables WHERE id = $1 OR merged_into_id = $1", [rootTableId]);
+    groupResult.rows.forEach(({ id }) => {
+      req.app.get("io").emit(`table-unlocked-${id}`, { message: "Masa a fost deblocată!" });
+    });
 
     return res.json({ success: true, message: "Timpul mesei a fost prelungit!" });
   } catch (error) {

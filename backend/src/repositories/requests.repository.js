@@ -8,7 +8,15 @@ export async function createTableRequest({
   payment_method,
 }) {
   const newRequest = await pool.query(
-    "INSERT INTO requests (bar_id, table_id,session_token, type, payment_method, status) VALUES ($1, $2, $3, $4,$5, 'pending') RETURNING *",
+    `INSERT INTO requests (bar_id, table_id, session_token, type, payment_method, status) 
+     VALUES (
+       $1, 
+       COALESCE((SELECT merged_into_id FROM tables WHERE id = $2), $2), 
+       $3, 
+       $4,
+       $5, 
+       'pending'
+     ) RETURNING *`,
     [bar_id, table_id, session_token, type, payment_method]
   );
   return newRequest.rows[0];

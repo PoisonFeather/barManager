@@ -1,5 +1,3 @@
-Card meniu produse -imagini -descriere completa
-
 Nu se updateaza comenzile intre clienti la mese combinate
 
 Reservations - intrii pe barmanager.ro/alba-iulia/ cauti framm's si dai rezervare de la 8 pentru 10 persoane, pui un mail, barul o confirma, primesti confirmarea pe mail/telefon -> link cu meniul ca sa il trimiti la grup sau asa !!

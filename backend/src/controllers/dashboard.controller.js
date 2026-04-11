@@ -1,6 +1,6 @@
-// backend/src/controllers/dashboard.controller.js
 import * as dashboardService from "../services/dashboard.service.js";
 import { mergeTablesService } from "../services/dashboard.service.js";
+import { pool as db } from "../db/pool.js";
 /**
  * Funcție helper pentru gestionarea codurilor de eroare
  */
@@ -32,10 +32,18 @@ export const approveTableHandler = async (req, res) => {
     // 📢 NOTIFICĂRI SOCKET.IO
     const io = req.app.get("io");
     if (io) {
-      // Trimitem token-ul clientului (telefonului) ca să poată comanda în continuare
-      io.emit(`table-approved-${tableId}`, { token });
+      // Determinam toate mesele combinata
+      const tableResult = await db.query("SELECT merged_into_id FROM tables WHERE id = $1", [tableId]);
+      const rootTableId = tableResult.rows[0]?.merged_into_id || tableId;
+      const groupResult = await db.query("SELECT id FROM tables WHERE id = $1 OR merged_into_id = $1", [rootTableId]);
+      
       // Notificăm dashboard-ul (tableta) să actualizeze culorile
-      io.emit("new-data", { type: "TABLE_APPROVED", tableId });
+      io.emit("new-data", { type: "TABLE_APPROVED", tableId: rootTableId });
+      
+      // Trimitem token-ul fiecărui client, indiferent de pre-table (ex: Masa 5 unita in Masa 1)
+      groupResult.rows.forEach(({ id }) => {
+        io.emit(`table-approved-${id}`, { token });
+      });
     }
 
     return res.json({ success: true, message: "Masa a fost aprobată!", token });
@@ -241,6 +249,9 @@ export const mergeTablesHandler = async (req, res, next) => {
     const io = req.app.get("io");
     if (io) {
       io.emit("new-data", { type: "TABLES_MERGED", sourceId, targetId });
+      // Notificăm ambele mese să își actualizeze istoricul (ca membrii să vadă produsele celorlalți)
+      io.emit(`table-updated-${sourceId}`, { type: "HISTORY_UPDATE", message: "Mesele au fost unite!" });
+      io.emit(`table-updated-${targetId}`, { type: "HISTORY_UPDATE", message: "Mesele au fost unite!" });
     }
     return res.status(200).json(result);
   } catch (error) {

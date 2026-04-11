@@ -15,7 +15,7 @@ export async function createRequestHandler(req, res) {
 
     // Security check
     const tableResult = await db.query(
-      "SELECT status, current_session_token FROM tables WHERE id = $1",
+      "SELECT status, current_session_token, merged_into_id FROM tables WHERE id = $1",
       [table_id]
     );
 
@@ -38,8 +38,9 @@ export async function createRequestHandler(req, res) {
     // 🚀 2. Dacă e totul OK, creăm cererea în DB
     //console.log(req.body);
     const result = await createRequest(req.body);
+    const rootTableId = table.merged_into_id || table_id;
     console.log(
-      `✅ Cerere creată: Masa ${table_id} - Tip: ${type} - ID Cerere: ${result.id} TOKEN ${session_token}`
+      `✅ Cerere creată: Masa ${table_id} (Redirijat spre Masa ${rootTableId}) - Tip: ${type} - ID Cerere: ${result.id} TOKEN ${session_token}`
     );
 
     // 📢 3. Anunțăm Dashboard-ul barmanului prin Socket
@@ -48,7 +49,7 @@ export async function createRequestHandler(req, res) {
       io.emit("new-data", {
         type: "SERVICE_REQUEST",
         requestType: type,
-        tableId: table_id,
+        tableId: rootTableId,
         session_token: session_token,
       });
     }

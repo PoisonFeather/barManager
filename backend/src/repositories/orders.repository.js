@@ -111,27 +111,29 @@ export async function markOrderItemServed(itemId) {
 }
 
 export async function closeTableOrders(tableId, paymentMethod = "cash") {
-  //console.log(paymentMethod);
-  // 1. Închidem comenzile (marcate ca plătite) și salvăm metoda de plată
+  // 1. Închidem comenzile nerezolvate (pentru Părinte + potențiale resturi de pe Copii)
   await pool.query(
-    "UPDATE orders SET is_paid = TRUE, payment_method = $2 WHERE table_id = $1 AND is_paid = FALSE",
+    "UPDATE orders SET is_paid = TRUE, payment_method = $2 WHERE (table_id = $1 OR table_id IN (SELECT id FROM tables WHERE merged_into_id = $1)) AND is_paid = FALSE",
     [tableId, paymentMethod]
   );
 
-  // 2. Resetăm masa principală (Părintele) și ștergem ora de pornire a sesiunii
+  // 2. Ștergem TOATE cererile active (dacă există) pentru masa Părinte și Copii
   await pool.query(
-    "UPDATE tables SET status = 'closed', current_session_token = NULL, session_started_at = NULL WHERE id = $1",
+    "DELETE FROM requests WHERE table_id = $1 OR table_id IN (SELECT id FROM tables WHERE merged_into_id = $1)", 
     [tableId]
   );
 
-  // 3. Eliberăm mesele Copil (rupem legătura) - CORECTAT AICI cu `pool`
+  // 3. Resetăm Părintele și toți Copiii (Să fim siguri că la eliberare, Copiii reapar ca mese ÎNCHISE)
+  await pool.query(
+    "UPDATE tables SET status = 'closed', current_session_token = NULL, session_started_at = NULL WHERE id = $1 OR merged_into_id = $1",
+    [tableId]
+  );
+
+  // 4. Abia acum eliberăm mesele Copil (rupem legătura)
   await pool.query(
     "UPDATE tables SET merged_into_id = NULL WHERE merged_into_id = $1",
     [tableId]
   );
-
-  //4. Ștergem cererile active (dacă există) pentru această masă
-  await pool.query("DELETE FROM requests WHERE table_id = $1", [tableId]);
 }
 
 export async function unlockTable_db(tableId) {
