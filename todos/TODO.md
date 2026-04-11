@@ -1,13 +1,7 @@
-Nu se updateaza comenzile intre clienti la mese combinate
-
 Reservations - intrii pe barmanager.ro/alba-iulia/ cauti framm's si dai rezervare de la 8 pentru 10 persoane, pui un mail, barul o confirma, primesti confirmarea pe mail/telefon -> link cu meniul ca sa il trimiti la grup sau asa !!
 
 🟢 Faza 1: Autentificare & Securitate (Prioritate Maximă)
 Obiectiv: Nimeni nu intră în Dashboard fără bilet de voie.
-
-[ ] Nu se updateaza toatul la masa parinte
-
-[ ] Izolare Date (Multitenancy): Modificarea query-urilor SQL în Repository pentru a include mereu WHERE bar_id = req.user.barId.
 
 [ ] Environment Security: Mutarea JWT_SECRET și a url-urilor de DB din cod în fișierul .env.
 
@@ -47,10 +41,6 @@ Obiectiv: O aplicație care se simte profesională.
 Obiectiv: Să dormi liniștit când faci deploy.
 
 [ ] Teste de Integrare (Critical Flows):
-
-[ ] Flow-ul de Onboarding.
-
-[ ] Creare comandă -> Servire produs -> Închidere masă.
 
 [ ] Cleanup DB: Ștergerea scripturilor de tip seed-user.js și eliminarea datelor de test fără UUID-uri valide.
 

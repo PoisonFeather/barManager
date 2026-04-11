@@ -1,4 +1,4 @@
-import { getAnalytics } from "../services/analytics.service.js";
+import { getAnalytics, getWaitTimes } from "../services/analytics.service.js";
 
 function resolveStatus(error, fallback = 500) {
   return Number.isInteger(error?.status) ? error.status : fallback;
@@ -21,3 +21,21 @@ export async function getAnalyticsHandler(req, res) {
     return res.status(resolveStatus(error)).json({ error: error.message });
   }
 }
+
+export async function getWaitTimeAnalyticsHandler(req, res) {
+  try {
+    const { barId } = req.params;
+    const { period } = req.query; 
+    
+    if (req.user.barId !== barId) {
+       return res.status(403).json({ error: "Interzis" });
+    }
+
+    const data = await getWaitTimes(barId, period || 'week');
+    return res.json(data);
+  } catch (error) {
+    console.error("Eroare getWaitTimeAnalyticsHandler:", error);
+    return res.status(resolveStatus(error)).json({ error: error.message });
+  }
+}
+

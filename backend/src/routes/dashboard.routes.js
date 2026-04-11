@@ -11,7 +11,7 @@ import {
   addProductHandler,
   mergeTablesHandler,
 } from "../controllers/dashboard.controller.js";
-import { getAnalyticsHandler } from "../controllers/analytics.controller.js";
+import { getAnalyticsHandler, getWaitTimeAnalyticsHandler } from "../controllers/analytics.controller.js";
 import { validateToggleProductPayload } from "../middleware/validation.js";
 import { checkProductOwnership, checkCategoryOwnership, checkTableOwnership } from "../middleware/authorization.js";
 
@@ -22,6 +22,7 @@ router.use(verifyToken);
 // Altfel, URL-ul tău ar fi fost: /dashboard/dashboard/summary/...
 router.get("/summary/:barId", dashboardSummaryHandler);
 router.get("/analytics/:barId", getAnalyticsHandler);
+router.get("/analytics/wait-times/:barId", getWaitTimeAnalyticsHandler);
 
 // 2. ADĂUGĂM RUTELE POST (Tabele)
 router.post("/approve-table", checkTableOwnership, approveTableHandler);

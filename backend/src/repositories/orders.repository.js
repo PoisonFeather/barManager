@@ -105,7 +105,7 @@ export async function getPersonalHistory(tableId, personalToken) {
 }
 
 export async function markOrderItemServed(itemId) {
-  await pool.query("UPDATE order_items SET status = 'served' WHERE id = $1", [
+  await pool.query("UPDATE order_items SET status = 'served', served_at = NOW() WHERE id = $1", [
     itemId,
   ]);
 }
@@ -113,7 +113,7 @@ export async function markOrderItemServed(itemId) {
 export async function closeTableOrders(tableId, paymentMethod = "cash") {
   // 1. Închidem comenzile nerezolvate (pentru Părinte + potențiale resturi de pe Copii)
   await pool.query(
-    "UPDATE orders SET is_paid = TRUE, payment_method = $2 WHERE (table_id = $1 OR table_id IN (SELECT id FROM tables WHERE merged_into_id = $1)) AND is_paid = FALSE",
+    "UPDATE orders SET is_paid = TRUE, payment_method = $2, closed_at = NOW() WHERE (table_id = $1 OR table_id IN (SELECT id FROM tables WHERE merged_into_id = $1)) AND is_paid = FALSE",
     [tableId, paymentMethod]
   );
 
