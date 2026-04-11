@@ -10,6 +10,9 @@ import {
   deleteCategoryHandler,
   addProductHandler,
   mergeTablesHandler,
+  getZonesHandler,
+  createZoneHandler,
+  updateTableZoneHandler,
 } from "../controllers/dashboard.controller.js";
 import { getAnalyticsHandler, getWaitTimeAnalyticsHandler } from "../controllers/analytics.controller.js";
 import { validateToggleProductPayload } from "../middleware/validation.js";
@@ -23,6 +26,11 @@ router.use(verifyToken);
 router.get("/summary/:barId", dashboardSummaryHandler);
 router.get("/analytics/:barId", getAnalyticsHandler);
 router.get("/analytics/wait-times/:barId", getWaitTimeAnalyticsHandler);
+
+// ZONE MANAGEMENT
+router.get("/zones/:barId", getZonesHandler);
+router.post("/zones", createZoneHandler);
+router.patch("/tables/:tableId/zone", checkTableOwnership, updateTableZoneHandler);
 
 // 2. ADĂUGĂM RUTELE POST (Tabele)
 router.post("/approve-table", checkTableOwnership, approveTableHandler);

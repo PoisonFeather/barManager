@@ -6,6 +6,7 @@ export async function getDashboardSummaryByBar(barId) {
     SELECT 
       t.id as table_id,
       t.table_number,
+      t.zone_id,
       CASE 
         WHEN EXISTS (SELECT 1 FROM orders WHERE table_id = t.id AND status = 'pending_approval') THEN 'pending_approval'
         ELSE t.status 

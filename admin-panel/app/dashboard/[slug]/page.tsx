@@ -25,6 +25,8 @@ import { MenuSection } from "./components/menuSection";
 import { Sidebar } from "./components/Sidebar";
 import { AnalyticsSection } from "./components/analyticsSection";
 import { StaffOrderModal } from "./components/StaffOrderModal";
+import { ZoneDroppable } from "./components/ZoneDroppable";
+import { useZones } from "@/shared/hooks/useZones";
 
 export default function BartenderDashboard({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -32,6 +34,8 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
   const [activeTab, setActiveTab] = useState<"orders" | "stock" | "menu">("orders");
   const [mainView, setMainView] = useState<"workspace" | "analytics">("workspace");
   const [staffOrderTarget, setStaffOrderTarget] = useState<{ tableId: string; tableNumber: number } | null>(null);
+  const [activeZoneId, setActiveZoneId] = useState<string | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -44,8 +48,14 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
 
   const { barData, setBarData, refresh: refreshBarData } = useBarData(slug);
   const { tableGroups, refresh } = useDashboardSummary(barData?.id || null);
+  const { zones, refreshZones } = useZones(barData?.id || null);
   
-  useSocket(refresh);
+  useSocket(() => { refresh(); refreshZones(); });
+  
+  const displayedTableGroups = activeZoneId 
+    ? tableGroups.filter(t => t.zone_id === activeZoneId)
+    : tableGroups;
+
   const { isAudioEnabled, enableAudio } = useAudioAlerts(tableGroups);
 
   const sensors = useSensors(
@@ -129,14 +139,18 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
     // Dacă ai lăsat masa peste o ALTĂ masă
     if (over && active.id !== over.id) {
       const sourceId = active.id as string;
+
+      if (over.data.current?.type === "zone") {
+        const targetZoneId = over.data.current.zoneId;
+        await dashboardService.updateTableZone(sourceId, targetZoneId);
+        refresh();
+        return;
+      }
+
       const targetId = over.id as string;
 
-      // Opțional: Poți căuta numerele meselor în tableGroups ca să pui un Confirm mai prietenos (ex: "Unești Masa 5 cu 1?")
       if (confirm(`Ești sigur că vrei să unești aceste mese? Comanda mesei trase se va muta pe masa destinație.`)) {
-        // Aici chemăm endpoint-ul nou pe care l-am făcut în backend!
-        await dashboardService.mergeTables({ sourceId, targetId,
-          bar_id : barData?.id || ""
-         });
+        await dashboardService.mergeTables({ sourceId, targetId, bar_id: barData?.id || "" });
         refresh();
       }
     }
@@ -164,13 +178,44 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
             {/* 3. ÎNVELIM GRID-UL ÎN DndContext */}
             {activeTab === "orders" && (
               <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
+                
+                {/* ZONE TABS & EDIT MODE */}
+                <div className="flex flex-col sm:flex-row justify-between mb-8 gap-4 items-center">
+                  <div className="flex gap-2 flex-wrap bg-zinc-200 dark:bg-zinc-900 p-1 rounded-2xl">
+                    <ZoneDroppable id={null} isActive={activeZoneId === null} isEditMode={isEditMode}>
+                      <span onClick={() => setActiveZoneId(null)}>Toate Mesele</span>
+                    </ZoneDroppable>
+                    {zones.map(z => (
+                      <ZoneDroppable key={z.id} id={z.id} isActive={activeZoneId === z.id} isEditMode={isEditMode}>
+                        <span onClick={() => setActiveZoneId(z.id)}>{z.name}</span>
+                      </ZoneDroppable>
+                    ))}
+
+                    {isEditMode && (
+                      <button onClick={async () => {
+                         const name = prompt("Nume zonă nouă (ex: Terasa)");
+                         if(!name) return;
+                         await dashboardService.createZone({ bar_id: barData.id, name, list_order: zones.length });
+                         refreshZones();
+                      }} className="px-4 py-2 text-xs font-black uppercase text-zinc-500 bg-transparent rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 hover:border-orange-500 hover:text-orange-500 transition-colors">
+                        + Zonă Nouă
+                      </button>
+                    )}
+                  </div>
+
+                  <button onClick={() => setIsEditMode(!isEditMode)} 
+                          className={`px-4 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${isEditMode ? "bg-orange-500 text-white shadow-lg" : "bg-zinc-200 dark:bg-zinc-800 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300"}`}>
+                    {isEditMode ? "💾 Gata Mutarea" : "🏗️ Mută Mese (Drag)"}
+                  </button>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in duration-700">
-                  {tableGroups.length === 0 ? (
+                  {displayedTableGroups.length === 0 ? (
                     <div className="col-span-full py-32 text-center border-2 border-dashed border-zinc-200 dark:border-zinc-900 rounded-[4rem]">
-                      <p className="text-zinc-400 font-black uppercase tracking-widest text-sm italic">Nicio masă activă</p>
+                      <p className="text-zinc-400 font-black uppercase tracking-widest text-sm italic">Nicio masă în această zonă</p>
                     </div>
                   ) : (
-                    tableGroups.map(group => (
+                    displayedTableGroups.map(group => (
                       <TableCard 
                         key={group.table_id} 
                         group={group} 

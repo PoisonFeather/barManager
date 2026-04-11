@@ -74,6 +74,29 @@ export const dashboardService = {
     }
   },
 
+  getZones: async (barId: string) => {
+    const res = await fetchWithAuth(`${API_BASE_URL}/dashboard/zones/${barId}`);
+    if (!res.ok) return [];
+    return res.json();
+  },
+
+  createZone: async (payload: { bar_id: string; name: string; list_order: number }) => {
+    const res = await fetchWithAuth(`${API_BASE_URL}/dashboard/zones`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error("Eroare creare zonă");
+    return res.json();
+  },
+
+  updateTableZone: async (tableId: string, zoneId: string | null) => {
+    const res = await fetchWithAuth(`${API_BASE_URL}/dashboard/tables/${tableId}/zone`, {
+      method: "PATCH",
+      body: JSON.stringify({ zoneId }),
+    });
+    return res.ok;
+  },
+
   createCategory: async (payload: { bar_id: string; name: string }) => {
     const res = await fetchWithAuth(`${API_BASE_URL}/categories`, {
       method: "POST",
