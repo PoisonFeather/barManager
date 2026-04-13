@@ -1,22 +1,31 @@
 import { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export function useSocket(onNewData?: () => void) {
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    // Dacă SOCKET_URL este o rută relativă (ex. '/api'), înseamnă că folosim proxy-ul Next.js 
-    // pe același domeniu. Trimitem 'undefined' ca să se conecteze la origin-ul curent pe ROOT namespace, nu pe namespace-ul '/api'.
-    const isRelative = SOCKET_URL.startsWith('/');
-    const s: Socket = io(isRelative ? undefined : SOCKET_URL, {
-      path: isRelative ? '/api/socket' : '/socket.io'
+    // Dacă API_URL e relativ (ex. '/api' în producție), conectăm socket-ul
+    // direct la originea curentă (window.location.origin), fără prefix /api.
+    // Nginx va proxy-ui /socket.io/ → backend:3001.
+    //
+    // Dacă e URL absolut (ex. 'http://localhost:3001' în dev), conectăm direct la el.
+    const isRelative = API_URL.startsWith('/');
+    const socketHost = isRelative
+      ? (typeof window !== 'undefined' ? window.location.origin : '')
+      : API_URL;
+
+    const s: Socket = io(socketHost, {
+      path: '/socket.io',    // path-ul standard Socket.IO — Nginx sa proxy-uieze /socket.io/
+      transports: ['polling', 'websocket'], // polling first, then upgrade
     });
-    
+
     setSocket(s);
 
-    s.on('connect', () => console.log('🔌 Conectat la Socket Server pe ROOT'));
+    s.on('connect', () => console.log('🔌 Socket conectat:', s.id));
+    s.on('connect_error', (err) => console.error('❌ Socket error:', err.message));
 
     if (onNewData) {
       s.on('new-data', (data) => {

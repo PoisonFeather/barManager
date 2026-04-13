@@ -7,27 +7,39 @@ const nextConfig: NextConfig = {
   // mod standalone (reduce dimensiunea la deploy)
  //  output: 'export',
   
-  // 🔗 Proxy către Backend pentru a rezolva problemele de rețea/Ngrok
+  // 🔗 Proxy către Backend
   async rewrites() {
-    return [
-      // Socket.IO base path (polling handshake: /api/socket/?EIO=4...)
-      {
-        source: '/api/socket',
-        destination: 'http://app:3001/socket.io/',
-      },
-      {
-        source: '/api/socket/:path*',
-        destination: 'http://app:3001/socket.io/:path*',
-      },
-      {
-        source: '/socket.io/:path*',
-        destination: 'http://app:3001/socket.io/:path*',
-      },
-      {
-        source: '/api/:path*',
-        destination: 'http://app:3001/:path*',
-      }
-    ]
+    return {
+      // beforeFiles: rulele de socket sunt interceptate ÎNAINTE de rutele Next.js
+      // și se aplică și pe path-uri cu trailing slash
+      beforeFiles: [
+        // Socket.IO — trailing slash explicit (asta trimite Socket.IO client)
+        {
+          source: '/api/socket/',
+          destination: 'http://app:3001/socket.io/',
+        },
+        {
+          source: '/api/socket/:path*',
+          destination: 'http://app:3001/socket.io/:path*',
+        },
+        {
+          source: '/socket.io/',
+          destination: 'http://app:3001/socket.io/',
+        },
+        {
+          source: '/socket.io/:path*',
+          destination: 'http://app:3001/socket.io/:path*',
+        },
+      ],
+      afterFiles: [
+        // API general
+        {
+          source: '/api/:path*',
+          destination: 'http://app:3001/:path*',
+        },
+      ],
+      fallback: [],
+    };
   },
 };
 
