@@ -260,3 +260,43 @@ export const mergeTablesHandler = async (req, res, next) => {
     return res.status(status).json({ error: error.message });
   }
 };
+
+import { getZonesByBarId, createZone, updateTableZone } from "../repositories/zones.repository.js";
+
+export const getZonesHandler = async (req, res) => {
+  try {
+    const { barId } = req.params;
+    const zones = await getZonesByBarId(barId);
+    return res.json(zones);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const createZoneHandler = async (req, res) => {
+  try {
+    const barId = req.user?.barId || req.body.bar_id;
+    const { name, list_order } = req.body;
+    const zone = await createZone(barId, name, list_order);
+    return res.json(zone);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const updateTableZoneHandler = async (req, res) => {
+  try {
+    const { tableId } = req.params;
+    const { zoneId } = req.body; // Can be null
+    await updateTableZone(tableId, zoneId || null);
+    
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("new-data", { type: "TABLE_ZONE_UPDATED", tableId, zoneId });
+    }
+    
+    return res.json({ success: true, message: "Zone updated successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
