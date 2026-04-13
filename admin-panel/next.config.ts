@@ -10,6 +10,11 @@ const nextConfig: NextConfig = {
   // 🔗 Proxy către Backend pentru a rezolva problemele de rețea/Ngrok
   async rewrites() {
     return [
+      // Socket.IO base path (polling handshake: /api/socket/?EIO=4...)
+      {
+        source: '/api/socket',
+        destination: 'http://app:3001/socket.io/',
+      },
       {
         source: '/api/socket/:path*',
         destination: 'http://app:3001/socket.io/:path*',

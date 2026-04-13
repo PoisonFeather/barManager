@@ -94,9 +94,8 @@ export const getTableStatusHandler = async (req, res) => {
         const startedAt = new Date(session_started_at).getTime();
         const now = Date.now();
         const diffMinutes = (now - startedAt) / (1000 * 60);
-        console.log(`[Status Handler] Timp scurs: ${diffMinutes} minute. Max: 1`);
-        // va fi schimbat after testing
-        if (diffMinutes <= 1) {
+        console.log(`[Status Handler] Timp scurs: ${diffMinutes} minute. Max: 15`);
+        if (diffMinutes <= 15) {
           // Încă e în fereastra de 15 minute, îi dăm token-ul fără probleme
           return res.json({ status: "open", sessionToken: current_session_token });
         } else {
