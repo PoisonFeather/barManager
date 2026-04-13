@@ -1,12 +1,18 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
-// Generează sau recuperează un token unic per browser (nu per sesiune de masă)
-// Acesta identifică persoana fizică, nu masa
 function getOrCreatePersonalToken(): string {
   const key = "personal_browser_token";
   let token = localStorage.getItem(key);
   if (!token) {
-    token = crypto.randomUUID();
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+      token = crypto.randomUUID();
+    } else {
+      // Fallback generat clasic (pentru telefoane conectate prin HTTP local / IP)
+      token = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
     localStorage.setItem(key, token);
   }
   return token;
