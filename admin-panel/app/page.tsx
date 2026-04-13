@@ -27,7 +27,7 @@ const LANG = {
     f1Title: "Auto-Servire QR",
     f1Desc:
       "Clienții scanează, navighează și comandă direct de pe telefon — fără instalare, fără așteptare.",
-    f2Title: "Tehnologia „Bonul Meu"",
+    f2Title: "Tehnologia \u201EBonul Meu\u201D",
     f2Desc:
       "Token individual per client la masă. Separă comenzile și eliberează bonuri personalizate în câteva secunde.",
     f3Title: "Zone Drag & Drop",
@@ -68,7 +68,7 @@ const LANG = {
       "Gândește-te invers: o singură masă activată în plus aduce mai mult decât costul ei. Plătești pe ce folosești — nimic mai mult.",
     planProFeatures: [
       "Mese nelimitate (5€/masă/lună)",
-      "Tehnologia „Bonul Meu"",
+      "Tehnologia \u201EBonul Meu\u201D",
       "Zone Drag & Drop",
       "Analytics avansat în timp real",
       "Suport prioritar",
