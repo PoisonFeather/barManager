@@ -23,7 +23,7 @@ export default function OnboardingPage() {
   const addCategory = () => {
     setBarData({
       ...barData,
-      menu: [...barData.menu, { category: '', products: [{ name: '', price: '', description: '' }] }]
+      menu: [...barData.menu, { category: '', products: [{ name: '', price: '', description: '', image_url: '' }] }]
     });
   };
 
