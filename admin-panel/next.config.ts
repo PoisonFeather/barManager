@@ -11,24 +11,16 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
-        source: '/socket.io/:path*',
+        source: '/api/socket/:path*',
         destination: 'http://app:3001/socket.io/:path*',
       },
       {
-        source: '/api/socket',
-        destination: 'http://app:3001/socket.io/',
+        source: '/socket.io/:path*',
+        destination: 'http://app:3001/socket.io/:path*',
       },
       {
         source: '/api/:path*',
         destination: 'http://app:3001/:path*',
-      },
-      {
-        source: '/socket.io/:path*',
-        destination: 'http://app:3001/socket.io/:path*',
-      },
-      {
-        source: '/socket.io',
-        destination: 'http://app:3001/socket.io',
       }
     ]
   },
