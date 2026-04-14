@@ -1,8 +1,7 @@
 "use client";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
-import Head from "next/head";
 
 // ─── Translations ────────────────────────────────────────────────────────────
 const LANG = {
@@ -277,12 +276,12 @@ export default function Home() {
               >
                 {t.logIn}
               </Link>
-              <Link
-                href="/onboarding"
+              <a
+                href="mailto:contact@barmanager.app?subject=Vreau%20acces%20la%20BarManager"
                 className="px-5 py-2.5 rounded-full bg-white text-black text-xs font-black uppercase tracking-widest hover:scale-105 hover:bg-orange-50 transition-all hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
               >
                 {t.getStarted}
-              </Link>
+              </a>
             </div>
           </div>
         </nav>
@@ -317,12 +316,12 @@ export default function Home() {
             </motion.p>
 
             <motion.div variants={item} className="flex flex-col sm:flex-row justify-center gap-4">
-              <Link
-                href="/onboarding"
+              <a
+                href="mailto:contact@barmanager.app?subject=Vreau%20acces%20la%20BarManager"
                 className="px-8 py-4 rounded-full bg-orange-500 text-black text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_30px_rgba(234,88,12,0.4)]"
               >
                 {t.ctaPrimary}
-              </Link>
+              </a>
               <Link
                 href="/login"
                 className="px-8 py-4 rounded-full bg-zinc-900 border border-white/10 text-white text-sm font-bold uppercase tracking-widest hover:bg-zinc-800 transition-all"
@@ -445,12 +444,12 @@ export default function Home() {
                     </li>
                   ))}
                 </ul>
-                <Link
-                  href="/onboarding"
+                <a
+                  href="mailto:contact@barmanager.app?subject=Vreau%20acces%20gratuit%20la%20BarManager"
                   className="w-full text-center px-6 py-3.5 rounded-full border border-white/10 bg-zinc-800 text-white text-sm font-black uppercase tracking-widest hover:bg-zinc-700 transition-all"
                 >
                   {t.planFreeCta}
-                </Link>
+                </a>
               </motion.div>
 
               {/* Pro Plan */}
@@ -493,12 +492,12 @@ export default function Home() {
                   ))}
                 </ul>
 
-                <Link
-                  href="/onboarding"
+                <a
+                  href="mailto:contact@barmanager.app?subject=Vreau%20plan%20Pro%20-%20BarManager"
                   className="w-full text-center px-6 py-3.5 rounded-full bg-orange-500 text-black text-sm font-black uppercase tracking-widest hover:scale-105 hover:bg-orange-400 transition-all shadow-[0_0_20px_rgba(234,88,12,0.4)] relative z-10"
                 >
                   {t.planProCta}
-                </Link>
+                </a>
               </motion.div>
             </div>
 
@@ -603,12 +602,12 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
             >
-              <Link
-                href="/onboarding"
+              <a
+                href="mailto:contact@barmanager.app?subject=Vreau%20acces%20la%20BarManager"
                 className="inline-block px-10 py-5 rounded-full bg-white text-black font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_40px_rgba(255,255,255,0.2)] relative z-10"
               >
                 {t.bannerCta}
-              </Link>
+              </a>
             </motion.div>
           </div>
         </main>
