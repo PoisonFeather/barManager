@@ -3,7 +3,7 @@
  * Folosește tokenul stocat în localStorage sub cheia 'superadmin_token'.
  */
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
+const BACKEND_URL = "/api";
 
 function getSuperAdminToken(): string | null {
   if (typeof window === "undefined") return null;
