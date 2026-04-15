@@ -23,23 +23,25 @@ export async function loginUser(username, password) {
     throw error;
   }
 
-  // 3. Generăm token-ul JWT (aici ascundem ID-urile ca să le știe backend-ul la viitoarele request-uri)
+  // 3. Generăm token-ul JWT
   const token = jwt.sign(
     {
       userId: user.user_id,
       barId: user.bar_id,
+      role: user.role || "user",
     },
     JWT_SECRET,
-    { expiresIn: "24h" } // Token-ul expiră după o zi (patronul trebuie să se relogheze mâine)
+    { expiresIn: "24h" }
   );
 
-  console.log(`✅ User '${username}' s-a logat cu succes.`);
+  console.log(`✅ User '${username}' (role: ${user.role || "user"}) s-a logat cu succes.`);
 
-  // 4. Returnăm token-ul și slug-ul către Controller
+  // 4. Returnăm token-ul, slug-ul și rolul către Controller
   return {
     success: true,
     token,
     barSlug: user.bar_slug,
+    role: user.role || "user",
   };
 }
 

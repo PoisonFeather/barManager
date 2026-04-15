@@ -9,6 +9,7 @@ import dashboardRoutes from "./routes/dashboard.routes.js";
 import requestsRoutes from "./routes/requests.routes.js";
 import healthRoutes from "./routes/health.routes.js";
 import authRoutes from "./routes/auth.routes.js";
+import superadminRoutes from "./routes/superadmin.routes.js";
 
 /**
  * Express app factory.
@@ -57,6 +58,9 @@ export function createApp() {
 
   // Limiter strict EXPLICIT pe rutele de auth — montate cu prefix clar
   app.use("/auth", authLimiter, authRoutes);
+
+  // SuperAdmin routes — protejate de verifyToken + requireSuperAdmin în interiorul routerului
+  app.use("/superadmin", superadminRoutes);
 
   // Rutele publice și de dashboard — montate simplu, fără authLimiter
   app.use("/dashboard", dashboardRoutes);

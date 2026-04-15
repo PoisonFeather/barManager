@@ -10,6 +10,6 @@ export default function () {
   // Testăm ruta de meniu care face cerere la backend
   http.get(
     "http://204.168.143.186/menu/somm-wine-cheese?t=451b1def-3b14-42a9-8dfe-ba2ab591d158"
-  ); // sau ce rută de API ai tu
+  );
   sleep(1);
 }
