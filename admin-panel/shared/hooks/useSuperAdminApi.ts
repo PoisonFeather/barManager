@@ -28,7 +28,7 @@ async function superAdminFetch<T>(path: string, options?: RequestInit): Promise<
 }
 
 export const superAdminApi = {
-  getStats: () => superAdminFetch<Record<string, number>>("/superadmin/stats"),
+  getStats: () => superAdminFetch<GlobalStats>("/superadmin/stats"),
   getBars: () => superAdminFetch<Bar[]>("/superadmin/bars"),
   getRecentOrders: (limit = 20) =>
     superAdminFetch<RecentOrder[]>(`/superadmin/orders/recent?limit=${limit}`),
@@ -39,6 +39,21 @@ export const superAdminApi = {
 };
 
 // ─── Types ───────────────────────────────────────────────────────────────────
+export interface GlobalStats {
+  total_bars: number;
+  total_users: number;
+  total_tables: number;
+  tables_open_now: number;
+  orders_today: number;
+  orders_week: number;
+  orders_month: number;
+  revenue_today: number;
+  revenue_week: number;
+  revenue_month: number;
+  revenue_all_time: number;
+  active_bars_7d: number;
+}
+
 export interface Bar {
   id: string;
   name: string;

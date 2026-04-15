@@ -5,23 +5,7 @@ import { motion } from "framer-motion";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
-import { superAdminApi, type RevenueTrendPoint, type RecentOrder, type ChurnBar } from "@/shared/hooks/useSuperAdminApi";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-interface GlobalStats {
-  total_bars: number;
-  total_users: number;
-  total_tables: number;
-  tables_open_now: number;
-  orders_today: number;
-  orders_week: number;
-  orders_month: number;
-  revenue_today: number;
-  revenue_week: number;
-  revenue_month: number;
-  revenue_all_time: number;
-  active_bars_7d: number;
-}
+import { superAdminApi, type GlobalStats, type RevenueTrendPoint, type RecentOrder, type ChurnBar } from "@/shared/hooks/useSuperAdminApi";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function fmt(n: number) {
@@ -104,7 +88,7 @@ export default function SuperAdminOverview() {
         superAdminApi.getRecentOrders(15),
         superAdminApi.getChurnRisk(),
       ]);
-      setStats(s as GlobalStats);
+      setStats(s);
       setTrend(t);
       setOrders(o);
       setChurnBars(c);
