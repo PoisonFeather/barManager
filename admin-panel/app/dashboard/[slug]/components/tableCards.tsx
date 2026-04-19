@@ -161,9 +161,16 @@ export function TableCard({
               key={item.item_id}
               className="flex justify-between items-center bg-zinc-100 dark:bg-black/40 p-4 rounded-2xl border border-zinc-200 dark:border-white/5 group hover:border-orange-500/50 transition-colors"
             >
-              <span className="font-black text-sm uppercase">
-                {item.qty}x {item.name}
-              </span>
+              <div className="flex flex-col max-w-[70%]">
+                <span className="font-black text-sm uppercase leading-tight">
+                  {item.qty}x {item.name}
+                </span>
+                {item.notes && (
+                  <span className="text-[10px] font-bold italic text-orange-600 dark:text-orange-400 mt-0.5">
+                    * {item.notes}
+                  </span>
+                )}
+              </div>
               <button
                 onClick={() => onServe(item.item_id)}
                 className="bg-green-600 hover:bg-green-500 text-white w-10 h-10 flex items-center justify-center rounded-xl shadow-lg transition-transform active:scale-90"

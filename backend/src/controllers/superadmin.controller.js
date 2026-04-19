@@ -11,7 +11,7 @@ import {
   getBarUsers,
   createBarUser,
   updateUserPassword,
-  updateUserRoleAndCategories,
+  updateUserProfile,
 } from "../repositories/superadmin.repository.js";
 
 function resolveStatus(error, fallback = 500) {
@@ -148,16 +148,20 @@ export async function updateUserPasswordHandler(req, res) {
   }
 }
 
-export async function updateUserRoleAndCategoriesHandler(req, res) {
+export async function updateUserHandler(req, res) {
   try {
     const { userId } = req.params;
-    const { role, allowedCategories } = req.body;
-    if (!role) return res.status(400).json({ error: "Role required" });
+    const { username, role, password, allowedCategories } = req.body;
+    if (!username || !role) return res.status(400).json({ error: "Username and role are required" });
 
-    const data = await updateUserRoleAndCategories(userId, role, allowedCategories || []);
+    let passwordHash = null;
+    if (password) {
+      passwordHash = await bcrypt.hash(password, 10);
+    }
+    const data = await updateUserProfile(userId, { username, role, passwordHash, allowedCategories });
     return res.json(data);
   } catch (error) {
-    console.error("superadmin/update-role error:", error);
+    console.error("superadmin/update-user error:", error);
     return res.status(resolveStatus(error)).json({ error: error.message });
   }
 }

@@ -17,6 +17,7 @@ export function ProductDetailModal({ prod, primaryColor, onAdd, onClose, allowOr
 
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [notes, setNotes] = useState("");
   useEffect(() => setMounted(true), []);
 
   // Compute perceived luminance (0 = black, 1 = white)
@@ -45,7 +46,7 @@ export function ProductDetailModal({ prod, primaryColor, onAdd, onClose, allowOr
   };
 
   const handleAdd = () => {
-    onAdd(prod);
+    onAdd({ ...prod, notes });
     onClose();
   };
 
@@ -125,6 +126,22 @@ export function ProductDetailModal({ prod, primaryColor, onAdd, onClose, allowOr
               <p className="text-sm text-zinc-400 dark:text-zinc-600 italic">
                 Fără descriere disponibilă.
               </p>
+            )}
+
+            {/* Câmp Notițe / Mentuni Speciale */}
+            {allowOrdering && isAvailable && (
+              <div className="mt-6 border-t border-zinc-100 dark:border-white/5 pt-4">
+                <label className="text-[10px] font-black uppercase text-zinc-400 block mb-2 tracking-widest">
+                  Mențiuni Speciale
+                </label>
+                <textarea
+                  placeholder="ex: Fără roșii, bine făcut..."
+                  className="w-full bg-zinc-50 dark:bg-black/30 border border-zinc-200 dark:border-white/10 rounded-2xl p-4 text-sm focus:outline-none focus:border-zinc-400 dark:focus:border-white/20 transition-colors resize-none placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
+                  rows={2}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                />
+              </div>
             )}
           </div>
         </div>

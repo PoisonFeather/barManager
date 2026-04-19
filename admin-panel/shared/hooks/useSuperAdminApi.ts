@@ -43,7 +43,7 @@ export const superAdminApi = {
   getBarUsers: (barId: string) => superAdminFetch<BarUser[]>(`/superadmin/bars/${barId}/users`),
   createBarUser: (barId: string, payload: any) => superAdminFetch<BarUser>(`/superadmin/bars/${barId}/users`, { method: "POST", body: JSON.stringify(payload) }),
   updateUserPassword: (userId: string, payload: any) => superAdminFetch<{success: boolean}>(`/superadmin/users/${userId}/password`, { method: "PUT", body: JSON.stringify(payload) }),
-  updateUserRoleAndCategories: (userId: string, payload: any) => superAdminFetch<BarUser>(`/superadmin/users/${userId}/role`, { method: "PUT", body: JSON.stringify(payload) }),
+  updateUser: (userId: string, payload: any) => superAdminFetch<BarUser>(`/superadmin/users/${userId}`, { method: "PUT", body: JSON.stringify(payload) }),
 };
 
 // ─── Types ───────────────────────────────────────────────────────────────────

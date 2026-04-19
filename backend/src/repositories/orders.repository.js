@@ -38,8 +38,8 @@ export async function insertOrder(
 export async function insertOrderItems(client, orderId, items) {
   const itemQueries = items.map((item) =>
     client.query(
-      "INSERT INTO order_items (order_id, product_id, quantity, price_at_time) VALUES ($1, $2, $3, $4)",
-      [orderId, item.id, item.quantity, item.price]
+      "INSERT INTO order_items (order_id, product_id, quantity, price_at_time, notes) VALUES ($1, $2, $3, $4, $5)",
+      [orderId, item.id, item.quantity, item.price, item.notes || null]
     )
   );
   await Promise.all(itemQueries);
@@ -71,7 +71,7 @@ export async function updateOrderStatus(orderId, status) {
 
 export async function getUnpaidTableHistory(tableId) {
   const query = `
-    SELECT oi.quantity, p.name, oi.price_at_time as price, o.placed_by_staff
+    SELECT oi.quantity, p.name, oi.price_at_time as price, o.placed_by_staff, oi.notes
     FROM orders o
     JOIN order_items oi ON oi.order_id = o.id
     JOIN products p ON oi.product_id = p.id
@@ -88,7 +88,7 @@ export async function getUnpaidTableHistory(tableId) {
 
 export async function getPersonalHistory(tableId, personalToken) {
   const query = `
-    SELECT oi.quantity, p.name, oi.price_at_time as price
+    SELECT oi.quantity, p.name, oi.price_at_time as price, oi.notes
     FROM orders o
     JOIN order_items oi ON oi.order_id = o.id
     JOIN products p ON oi.product_id = p.id

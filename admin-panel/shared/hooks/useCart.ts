@@ -3,9 +3,11 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 // Definim un tip de bază pentru obiectele din coș (ajută la autocompletion)
 export interface CartItem {
   id: string;
+  cartItemId?: string; // Cheie unică în coș (pentru a diferenția notele)
   name: string;
   price: number;
   quantity: number;
+  notes?: string;
   [key: string]: any; // Permite și alte câmpuri opționale
 }
 
@@ -29,25 +31,28 @@ export function useCart() {
     localStorage.setItem('active_cart', JSON.stringify(cart));
   }, [cart]);
 
-  // 3. Adăugare produs (sau incrementare dacă există deja)
-  const addToCart = useCallback((product: any) => {
+  // 3. Adăugare produs (sau incrementare dacă există deja cu ACELEAȘI notițe)
+  const addToCart = useCallback((product: any, notes: string = "") => {
     setCart((prev) => {
-      const existingItem = prev.find((item) => item.id === product.id);
-      if (existingItem) {
-        return prev.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+      const targetCartItemId = `${product.id}-${notes.trim().toLowerCase()}`;
+
+      const existingItemIndex = prev.findIndex((item) => (item.cartItemId || item.id) === targetCartItemId || (item.id === product.id && (item.notes||"") === notes));
+      
+      if (existingItemIndex >= 0) {
+        return prev.map((item, index) =>
+          index === existingItemIndex ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
-      return [...prev, { ...product, quantity: 1 }];
+      return [...prev, { ...product, quantity: 1, notes, cartItemId: targetCartItemId }];
     });
   }, []);
 
-  // 4. Modificare cantitate (+1 / -1)
-  const updateQuantity = useCallback((id: string, delta: number) => {
+  // 4. Modificare cantitate (+1 / -1) bazat pe cartItemId unic (sau id fallback)
+  const updateQuantity = useCallback((cartItemIdOrId: string, delta: number) => {
     setCart((prev) =>
       prev
         .map((item) => {
-          if (item.id === id) {
+          if ((item.cartItemId || item.id) === cartItemIdOrId) {
             const newQty = item.quantity + delta;
             return newQty > 0 ? { ...item, quantity: newQty } : null;
           }

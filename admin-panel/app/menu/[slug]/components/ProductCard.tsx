@@ -29,7 +29,6 @@ export function ProductCard({ prod, onAdd, onOpenDetail, primaryColor, allowOrde
         <span className="text-zinc-500 dark:text-zinc-400 font-black text-sm">
           {Number(prod.price).toFixed(2)} RON
         </span>
-        </span>
       </div>
 
       {isAvailable && allowOrdering && (

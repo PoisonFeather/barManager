@@ -196,10 +196,15 @@ export async function updateUserPassword(userId, passwordHash) {
   await pool.query("UPDATE users SET password_hash = $1 WHERE id = $2", [passwordHash, userId]);
 }
 
-export async function updateUserRoleAndCategories(userId, role, allowedCategories = []) {
-  const result = await pool.query(
-    "UPDATE users SET role = $1, allowed_categories = $2 WHERE id = $3 RETURNING id, username, role, allowed_categories",
-    [role, allowedCategories, userId]
-  );
+export async function updateUserProfile(userId, { username, role, passwordHash, allowedCategories }) {
+  let query, params;
+  if (passwordHash) {
+    query = "UPDATE users SET username = $1, role = $2, password_hash = $3, allowed_categories = $4 WHERE id = $5 RETURNING id, username, role, allowed_categories";
+    params = [username, role, passwordHash, allowedCategories || [], userId];
+  } else {
+    query = "UPDATE users SET username = $1, role = $2, allowed_categories = $3 WHERE id = $4 RETURNING id, username, role, allowed_categories";
+    params = [username, role, allowedCategories || [], userId];
+  }
+  const result = await pool.query(query, params);
   return result.rows[0];
 }
