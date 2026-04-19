@@ -6,7 +6,7 @@ interface SidebarProps {
   userRole?: string;
 }
 
-export function Sidebar({ mainView, setMainView }: SidebarProps) {
+export function Sidebar({ mainView, setMainView, userRole }: SidebarProps) {
   return (
     <>
       {/* Desktop Sidebar */}
