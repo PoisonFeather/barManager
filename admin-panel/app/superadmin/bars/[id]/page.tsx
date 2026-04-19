@@ -48,7 +48,7 @@ export default function SuperAdminBarDetailsPage({ params }: { params: Promise<{
     load();
   }, [id]);
 
-  async function handleToggleFeature(key: "timer_minutes" | "has_kds", value: any) {
+  async function handleToggleFeature(key: string, value: any) {
     if (!bar) return;
     const newFeatures = { ...bar.features, [key]: value };
     try {
