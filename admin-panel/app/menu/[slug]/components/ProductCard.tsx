@@ -32,6 +32,7 @@ export function ProductCard({ prod, onAdd, onOpenDetail, primaryColor, allowOrde
       </div>
 
       {isAvailable && allowOrdering && (
+
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={(e) => {
