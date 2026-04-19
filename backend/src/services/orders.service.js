@@ -33,6 +33,10 @@ export async function createOrder(payload) {
     });
 
     await insertOrderItems(client, createdOrderId, items);
+    
+    // Extindem timer-ul de activitate al mesei la ultima comandă
+    await client.query("UPDATE tables SET last_activity_at = NOW() WHERE id = $1", [table_id]);
+    
     return createdOrderId;
   });
 

@@ -36,15 +36,29 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
   const [staffOrderTarget, setStaffOrderTarget] = useState<{ tableId: string; tableNumber: number } | null>(null);
   const [activeZoneId, setActiveZoneId] = useState<string | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [userRole, setUserRole] = useState<string>("server");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const token = localStorage.getItem("token");
       if (!token) {
         router.push("/login");
+        return;
+      }
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const role = payload.role || "server";
+        setUserRole(role);
+        
+        // Dacă rolul e kitchen, mergem direct pe varianta de KDS
+        if (role === "kitchen") {
+          router.replace(`/dashboard/${slug}/kitchen`);
+        }
+      } catch (e) {
+        setUserRole("server");
       }
     }
-  }, [router]);
+  }, [router, slug]);
 
   const { barData, setBarData, refresh: refreshBarData } = useBarData(slug);
   const { tableGroups, refresh } = useDashboardSummary(barData?.id || null);
@@ -160,7 +174,7 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
 
   return (
     <div className="flex min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white transition-colors duration-500">
-      <Sidebar mainView={mainView} setMainView={setMainView} />
+      <Sidebar mainView={mainView} setMainView={setMainView} userRole={userRole} />
       
       {/* Wrapper principal cu padding pentru mobile naavigation bottom si pt conținutul paginii */}
       <div className="flex-1 w-full p-4 pb-24 md:p-8 overflow-y-auto">
@@ -173,6 +187,7 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
               tableCount={tableGroups.length}
               isAudioEnabled={isAudioEnabled}
               onEnableAudio={enableAudio}
+              userRole={userRole}
             />
 
             {/* 3. ÎNVELIM GRID-UL ÎN DndContext */}

@@ -29,6 +29,7 @@ export async function loginUser(username, password) {
       userId: user.user_id,
       barId: user.bar_id,
       role: user.role || "user",
+      allowedCategories: user.allowed_categories || [],
     },
     JWT_SECRET,
     { expiresIn: "24h" }
@@ -42,6 +43,7 @@ export async function loginUser(username, password) {
     token,
     barSlug: user.bar_slug,
     role: user.role || "user",
+    allowedCategories: user.allowed_categories || [],
   };
 }
 

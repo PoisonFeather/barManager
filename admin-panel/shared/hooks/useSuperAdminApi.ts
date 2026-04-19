@@ -36,6 +36,14 @@ export const superAdminApi = {
     superAdminFetch<RevenueTrendPoint[]>(`/superadmin/revenue?days=${days}`),
   getChurnRisk: () => superAdminFetch<ChurnBar[]>("/superadmin/churn-risk"),
   getSystemHealth: () => superAdminFetch<SystemHealth>("/superadmin/system-health"),
+
+  // Bar specifics (Superadmin capabilities)
+  getBarDetails: (barId: string) => superAdminFetch<BarDetails>(`/superadmin/bars/${barId}/details`),
+  updateBarFeatures: (barId: string, features: BarFeatures) => superAdminFetch<BarFeatures>(`/superadmin/bars/${barId}/features`, { method: "PATCH", body: JSON.stringify({ features }) }),
+  getBarUsers: (barId: string) => superAdminFetch<BarUser[]>(`/superadmin/bars/${barId}/users`),
+  createBarUser: (barId: string, payload: any) => superAdminFetch<BarUser>(`/superadmin/bars/${barId}/users`, { method: "POST", body: JSON.stringify(payload) }),
+  updateUserPassword: (userId: string, payload: any) => superAdminFetch<{success: boolean}>(`/superadmin/users/${userId}/password`, { method: "PUT", body: JSON.stringify(payload) }),
+  updateUserRoleAndCategories: (userId: string, payload: any) => superAdminFetch<BarUser>(`/superadmin/users/${userId}/role`, { method: "PUT", body: JSON.stringify(payload) }),
 };
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -101,4 +109,26 @@ export interface SystemHealth {
   db_ok: boolean;
   orders_last_10min: number;
   checked_at: string;
+}
+
+export interface BarFeatures {
+  timer_minutes?: number;
+  has_kds?: boolean;
+}
+
+export interface BarDetails extends Bar {
+  features: BarFeatures;
+  stats: {
+    total_tables: number;
+    total_orders: number;
+    total_revenue: string;
+  };
+}
+
+export interface BarUser {
+  id: string;
+  username: string;
+  role: "admin" | "server" | "kitchen";
+  created_at: string;
+  allowed_categories: string[];
 }

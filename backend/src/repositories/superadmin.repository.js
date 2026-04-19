@@ -51,7 +51,8 @@ export async function getAllBars() {
                 WHERE o.bar_id = b.id AND o.is_paid = TRUE
                 AND o.created_at >= date_trunc('month', NOW())), 0)::numeric      AS revenue_month,
       (SELECT MAX(o.created_at) FROM orders o WHERE o.bar_id = b.id)             AS last_order_at,
-      b.created_at                                                                 AS bar_created_at
+      b.created_at                                                                 AS bar_created_at,
+      b.features
     FROM bars b
     ORDER BY revenue_total DESC
   `);
@@ -136,4 +137,69 @@ export async function getSystemHealth() {
     orders_last_10min: result.rows[0]?.orders_last_10min ?? 0,
     checked_at: new Date().toISOString(),
   };
+}
+
+// -------------------------------------------------------------
+// Bar Management endpoints
+// -------------------------------------------------------------
+
+export async function getBarDetails(barId) {
+  const barResult = await pool.query(
+    "SELECT id, name, slug, primary_color, logo_url, created_at, features FROM bars WHERE id = $1",
+    [barId]
+  );
+  const bar = barResult.rows[0];
+  if (!bar) return null;
+  
+  const statsResult = await pool.query(
+    `SELECT
+      (SELECT COUNT(*) FROM tables WHERE bar_id = $1)::integer AS total_tables,
+      (SELECT COUNT(*) FROM orders WHERE bar_id = $1)::integer AS total_orders,
+      COALESCE((SELECT SUM(total_amount) FROM orders WHERE bar_id = $1 AND is_paid = TRUE), 0)::numeric AS total_revenue
+    `,
+    [barId]
+  );
+  
+  return {
+    ...bar,
+    stats: statsResult.rows[0],
+  };
+}
+
+export async function updateBarFeatures(barId, features) {
+  const result = await pool.query(
+    "UPDATE bars SET features = $1 WHERE id = $2 RETURNING features",
+    [JSON.stringify(features), barId]
+  );
+  return result.rows[0];
+}
+
+export async function getBarUsers(barId) {
+  const result = await pool.query(
+    "SELECT id, username, role, created_at, allowed_categories FROM users WHERE bar_id = $1 ORDER BY created_at DESC",
+    [barId]
+  );
+  return result.rows;
+}
+
+export async function createBarUser(barId, username, passwordHash, role, allowedCategories = []) {
+  const result = await pool.query(
+    `INSERT INTO users (bar_id, username, password_hash, role, allowed_categories)
+     VALUES ($1, $2, $3, $4, $5)
+     RETURNING id, username, role, created_at, allowed_categories`,
+    [barId, username, passwordHash, role, allowedCategories]
+  );
+  return result.rows[0];
+}
+
+export async function updateUserPassword(userId, passwordHash) {
+  await pool.query("UPDATE users SET password_hash = $1 WHERE id = $2", [passwordHash, userId]);
+}
+
+export async function updateUserRoleAndCategories(userId, role, allowedCategories = []) {
+  const result = await pool.query(
+    "UPDATE users SET role = $1, allowed_categories = $2 WHERE id = $3 RETURNING id, username, role, allowed_categories",
+    [role, allowedCategories, userId]
+  );
+  return result.rows[0];
 }

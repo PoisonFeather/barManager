@@ -4,7 +4,7 @@ export async function getUserByUsername(username) {
   // LEFT JOIN: superadmin users have bar_id = NULL and no bar row
   const query = `
     SELECT u.id as user_id, u.username, u.password_hash, u.bar_id,
-           u.role, b.slug as bar_slug
+           u.role, u.allowed_categories, b.slug as bar_slug
     FROM users u
     LEFT JOIN bars b ON u.bar_id = b.id
     WHERE u.username = $1

@@ -300,3 +300,13 @@ export const updateTableZoneHandler = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+export const extendTableTimerHandler = async (req, res) => {
+  try {
+    const { tableId } = req.params;
+    await db.query("UPDATE tables SET last_activity_at = NOW() WHERE id = $1", [tableId]);
+    return res.json({ success: true, message: "Timer extended" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

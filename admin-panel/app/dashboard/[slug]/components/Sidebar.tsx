@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 interface SidebarProps {
   mainView: "workspace" | "analytics";
   setMainView: (view: "workspace" | "analytics") => void;
+  userRole?: string;
 }
 
 export function Sidebar({ mainView, setMainView }: SidebarProps) {
@@ -28,18 +29,20 @@ export function Sidebar({ mainView, setMainView }: SidebarProps) {
             <span className="text-[9px] font-bold uppercase tracking-widest">Bar</span>
           </button>
 
-          <button
-            onClick={() => setMainView("analytics")}
-            className={`w-full aspect-square rounded-2xl flex flex-col items-center justify-center gap-1 transition-all ${
-              mainView === "analytics" 
-                ? "bg-zinc-100 dark:bg-zinc-800 text-orange-500" 
-                : "text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 hover:text-zinc-700 dark:hover:text-zinc-300"
-            }`}
-             title="Analytics / Rapoarte"
-          >
-            <span className="text-xl">📈</span>
-            <span className="text-[9px] font-bold uppercase tracking-widest">Admin</span>
-          </button>
+          {(userRole === "admin" || userRole === "superadmin") && (
+            <button
+              onClick={() => setMainView("analytics")}
+              className={`w-full aspect-square rounded-2xl flex flex-col items-center justify-center gap-1 transition-all ${
+                mainView === "analytics" 
+                  ? "bg-zinc-100 dark:bg-zinc-800 text-orange-500" 
+                  : "text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 hover:text-zinc-700 dark:hover:text-zinc-300"
+              }`}
+               title="Analytics / Rapoarte"
+            >
+              <span className="text-xl">📈</span>
+              <span className="text-[9px] font-bold uppercase tracking-widest">Admin</span>
+            </button>
+          )}
         </nav>
       </aside>
 
@@ -57,17 +60,19 @@ export function Sidebar({ mainView, setMainView }: SidebarProps) {
             <span className="text-[9px] font-bold uppercase tracking-widest">Bar</span>
           </button>
 
-          <button
-            onClick={() => setMainView("analytics")}
-            className={`flex flex-col items-center justify-center gap-1 p-2 transition-all ${
-              mainView === "analytics" 
-                ? "text-orange-500" 
-                : "text-zinc-500"
-            }`}
-          >
-            <span className="text-lg">📈</span>
-            <span className="text-[9px] font-bold uppercase tracking-widest">Admin</span>
-          </button>
+          {(userRole === "admin" || userRole === "superadmin") && (
+            <button
+              onClick={() => setMainView("analytics")}
+              className={`flex flex-col items-center justify-center gap-1 p-2 transition-all ${
+                mainView === "analytics" 
+                  ? "text-orange-500" 
+                  : "text-zinc-500"
+              }`}
+            >
+              <span className="text-lg">📈</span>
+              <span className="text-[9px] font-bold uppercase tracking-widest">Admin</span>
+            </button>
+          )}
       </div>
     </>
   );

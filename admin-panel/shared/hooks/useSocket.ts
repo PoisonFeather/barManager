@@ -30,6 +30,23 @@ export function useSocket(onNewData?: () => void) {
     if (onNewData) {
       s.on('new-data', (data) => {
         console.log('📡 Semnal primit:', data);
+        if (data.type === "TABLE_INACTIVE") {
+          // If we are on the dashboard, we intercept this and prompt the server.
+          const action = window.confirm(`Masa ${data.tableNumber} e inactivă dincolo de limita setată (${data.inactiveMinutes} min).\n\nApasă OK pentru a extinde timerul (clientul mai ramane la masa).\nApasă Cancel pentru a o închide manual.`);
+          if (action) {
+            const token = localStorage.getItem("token");
+            if (token) {
+              fetch(`${socketHost}/dashboard/tables/${data.tableId}/extend-timer`, {
+                method: "POST",
+                headers: { "Authorization": `Bearer ${token}` }
+              }).catch(console.error);
+            }
+          } else {
+             // In fact here we could call close-table or prompt for payment, 
+             // but usually they will click Cancel and close it nicely manually from the TableCard ui.
+             alert(`Te rog localizează Masa ${data.tableNumber} pe ecran și închide-o (selectează metoda de plată).`);
+          }
+        }
         onNewData();
       });
     }

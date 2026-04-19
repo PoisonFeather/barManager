@@ -8,6 +8,12 @@ import {
   getRevenueTrendHandler,
   getChurnRiskHandler,
   getSystemHealthHandler,
+  getBarDetailsHandler,
+  updateBarFeaturesHandler,
+  getBarUsersHandler,
+  createBarUserHandler,
+  updateUserPasswordHandler,
+  updateUserRoleAndCategoriesHandler,
 } from "../controllers/superadmin.controller.js";
 
 const router = Router();
@@ -22,5 +28,15 @@ router.get("/orders/recent",  getRecentOrdersHandler);   // ?limit=20
 router.get("/revenue",        getRevenueTrendHandler);    // ?days=30
 router.get("/churn-risk",     getChurnRiskHandler);
 router.get("/system-health",  getSystemHealthHandler);
+
+// Bar Management
+router.get("/bars/:barId/details", getBarDetailsHandler);
+router.patch("/bars/:barId/features", updateBarFeaturesHandler);
+router.get("/bars/:barId/users", getBarUsersHandler);
+router.post("/bars/:barId/users", createBarUserHandler);
+
+// User Management specifically for bars under superadmin
+router.put("/users/:userId/password", updateUserPasswordHandler);
+router.put("/users/:userId/role", updateUserRoleAndCategoriesHandler);
 
 export default router;

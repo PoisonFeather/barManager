@@ -13,9 +13,22 @@ export function verifyToken(req, res, next) {
   
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded; // Atașează { userId, barId } la request, sau doar { barId } pentru demo
+    req.user = decoded; // Atașează { userId, barId, role, allowedCategories } la request, sau doar { barId } pentru demo
     next();
   } catch (error) {
     return res.status(401).json({ error: "Token invalid sau expirat." });
   }
+}
+
+export function allowRoles(...roles) {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ error: "Utilizator neautentificat." });
+    }
+    // superadmin can access anything
+    if (req.user.role === "superadmin" || roles.includes(req.user.role)) {
+      return next();
+    }
+    return res.status(403).json({ error: "Acces interzis pentru acest rol." });
+  };
 }
