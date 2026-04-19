@@ -66,6 +66,7 @@ export interface Bar {
   id: string;
   name: string;
   slug: string;
+  logo_url?: string | null;
   primary_color: string | null;
   table_count: number;
   tables_open: number;

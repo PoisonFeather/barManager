@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { superAdminApi, type Bar } from "@/shared/hooks/useSuperAdminApi";
 
@@ -33,6 +34,7 @@ function ActivityDot({ lastOrderAt }: { lastOrderAt: string | null }) {
 }
 
 export default function SuperAdminBarsPage() {
+  const router = useRouter();
   const [bars,    setBars]    = useState<Bar[]>([]);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState("");
@@ -203,7 +205,7 @@ export default function SuperAdminBarsPage() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: i * 0.02 }}
-                  onClick={() => window.location.assign(`/superadmin/bars/${bar.id}`)}
+                  onClick={() => router.push(`/superadmin/bars/${bar.id}`)}
                   className="border-b border-white/4 hover:bg-white/3 transition-colors cursor-pointer"
                 >
                   <td className="px-4 py-3">

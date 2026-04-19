@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: admin_boss
+      POSTGRES_PASSWORD: secret_password
+      POSTGRES_DB: bars_management
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build: ./backend
+    restart: always
+    ports:
+      - "127.0.0.1:3001:3001"
+    depends_on:
+      - db
+    environment:
+      PORT: 3001
+      DATABASE_URL: postgresql://admin_boss:secret_password@db:5432/bars_management
+
+  frontend:
+    build: ./admin-panel
+    restart: always
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - app
+    environment:
+      NEXT_PUBLIC_API_URL: https://barmanager.live/api
+      NEXT_SERVER_API_URL: http://app:3001
+
+volumes:
+  postgres_data:
+
