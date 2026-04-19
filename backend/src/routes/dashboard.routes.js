@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { verifyToken } from "../middleware/auth.js";
+import { verifyToken, allowRoles } from "../middleware/auth.js";
 import {
   dashboardSummaryHandler,
   toggleProductAvailabilityHandler,
@@ -13,6 +13,7 @@ import {
   getZonesHandler,
   createZoneHandler,
   updateTableZoneHandler,
+  extendTableTimerHandler,
 } from "../controllers/dashboard.controller.js";
 import { getAnalyticsHandler, getWaitTimeAnalyticsHandler } from "../controllers/analytics.controller.js";
 import { validateToggleProductPayload } from "../middleware/validation.js";
@@ -24,8 +25,8 @@ router.use(verifyToken);
 // 1. SCOATEM "/dashboard" din rute (dacă e deja prefixat în app.js)
 // Altfel, URL-ul tău ar fi fost: /dashboard/dashboard/summary/...
 router.get("/summary/:barId", dashboardSummaryHandler);
-router.get("/analytics/:barId", getAnalyticsHandler);
-router.get("/analytics/wait-times/:barId", getWaitTimeAnalyticsHandler);
+router.get("/analytics/:barId", allowRoles("admin"), getAnalyticsHandler);
+router.get("/analytics/wait-times/:barId", allowRoles("admin"), getWaitTimeAnalyticsHandler);
 
 // ZONE MANAGEMENT
 router.get("/zones/:barId", getZonesHandler);
@@ -35,6 +36,7 @@ router.patch("/tables/:tableId/zone", checkTableOwnership, updateTableZoneHandle
 // 2. ADĂUGĂM RUTELE POST (Tabele)
 router.post("/approve-table", checkTableOwnership, approveTableHandler);
 router.post("/reject-table", checkTableOwnership, rejectTableHandler);
+router.post("/tables/:tableId/extend-timer", checkTableOwnership, extendTableTimerHandler);
 
 // 3. Ruta pentru stoc
 router.patch(

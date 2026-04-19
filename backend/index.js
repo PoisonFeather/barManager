@@ -3,6 +3,7 @@ import { logEnvDiagnostics, loadEnv } from "./src/config/env.js";
 
 import { createServer } from "http";
 import { Server } from "socket.io";
+import { startInactivityTimer } from "./src/services/timer.service.js";
 
 /**
  * SRP bootstrap entrypoint:
@@ -45,4 +46,7 @@ io.on("connection", (socket) => {
 
 httpServer.listen(PORT, () => {
   console.log(`🚀 Server pornit pe portul ${PORT} cu WebSockets activat`);
+  
+  // Pornește cron job-ul pentru inactivitate mese
+  startInactivityTimer(io);
 });
