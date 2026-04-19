@@ -345,6 +345,7 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
                   onAdd={addToCart}
                   onOpenDetail={setSelectedProduct}
                   primaryColor={barData.primary_color}
+                  allowOrdering={barData.features?.allow_ordering !== false}
                 />
               ))}
             </div>
@@ -365,6 +366,8 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
         primaryColor={barData.primary_color}
         isCartOpen={isCartOpen}
         isServiceModalOpen={isServiceModalOpen}
+        allowCallWaiter={barData.features?.allow_call_waiter !== false}
+        allowOrdering={barData.features?.allow_ordering !== false}
       />
       )}
 
@@ -394,6 +397,7 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
           <ProductDetailModal
             prod={selectedProduct}
             primaryColor={barData.primary_color}
+            allowOrdering={barData.features?.allow_ordering !== false}
             onAdd={addToCart}
             onClose={() => setSelectedProduct(null)}
           />

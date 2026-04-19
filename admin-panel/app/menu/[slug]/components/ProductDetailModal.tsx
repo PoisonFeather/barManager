@@ -8,9 +8,10 @@ interface ProductDetailModalProps {
   primaryColor: string;
   onAdd: (product: any) => void;
   onClose: () => void;
+  allowOrdering: boolean;
 }
 
-export function ProductDetailModal({ prod, primaryColor, onAdd, onClose }: ProductDetailModalProps) {
+export function ProductDetailModal({ prod, primaryColor, onAdd, onClose, allowOrdering }: ProductDetailModalProps) {
   // Treat undefined/null as available — only explicit false means unavailable
   const isAvailable = prod.is_available !== false;
 
@@ -129,23 +130,25 @@ export function ProductDetailModal({ prod, primaryColor, onAdd, onClose }: Produ
         </div>
 
         {/* Footer — Add to order button */}
-        <div className="px-7 py-6 bg-white dark:bg-zinc-900 border-t border-zinc-100 dark:border-white/5 shrink-0">
-          {isAvailable ? (
-            <motion.button
-              whileTap={{ scale: 0.96 }}
-              onClick={handleAdd}
-              className="w-full py-5 rounded-3xl font-black text-base uppercase tracking-widest shadow-lg active:scale-95 flex items-center justify-between px-8 group transition-opacity"
-              style={{ backgroundColor: primaryColor, color: '#000' }}
-            >
-              <span>Adaugă la comandă</span>
-              <span className="opacity-50 group-hover:translate-x-1 transition-transform text-xl">+</span>
-            </motion.button>
-          ) : (
-            <div className="w-full py-5 rounded-3xl font-black text-base uppercase tracking-widest text-center bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600">
-              Indisponibil momentan
-            </div>
-          )}
-        </div>
+        {allowOrdering && (
+          <div className="px-7 py-6 bg-white dark:bg-zinc-900 border-t border-zinc-100 dark:border-white/5 shrink-0">
+            {isAvailable ? (
+              <motion.button
+                whileTap={{ scale: 0.96 }}
+                onClick={handleAdd}
+                className="w-full py-5 rounded-3xl font-black text-base uppercase tracking-widest shadow-lg active:scale-95 flex items-center justify-between px-8 group transition-opacity"
+                style={{ backgroundColor: primaryColor, color: '#000' }}
+              >
+                <span>Adaugă la comandă</span>
+                <span className="opacity-50 group-hover:translate-x-1 transition-transform text-xl">+</span>
+              </motion.button>
+            ) : (
+              <div className="w-full py-5 rounded-3xl font-black text-base uppercase tracking-widest text-center bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600">
+                Indisponibil momentan
+              </div>
+            )}
+          </div>
+        )}
       </motion.div>
     </div>
   );

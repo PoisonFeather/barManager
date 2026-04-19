@@ -115,6 +115,8 @@ export interface SystemHealth {
 export interface BarFeatures {
   timer_minutes?: number;
   has_kds?: boolean;
+  allow_ordering?: boolean;
+  allow_call_waiter?: boolean;
 }
 
 export interface BarDetails extends Bar {

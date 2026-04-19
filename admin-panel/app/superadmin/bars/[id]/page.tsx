@@ -139,6 +139,32 @@ export default function SuperAdminBarDetailsPage({ params }: { params: Promise<{
               <motion.div animate={{ x: bar.features.has_kds ? 24 : 0 }} className="w-4 h-4 bg-white rounded-full" />
             </button>
           </div>
+
+          <div className="flex items-center justify-between mt-4">
+            <div>
+              <p className="font-bold text-white">Comenzi la Masă (QR)</p>
+              <p className="text-xs text-zinc-500">Permite clienților să comande direct din telefon.</p>
+            </div>
+            <button 
+              onClick={() => handleToggleFeature("allow_ordering", bar.features.allow_ordering === false ? true : false)}
+              className={`w-12 h-6 rounded-full flex items-center p-1 transition-colors ${bar.features.allow_ordering !== false ? "bg-orange-500" : "bg-zinc-700"}`}
+            >
+              <motion.div animate={{ x: bar.features.allow_ordering !== false ? 24 : 0 }} className="w-4 h-4 bg-white rounded-full" />
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between mt-4">
+            <div>
+              <p className="font-bold text-white">Cheamă Chelner / Nota</p>
+              <p className="text-xs text-zinc-500">Afișează butonul de chemat ospătarul.</p>
+            </div>
+            <button 
+              onClick={() => handleToggleFeature("allow_call_waiter", bar.features.allow_call_waiter === false ? true : false)}
+              className={`w-12 h-6 rounded-full flex items-center p-1 transition-colors ${bar.features.allow_call_waiter !== false ? "bg-orange-500" : "bg-zinc-700"}`}
+            >
+              <motion.div animate={{ x: bar.features.allow_call_waiter !== false ? 24 : 0 }} className="w-4 h-4 bg-white rounded-full" />
+            </button>
+          </div>
         </div>
 
         {/* User Accounts */}

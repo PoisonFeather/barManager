@@ -5,9 +5,10 @@ interface ProductCardProps {
   onAdd: (product: any) => void;
   onOpenDetail: (product: any) => void;
   primaryColor: string;
+  allowOrdering: boolean;
 }
 
-export function ProductCard({ prod, onAdd, onOpenDetail, primaryColor }: ProductCardProps) {
+export function ProductCard({ prod, onAdd, onOpenDetail, primaryColor, allowOrdering }: ProductCardProps) {
   // Treat undefined/null as available — only explicit false means unavailable
   const isAvailable = prod.is_available !== false;
 
@@ -28,9 +29,10 @@ export function ProductCard({ prod, onAdd, onOpenDetail, primaryColor }: Product
         <span className="text-zinc-500 dark:text-zinc-400 font-black text-sm">
           {Number(prod.price).toFixed(2)} RON
         </span>
+        </span>
       </div>
 
-      {isAvailable && (
+      {isAvailable && allowOrdering && (
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={(e) => {

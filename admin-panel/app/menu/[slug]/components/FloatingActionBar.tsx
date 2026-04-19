@@ -9,10 +9,12 @@ interface Props {
   primaryColor: string;
   isCartOpen: boolean;
   isServiceModalOpen: boolean;
+  allowCallWaiter: boolean;
+  allowOrdering: boolean;
 }
 
 export function FloatingActionBar({ 
-  totalItems, totalAmount, historyTotal, onOpenCart, onOpenService, onUnlock, showUnlockRequest, primaryColor, isCartOpen, isServiceModalOpen 
+  totalItems, totalAmount, historyTotal, onOpenCart, onOpenService, onUnlock, showUnlockRequest, primaryColor, isCartOpen, isServiceModalOpen, allowCallWaiter, allowOrdering
 }: Props) {
   //("[DEBUG] FloatingActionBar rendered! showUnlockRequest =", showUnlockRequest);
   // Nu afișăm bara dacă modalurile sunt deschise (ca să nu se suprapună)
@@ -33,17 +35,19 @@ export function FloatingActionBar({
       )}
 
       {/* Buton Servicii */}
-      <button 
-        onClick={onOpenService} 
-        className="w-16 h-16 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 flex items-center justify-center text-xl shadow-2xl active:scale-95 transition-transform shrink-0"
-      >
-        🛎️
-      </button>
+      {allowCallWaiter && (
+        <button 
+          onClick={onOpenService} 
+          className="w-16 h-16 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 flex items-center justify-center text-xl shadow-2xl active:scale-95 transition-transform shrink-0"
+        >
+          🛎️
+        </button>
+      )}
 
       {/* Buton Coș / Notă */}
-      {(totalItems > 0 || historyTotal > 0) && (
+      {( (totalItems > 0 && allowOrdering) || historyTotal > 0 ) && (
         <div className="flex-1">
-          {totalItems > 0 ? (
+          {totalItems > 0 && allowOrdering ? (
             <button 
               onClick={onOpenCart} 
               className="w-full h-16 px-8 rounded-4xl font-black flex justify-between items-center shadow-xl active:scale-95 transition-all" 
