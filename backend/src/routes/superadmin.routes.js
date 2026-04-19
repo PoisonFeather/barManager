@@ -13,7 +13,7 @@ import {
   getBarUsersHandler,
   createBarUserHandler,
   updateUserPasswordHandler,
-  updateUserRoleAndCategoriesHandler,
+  updateUserHandler,
 } from "../controllers/superadmin.controller.js";
 
 const router = Router();
@@ -37,6 +37,6 @@ router.post("/bars/:barId/users", createBarUserHandler);
 
 // User Management specifically for bars under superadmin
 router.put("/users/:userId/password", updateUserPasswordHandler);
-router.put("/users/:userId/role", updateUserRoleAndCategoriesHandler);
+router.put("/users/:userId", updateUserHandler);
 
 export default router;
