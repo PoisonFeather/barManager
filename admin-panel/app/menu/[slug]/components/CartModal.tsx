@@ -51,15 +51,20 @@ export function CartModal({ cart, history, myShare, onUpdate, onSend, onClose, p
             <div className="space-y-3">
               <h3 className="text-zinc-400 text-[10px] font-black uppercase tracking-widest">De Comandat</h3>
               {cart.map((item) => (
-                <div key={item.id} className="flex justify-between items-center bg-zinc-50 dark:bg-white/5 p-5 rounded-4xl border border-zinc-100 dark:border-white/5">
+                <div key={item.cartItemId || item.id} className="flex justify-between items-center bg-zinc-50 dark:bg-white/5 p-5 rounded-4xl border border-zinc-100 dark:border-white/5">
                   <div className="flex-1">
                     <p className="font-black uppercase text-sm">{item.name}</p>
+                    {item.notes && (
+                      <p className="text-xs text-orange-500 font-bold italic line-clamp-1 mb-1">
+                        * {item.notes}
+                      </p>
+                    )}
                     <p className="text-[10px] font-bold text-zinc-500">{(item.price * item.quantity).toFixed(2)} RON</p>
                   </div>
                   <div className="flex items-center gap-4 bg-zinc-200/50 dark:bg-black/40 p-1.5 rounded-2xl border border-zinc-300 dark:border-white/10">
-                    <button className="w-8 h-8 flex items-center justify-center font-bold" onClick={() => onUpdate(item.id, -1)}>−</button>
+                    <button className="w-8 h-8 flex items-center justify-center font-bold" onClick={() => onUpdate(item.cartItemId || item.id, -1)}>−</button>
                     <span className="font-black w-4 text-center text-sm">{item.quantity}</span>
-                    <button className="w-8 h-8 flex items-center justify-center font-bold" onClick={() => onUpdate(item.id, 1)}>+</button>
+                    <button className="w-8 h-8 flex items-center justify-center font-bold" onClick={() => onUpdate(item.cartItemId || item.id, 1)}>+</button>
                   </div>
                 </div>
               ))}
@@ -75,9 +80,12 @@ export function CartModal({ cart, history, myShare, onUpdate, onSend, onClose, p
               </h3>
               <div className="space-y-2 bg-indigo-50 dark:bg-indigo-950/30 p-5 rounded-3xl border border-indigo-100 dark:border-indigo-900/50">
                 {myShare.map((item, i) => (
-                  <div key={i} className="flex justify-between text-[11px] font-bold uppercase tracking-tight text-indigo-700 dark:text-indigo-300">
-                    <span>{item.quantity}x {item.name}</span>
-                    <span className="font-mono italic">{(item.quantity * item.price).toFixed(2)} RON</span>
+                  <div key={i} className="flex flex-col mb-1 text-[11px] font-bold uppercase tracking-tight text-indigo-700 dark:text-indigo-300">
+                    <div className="flex justify-between">
+                      <span>{item.quantity}x {item.name}</span>
+                      <span className="font-mono italic">{(item.quantity * item.price).toFixed(2)} RON</span>
+                    </div>
+                    {item.notes && <span className="text-[9px] lowercase italic opacity-80">* {item.notes}</span>}
                   </div>
                 ))}
                 <div className="border-t border-indigo-200 dark:border-indigo-800 pt-2 mt-2 flex justify-between font-black text-sm text-indigo-700 dark:text-indigo-300">
@@ -96,16 +104,19 @@ export function CartModal({ cart, history, myShare, onUpdate, onSend, onClose, p
               </h3>
               <div className="space-y-2 bg-zinc-100 dark:bg-black/20 p-6 rounded-4xl border border-dashed border-zinc-200 dark:border-white/10">
                 {history.map((item, i) => (
-                  <div key={i} className="flex justify-between items-center text-[11px] font-bold uppercase tracking-tight text-zinc-500">
-                    <div className="flex items-center gap-2">
-                      <span>{item.quantity}x {item.name}</span>
-                      {item.placed_by_staff && (
-                        <span className="bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider">
-                          🍺 Bar
-                        </span>
-                      )}
+                  <div key={i} className="flex flex-col mb-1 text-[11px] font-bold uppercase tracking-tight text-zinc-500">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <span>{item.quantity}x {item.name}</span>
+                        {item.placed_by_staff && (
+                          <span className="bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider">
+                            🍺 Bar
+                          </span>
+                        )}
+                      </div>
+                      <span className="font-mono italic">{(item.quantity * item.price).toFixed(2)}</span>
                     </div>
-                    <span className="font-mono italic">{(item.quantity * item.price).toFixed(2)}</span>
+                    {item.notes && <span className="text-[9px] lowercase italic text-orange-400 dark:text-orange-500/80">* {item.notes}</span>}
                   </div>
                 ))}
               </div>

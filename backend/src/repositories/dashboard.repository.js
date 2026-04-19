@@ -30,7 +30,8 @@ export async function getDashboardSummaryByBar(barId) {
         jsonb_agg(jsonb_build_object(
           'item_id', oi.id,
           'name', p.name,
-          'qty', oi.quantity
+          'qty', oi.quantity,
+          'notes', oi.notes
         )) FILTER (WHERE oi.status = 'pending' AND o.status = 'confirmed'),
         '[]'::jsonb
       ) as pending_items,
