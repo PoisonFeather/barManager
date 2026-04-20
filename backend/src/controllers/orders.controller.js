@@ -194,6 +194,8 @@ export async function serveOrderItemHandler(req, res) {
   try {
     const { itemId } = req.params;
     const response = await serveOrderItem(itemId);
+    const io = req.app.get("io");
+    if (io) io.emit("new-data", { type: "ITEM_SERVED", itemId });
     return res.json(response);
   } catch (error) {
     return res.status(resolveStatus(error)).json({ error: error.message });
@@ -204,6 +206,8 @@ export async function deliverOrderItemHandler(req, res) {
   try {
     const { itemId } = req.params;
     const response = await deliverOrderItem(itemId);
+    const io = req.app.get("io");
+    if (io) io.emit("new-data", { type: "ITEM_DELIVERED", itemId });
     return res.json(response);
   } catch (error) {
     return res.status(resolveStatus(error)).json({ error: error.message });

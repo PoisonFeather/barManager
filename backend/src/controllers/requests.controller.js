@@ -65,6 +65,8 @@ export async function completeRequestHandler(req, res) {
   try {
     const { id } = req.params;
     const result = await completeRequest(id);
+    const io = req.app.get("io");
+    if (io) io.emit("new-data", { type: "REQUEST_COMPLETED", requestId: id });
     return res.json(result);
   } catch (error) {
     console.log(error);
