@@ -53,10 +53,19 @@ export default function KitchenKDS({ params }: { params: Promise<{ slug: string 
   };
 
   const kdsGroups = tableGroups
-    .map(group => ({
-      ...group,
-      pending_items: group.pending_items?.filter((i: any) => i.status === 'pending') || []
-    }))
+    .map(group => {
+      const pendingItems = group.pending_items?.filter((i: any) => i.status === 'pending') || [];
+      
+      // Dacă bucătăria are categorii selectate, filtrăm și la nivel de element
+      const filteredPendingItems = (allowedCategories && allowedCategories.length > 0)
+        ? pendingItems.filter((i: any) => allowedCategories.includes(i.category_id))
+        : pendingItems;
+
+      return {
+        ...group,
+        pending_items: filteredPendingItems
+      };
+    })
     .filter(hasWork);
 
   return (
