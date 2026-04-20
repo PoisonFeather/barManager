@@ -31,7 +31,8 @@ export async function getDashboardSummaryByBar(barId) {
           'item_id', oi.id,
           'name', p.name,
           'qty', oi.quantity,
-          'notes', oi.notes
+          'notes', oi.notes,
+          'category_id', p.category_id
         )) FILTER (WHERE oi.status = 'pending' AND o.status = 'confirmed'),
         '[]'::jsonb
       ) as pending_items,

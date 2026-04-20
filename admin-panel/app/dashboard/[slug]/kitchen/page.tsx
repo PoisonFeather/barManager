@@ -43,23 +43,18 @@ export default function KitchenKDS({ params }: { params: Promise<{ slug: string 
     return <div className="min-h-screen bg-black flex items-center justify-center text-orange-500 font-black animate-pulse text-2xl tracking-widest">KDS Se Încarcă...</div>;
   }
 
-  // Filtrăm mesele care au comenzi pentru categoriile permise ale acestui user de KDS (ex. Bar vs. Bucătărie)
   const hasWork = (group: any) => {
     if (!allowedCategories || allowedCategories.length === 0) return true; // Poate vedea tot
     
-    const allReqs = [...(group.active_requests || []), ...(group.requests || [])];
-    return allReqs.some(req => {
-      // doar comenzi de produse, ignoram apeluri chelner
-      if (req.type !== "order" && req.type !== "staff_order") return false;
-      return req.items?.some((item: any) => allowedCategories.includes(item.category_id));
-    });
+    // Filtram pur și simplu dacă există produse pendinte care fac parte din categoriile permise
+    return group.pending_items?.some((item: any) => allowedCategories.includes(item.category_id));
   };
 
   const kdsGroups = tableGroups.filter(hasWork);
 
   return (
-    <div className="min-h-screen bg-zinc-950 p-4 md:p-8 text-white">
-      <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-4">
+    <div className="min-h-screen bg-zinc-100 dark:bg-zinc-950 p-4 md:p-8 text-zinc-900 dark:text-white">
+      <div className="flex justify-between items-center mb-8 border-b border-zinc-200 dark:border-white/10 pb-4">
          <div>
            <h1 className="text-4xl text-orange-500 font-black tracking-tighter uppercase">KDS / Ecran Producție</h1>
            <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs mt-1">{barData.name}</p>

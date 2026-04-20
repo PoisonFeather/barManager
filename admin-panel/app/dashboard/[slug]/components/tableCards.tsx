@@ -52,7 +52,7 @@ export function TableCard({
       {...attributes}
       style={dragStyle}
       id={`table-card-${group.table_id}`}
-      className={`relative cursor-grab active:cursor-grabbing bg-white dark:bg-zinc-900 rounded-[2.5rem] p-7 border-t-8 shadow-2xl flex flex-col transition-all duration-300 ${getBorderColor()}`}
+      className={`relative cursor-grab active:cursor-grabbing bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white rounded-[2.5rem] p-7 border-t-8 shadow-2xl flex flex-col transition-all duration-300 ${getBorderColor()}`}
     >
       <div className="flex justify-between items-start mb-6">
         <div>
@@ -162,7 +162,7 @@ export function TableCard({
               className="flex justify-between items-center bg-zinc-100 dark:bg-black/40 p-4 rounded-2xl border border-zinc-200 dark:border-white/5 group hover:border-orange-500/50 transition-colors"
             >
               <div className="flex flex-col max-w-[70%]">
-                <span className="font-black text-sm uppercase leading-tight">
+                <span className="font-black text-sm uppercase leading-tight text-zinc-900 dark:text-white">
                   {item.qty}x {item.name}
                 </span>
                 {item.notes && (
