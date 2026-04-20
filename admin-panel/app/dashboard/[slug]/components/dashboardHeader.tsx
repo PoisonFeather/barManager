@@ -36,18 +36,18 @@ export function DashboardHeader({ barName, activeTab, setActiveTab, tableCount, 
             Mese ({tableCount})
           </button>
           
-          {(userRole === "admin" || userRole === "superadmin") && (
-            <>
+          {(userRole === "admin" || userRole === "superadmin" || userRole === "server") && (
               <button onClick={() => setActiveTab("stock")} className={`flex-1 md:flex-none px-6 py-2 rounded-xl font-black text-[10px] uppercase ${activeTab === "stock" ? "bg-white dark:bg-zinc-800 shadow-lg" : "text-zinc-500"}`}>
                 Stoc
               </button>
+          )}
+          {(userRole === "admin" || userRole === "superadmin") && (
               <button 
                 onClick={() => setActiveTab("menu")} 
                 className={`flex-1 md:flex-none px-6 py-2 rounded-xl font-black text-[10px] uppercase transition-all ${activeTab === "menu" ? "bg-white dark:bg-zinc-800 shadow-lg text-zinc-900 dark:text-white" : "text-zinc-500"}`}
               >
                 Meniu
               </button>
-            </>
           )}
         </div>
       </div>

@@ -19,7 +19,7 @@ import superadminRoutes from "./routes/superadmin.routes.js";
 // Limiter global (fallback pentru toate rutele)
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 300,
+  max: 400,
   message: {
     error: "Prea multe cereri de la acest IP. Te rugăm să încerci din nou.",
   },

@@ -32,8 +32,9 @@ export function useCart() {
   }, [cart]);
 
   // 3. Adăugare produs (sau incrementare dacă există deja cu ACELEAȘI notițe)
-  const addToCart = useCallback((product: any, notes: string = "") => {
+  const addToCart = useCallback((product: any) => {
     setCart((prev) => {
+      const notes = product.notes || "";
       const targetCartItemId = `${product.id}-${notes.trim().toLowerCase()}`;
 
       const existingItemIndex = prev.findIndex((item) => (item.cartItemId || item.id) === targetCartItemId || (item.id === product.id && (item.notes||"") === notes));
@@ -43,7 +44,7 @@ export function useCart() {
           index === existingItemIndex ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
-      return [...prev, { ...product, quantity: 1, notes, cartItemId: targetCartItemId }];
+      return [...prev, { ...product, quantity: 1, cartItemId: targetCartItemId }];
     });
   }, []);
 
