@@ -148,6 +148,7 @@ export function validateCreateOrderPayload(req, res, next) {
           id: rawItemId,
           quantity: Number(item.quantity),
           price: Number(item.price),
+          notes: item.notes || null,
         });
       }
     });

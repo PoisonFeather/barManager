@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useDashboardSummary } from "@/shared/hooks/useDashboardSummary";
 import { useBarData } from "@/shared/hooks/useBarData";
 import { dashboardService } from "@/shared/services/dashboardService";
-import { useSocket } from "@/shared/hooks/useSocket"; 
+import { useSocket } from "@/shared/hooks/useSocket";
 import { TableCard } from "../components/tableCards";
 
 export default function KitchenKDS({ params }: { params: Promise<{ slug: string }> }) {
@@ -12,7 +12,7 @@ export default function KitchenKDS({ params }: { params: Promise<{ slug: string 
   const router = useRouter();
   const [userRole, setUserRole] = useState<string>("server");
   const [allowedCategories, setAllowedCategories] = useState<string[]>([]);
-  
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const token = localStorage.getItem("token");
@@ -24,7 +24,7 @@ export default function KitchenKDS({ params }: { params: Promise<{ slug: string 
         const payload = JSON.parse(atob(token.split('.')[1]));
         setUserRole(payload.role || "server");
         setAllowedCategories(payload.allowedCategories || []);
-      } catch (e) {}
+      } catch (e) { }
     }
   }, [router]);
 
@@ -45,7 +45,7 @@ export default function KitchenKDS({ params }: { params: Promise<{ slug: string 
 
   const hasWork = (group: any) => {
     if (!allowedCategories || allowedCategories.length === 0) return true; // Poate vedea tot
-    
+
     // Filtram pur și simplu dacă există produse pendinte care fac parte din categoriile permise
     return group.pending_items?.some((item: any) => allowedCategories.includes(item.category_id));
   };
@@ -55,31 +55,31 @@ export default function KitchenKDS({ params }: { params: Promise<{ slug: string 
   return (
     <div className="min-h-screen bg-zinc-100 dark:bg-zinc-950 p-4 md:p-8 text-zinc-900 dark:text-white">
       <div className="flex justify-between items-center mb-8 border-b border-zinc-200 dark:border-white/10 pb-4">
-         <div>
-           <h1 className="text-4xl text-orange-500 font-black tracking-tighter uppercase">KDS / Ecran Producție</h1>
-           <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs mt-1">{barData.name}</p>
-         </div>
-         {userRole !== "kitchen" && (
-           <button 
-             onClick={() => router.push(`/dashboard/${slug}`)} 
-             className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 font-bold text-xs uppercase tracking-widest transition-colors"
-           >
-             Înapoi la Bar
-           </button>
-         )}
+        <div>
+          <h1 className="text-4xl text-orange-500 font-black tracking-tighter uppercase">KDS / Ecran Producție</h1>
+          <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs mt-1">{barData.name}</p>
+        </div>
+        {userRole !== "kitchen" && (
+          <button
+            onClick={() => router.push(`/dashboard/${slug}`)}
+            className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 font-bold text-xs uppercase tracking-widest transition-colors"
+          >
+            Înapoi la Bar
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-max items-start">
         {kdsGroups.map(group => (
           <div key={group.table_id} className="scale-100 transform origin-top transition-transform">
-            <TableCard 
-              group={group} 
-              onComplete={handleComplete} 
-              onServe={handleServe} 
-              onClose={() => {}} // Disabled on KDS visually because they shouldn't tap it
-              onApprove={() => {}}
-              onReject={() => {}}
-              onAddOrder={() => {}}
+            <TableCard
+              group={group}
+              onComplete={handleComplete}
+              onServe={handleServe}
+              onClose={() => { }} // Disabled on KDS visually because they shouldn't tap it
+              onApprove={() => { }}
+              onReject={() => { }}
+              onAddOrder={() => { }}
             />
           </div>
         ))}
