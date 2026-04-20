@@ -30,7 +30,7 @@ const globalLimiter = rateLimit({
 // Limiter strict DOAR pentru auth/onboarding (brute-force protection)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: 100,
   message: {
     error: "Prea multe încercări. Cont blocat temporar! Încearcă peste 15 minute.",
   },
