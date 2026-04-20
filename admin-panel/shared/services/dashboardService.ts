@@ -39,6 +39,12 @@ export const dashboardService = {
       });
     return res.ok;
   },
+  deliverItem: async (itemId: string) => {
+    const res = await fetchWithAuth(`${API_BASE_URL}/order-items/${itemId}/deliver`, { 
+        method: "PATCH" 
+      });
+    return res.ok;
+  },
   closeTable: async (tableId: string, paymentMethod: string = 'cash') => {
     const res = await fetchWithAuth(`${API_BASE_URL}/tables/${tableId}/close`, { 
         method: "PATCH",

@@ -91,6 +91,7 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
   // Handlere normale
   const handleComplete = async (id: string) => (await dashboardService.completeRequest(id)) && refresh();
   const handleServe = async (id: string) => (await dashboardService.serveItem(id)) && refresh();
+  const handleDeliver = async (id: string) => (await dashboardService.deliverItem(id)) && refresh();
 
 
 
@@ -236,6 +237,7 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
                         group={group} 
                         onComplete={handleComplete} 
                         onServe={handleServe} 
+                        onDeliver={handleDeliver}
                         onClose={() => handleClose(group.table_id, group.requests?.find((r: any) => r.type === "bill")?.payment_method)}
                         onApprove={handleApprove}
                         onReject={handleReject}

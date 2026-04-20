@@ -110,6 +110,13 @@ export async function markOrderItemServed(itemId) {
   ]);
 }
 
+export async function markOrderItemDelivered(itemId) {
+  // Delivered meaning taken to the table by waiter
+  await pool.query("UPDATE order_items SET status = 'delivered', served_at = NOW() WHERE id = $1", [
+    itemId,
+  ]);
+}
+
 export async function closeTableOrders(tableId, paymentMethod = "cash") {
   // 1. Închidem comenzile nerezolvate (pentru Părinte + potențiale resturi de pe Copii)
   await pool.query(

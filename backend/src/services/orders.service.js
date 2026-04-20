@@ -10,6 +10,7 @@ import {
   withTransaction,
   insertRequest,
   updateRequestStatus,
+  markOrderItemDelivered,
 } from "../repositories/orders.repository.js";
 
 export async function createOrder(payload) {
@@ -69,6 +70,11 @@ export async function getMyShare(tableId, sessionToken) {
 
 export async function serveOrderItem(itemId) {
   await markOrderItemServed(itemId);
+  return { success: true };
+}
+
+export async function deliverOrderItem(itemId) {
+  await markOrderItemDelivered(itemId);
   return { success: true };
 }
 

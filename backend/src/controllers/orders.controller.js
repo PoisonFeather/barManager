@@ -6,6 +6,7 @@ import {
   getTableHistory,
   listActiveOrders,
   serveOrderItem,
+  deliverOrderItem,
 } from "../services/orders.service.js";
 import {
   createRequest,
@@ -193,6 +194,16 @@ export async function serveOrderItemHandler(req, res) {
   try {
     const { itemId } = req.params;
     const response = await serveOrderItem(itemId);
+    return res.json(response);
+  } catch (error) {
+    return res.status(resolveStatus(error)).json({ error: error.message });
+  }
+}
+
+export async function deliverOrderItemHandler(req, res) {
+  try {
+    const { itemId } = req.params;
+    const response = await deliverOrderItem(itemId);
     return res.json(response);
   } catch (error) {
     return res.status(resolveStatus(error)).json({ error: error.message });

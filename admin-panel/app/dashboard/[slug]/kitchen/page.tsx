@@ -44,13 +44,20 @@ export default function KitchenKDS({ params }: { params: Promise<{ slug: string 
   }
 
   const hasWork = (group: any) => {
-    if (!allowedCategories || allowedCategories.length === 0) return true; // Poate vedea tot
+    const pendingItems = group.pending_items?.filter((i: any) => i.status === 'pending') || [];
+    if (pendingItems.length === 0) return false;
 
+    if (!allowedCategories || allowedCategories.length === 0) return true; // Poate vedea tot
     // Filtram pur și simplu dacă există produse pendinte care fac parte din categoriile permise
-    return group.pending_items?.some((item: any) => allowedCategories.includes(item.category_id));
+    return pendingItems.some((item: any) => allowedCategories.includes(item.category_id));
   };
 
-  const kdsGroups = tableGroups.filter(hasWork);
+  const kdsGroups = tableGroups
+    .map(group => ({
+      ...group,
+      pending_items: group.pending_items?.filter((i: any) => i.status === 'pending') || []
+    }))
+    .filter(hasWork);
 
   return (
     <div className="min-h-screen bg-zinc-100 dark:bg-zinc-950 p-4 md:p-8 text-zinc-900 dark:text-white">
