@@ -35,7 +35,7 @@ export default function SuperAdminBarDetailsPage({ params }: { params: Promise<{
       const menuRes = await fetch(`/api/menu/${details.slug}`);
       if (menuRes.ok) {
         const menuData = await menuRes.json();
-        setBarCategories(menuData.categories || []);
+        setBarCategories(menuData.menu || []);
       }
     } catch (err: any) {
       setError(err.message || String(err));

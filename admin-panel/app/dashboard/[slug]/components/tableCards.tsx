@@ -127,9 +127,8 @@ export function TableCard({
         {group.active_requests?.map((req: any) => (
           <div
             key={req.id}
-            className={`p-4 rounded-2xl flex justify-between items-center ${
-              req.type === "bill" ? "bg-red-600 animate-pulse" : "bg-orange-500"
-            } text-white shadow-lg`}
+            className={`p-4 rounded-2xl flex justify-between items-center ${req.type === "bill" ? "bg-red-600 animate-pulse" : "bg-orange-500"
+              } text-white shadow-lg`}
           >
             <div className="flex flex-col gap-1.5">
               <span className="font-black text-xs uppercase opacity-90 tracking-wider">
@@ -162,11 +161,10 @@ export function TableCard({
             return (
               <div
                 key={item.item_id}
-                className={`flex justify-between items-center p-4 rounded-2xl border transition-colors group ${
-                  isServed 
-                    ? "bg-green-500/10 border-green-500/50 shadow-[0_0_15px_rgba(34,197,94,0.2)]" 
+                className={`flex justify-between items-center p-4 rounded-2xl border transition-colors group ${isServed
+                    ? "bg-green-500/10 border-green-500/50 shadow-[0_0_15px_rgba(34,197,94,0.2)]"
                     : "bg-zinc-100 dark:bg-black/40 border-zinc-200 dark:border-white/5 hover:border-orange-500/50"
-                }`}
+                  }`}
               >
                 <div className="flex flex-col max-w-[70%]">
                   <span className={`font-black text-sm uppercase leading-tight ${isServed ? "text-green-600 dark:text-green-400" : "text-zinc-900 dark:text-white"}`}>
@@ -179,7 +177,7 @@ export function TableCard({
                   )}
                   {isServed && (
                     <span className="text-[9px] font-black uppercase tracking-widest text-green-500 mt-1">
-                      ✅ Gata la bucătărie
+                      ✅ Gata de dus la masă
                     </span>
                   )}
                 </div>
@@ -216,10 +214,9 @@ export function TableCard({
         }}
         disabled={hasOrders || isPendingApproval}
         className={`w-full p-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all 
-          ${
-            !hasOrders && !isPendingApproval
-              ? "bg-zinc-950 dark:bg-white text-white dark:text-black hover:scale-[1.02] active:scale-95 shadow-xl"
-              : "bg-zinc-100 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed opacity-50"
+          ${!hasOrders && !isPendingApproval
+            ? "bg-zinc-950 dark:bg-white text-white dark:text-black hover:scale-[1.02] active:scale-95 shadow-xl"
+            : "bg-zinc-100 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed opacity-50"
           }`}
       >
         Închide & Eliberează Masa
