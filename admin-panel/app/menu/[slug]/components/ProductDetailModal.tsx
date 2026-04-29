@@ -1,5 +1,5 @@
 "use client";
-import { motion } from "framer-motion";
+import { motion, useDragControls } from "framer-motion";
 import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
 
@@ -12,6 +12,7 @@ interface ProductDetailModalProps {
 }
 
 export function ProductDetailModal({ prod, primaryColor, onAdd, onClose, allowOrdering }: ProductDetailModalProps) {
+  const dragControls = useDragControls();
   // Treat undefined/null as available — only explicit false means unavailable
   const isAvailable = prod.is_available !== false;
 
@@ -63,14 +64,30 @@ export function ProductDetailModal({ prod, primaryColor, onAdd, onClose, allowOr
 
       {/* Card */}
       <motion.div
+        drag="y"
+        dragControls={dragControls}
+        dragListener={false}
+        dragConstraints={{ top: 0 }}
+        dragElastic={0.2}
+        onDragEnd={(e, info) => {
+          if (info.offset.y > 100 || info.velocity.y > 500) {
+            onClose();
+          }
+        }}
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
         transition={{ type: "spring", damping: 28, stiffness: 220 }}
         className="relative bg-white dark:bg-zinc-900 w-full max-h-[90vh] rounded-t-[2.5rem] shadow-2xl flex flex-col overflow-hidden"
       >
-        {/* Drag pill */}
-        <div className="w-12 h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full mx-auto mt-5 mb-2 shrink-0" />
+        {/* Drag pill area (handle) */}
+        <div 
+          className="w-full pt-5 pb-2 flex justify-center shrink-0 cursor-grab active:cursor-grabbing"
+          onPointerDown={(e) => dragControls.start(e)}
+          style={{ touchAction: "none" }}
+        >
+          <div className="w-12 h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full" />
+        </div>
 
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto">

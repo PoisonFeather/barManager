@@ -1,5 +1,5 @@
 // app/menu/[slug]/components/CartModal.tsx
-import { motion } from "framer-motion";
+import { motion, useDragControls } from "framer-motion";
 
 interface Props {
   cart: any[];
@@ -14,6 +14,7 @@ interface Props {
 }
 
 export function CartModal({ cart, history, myShare, onUpdate, onSend, onClose, primaryColor, totalAmount, historyTotal }: Props) {
+  const dragControls = useDragControls();
   const myShareTotal = myShare.reduce((sum, o) => sum + (Number(o.price) * o.quantity), 0);
   // Secțiunea "Contribuția Ta" apare DOAR dacă:
   // 1. Avem produse personale (myShare non-gol)
@@ -32,13 +33,29 @@ export function CartModal({ cart, history, myShare, onUpdate, onSend, onClose, p
       />
       
       <motion.div 
+        drag="y"
+        dragControls={dragControls}
+        dragListener={false}
+        dragConstraints={{ top: 0 }}
+        dragElastic={0.2}
+        onDragEnd={(e, info) => {
+          if (info.offset.y > 100 || info.velocity.y > 500) {
+            onClose();
+          }
+        }}
         initial={{ y: "100%" }} 
         animate={{ y: 0 }} 
         exit={{ y: "100%" }}
         transition={{ type: "spring", damping: 25, stiffness: 200 }}
         className="relative bg-white dark:bg-zinc-900 w-full max-h-[85vh] rounded-t-[3rem] shadow-2xl flex flex-col overflow-hidden"
       >
-        <div className="w-12 h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full mx-auto my-6" />
+        <div 
+          className="w-full pt-6 pb-4 flex justify-center shrink-0 cursor-grab active:cursor-grabbing"
+          onPointerDown={(e) => dragControls.start(e)}
+          style={{ touchAction: "none" }}
+        >
+          <div className="w-12 h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full" />
+        </div>
         
         <div className="flex-1 overflow-y-auto px-8 pb-10 space-y-8">
           <div className="flex justify-between items-end">

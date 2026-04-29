@@ -1,6 +1,6 @@
 // app/menu/[slug]/components/ServiceModal.tsx
 import { useState } from 'react';
-import { motion } from "framer-motion";
+import { motion, useDragControls } from "framer-motion";
 
 interface Props {
   onSendRequest: (type: string, method?: string | null) => void;
@@ -9,6 +9,7 @@ interface Props {
 
 export function ServiceModal({ onSendRequest, onClose }: Props) {
   const [step, setStep] = useState<'choice' | 'payment'>('choice');
+  const dragControls = useDragControls();
 
   return (
     <div className="fixed inset-0 z-60 flex flex-col justify-end">
@@ -19,10 +20,26 @@ export function ServiceModal({ onSendRequest, onClose }: Props) {
       />
       
       <motion.div 
+        drag="y"
+        dragControls={dragControls}
+        dragListener={false}
+        dragConstraints={{ top: 0 }}
+        dragElastic={0.2}
+        onDragEnd={(e, info) => {
+          if (info.offset.y > 100 || info.velocity.y > 500) {
+            onClose();
+          }
+        }}
         initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
-        className="relative bg-zinc-950 w-full rounded-t-[3rem] p-10 pb-16 border-t border-white/5"
+        className="relative bg-zinc-950 w-full rounded-t-[3rem] p-10 pt-0 pb-16 border-t border-white/5"
       >
-        <div className="w-12 h-1.5 bg-zinc-800 rounded-full mx-auto mb-10" />
+        <div 
+          className="w-full pt-6 pb-10 flex justify-center shrink-0 cursor-grab active:cursor-grabbing"
+          onPointerDown={(e) => dragControls.start(e)}
+          style={{ touchAction: "none" }}
+        >
+          <div className="w-12 h-1.5 bg-zinc-800 rounded-full" />
+        </div>
         
         {step === 'choice' ? (
           <div className="grid gap-4">
