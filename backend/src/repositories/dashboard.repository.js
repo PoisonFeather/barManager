@@ -47,7 +47,7 @@ export async function getDashboardSummaryByBar(barId) {
       GREATEST(
          COALESCE((SELECT MAX(created_at) FROM orders WHERE table_id = t.id), '1970-01-01'::timestamp),
          COALESCE((SELECT MAX(created_at) FROM requests WHERE table_id = t.id), '1970-01-01'::timestamp),
-         COALESCE(t.updated_at, '1970-01-01'::timestamp)
+         COALESCE(t.last_activity_at, '1970-01-01'::timestamp)
       ) as last_activity_time
 
     FROM tables t

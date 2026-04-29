@@ -10,3 +10,4 @@ TODO.local.md
 .continue/agents/new-config.yaml
 PRODUCT_OVERVIEW.md
 market_situation/Market scan and pricing guidance for BarManager SaaS.pdf
+backend/test-db.js
