@@ -104,7 +104,7 @@ export function TableCard({
             +
           </button>
 
-          {isPendingApproval && !isSmall && (
+          {isPendingApproval && (
             <span className="bg-yellow-400 text-black text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-tighter">
               Așteaptă Aprobare
             </span>
@@ -164,74 +164,60 @@ export function TableCard({
       </div>
 
       {/* PRODUSE DE SERVIT */}
-      {!isSmall && (
-        <div className="flex-1 space-y-3 mb-8">
-          <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest ml-2">
-            Comenzi active
-          </p>
-          {hasOrders ? (
-            group.pending_items.map((item: any) => {
-              const isServed = item.status === 'served';
-              return (
-                <div
-                  key={item.item_id}
-                  className={`flex justify-between items-center p-4 rounded-2xl border transition-colors group ${isServed
-                      ? "bg-green-500/10 border-green-500/50 shadow-[0_0_15px_rgba(34,197,94,0.2)]"
-                      : "bg-zinc-100 dark:bg-black/40 border-zinc-200 dark:border-white/5 hover:border-orange-500/50"
-                    }`}
-                >
-                  <div className="flex flex-col max-w-[70%]">
-                    <span className={`font-black text-sm uppercase leading-tight ${isServed ? "text-green-600 dark:text-green-400" : "text-zinc-900 dark:text-white"}`}>
-                      {item.qty}x {item.name}
+      <div className="flex-1 space-y-3 mb-8 mt-4">
+        <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest ml-2">
+          Comenzi active
+        </p>
+        {hasOrders ? (
+          group.pending_items.map((item: any) => {
+            const isServed = item.status === 'served';
+            return (
+              <div
+                key={item.item_id}
+                className={`flex justify-between items-center p-3 rounded-2xl border transition-colors group ${isServed
+                    ? "bg-green-500/10 border-green-500/50 shadow-[0_0_15px_rgba(34,197,94,0.2)]"
+                    : "bg-zinc-100 dark:bg-black/40 border-zinc-200 dark:border-white/5 hover:border-orange-500/50"
+                  }`}
+              >
+                <div className="flex flex-col max-w-[70%]">
+                  <span className={`font-black text-sm uppercase leading-tight ${isServed ? "text-green-600 dark:text-green-400" : "text-zinc-900 dark:text-white"}`}>
+                    {item.qty}x {item.name}
+                  </span>
+                  {item.notes && (
+                    <span className="text-[10px] font-bold italic text-orange-600 dark:text-orange-400 mt-0.5">
+                      * {item.notes}
                     </span>
-                    {item.notes && (
-                      <span className="text-[10px] font-bold italic text-orange-600 dark:text-orange-400 mt-0.5">
-                        * {item.notes}
-                      </span>
-                    )}
-                    {isServed && (
-                      <span className="text-[9px] font-black uppercase tracking-widest text-green-500 mt-1">
-                        ✅ Gata de dus la masă
-                      </span>
-                    )}
-                  </div>
-                  {isServed ? (
-                    <button
-                      onClick={() => onDeliver && onDeliver(item.item_id)}
-                      className="bg-green-600 hover:bg-green-500 text-white px-3 h-10 flex items-center justify-center rounded-xl shadow-lg transition-transform active:scale-90 text-[10px] uppercase font-black tracking-widest"
-                    >
-                      La Masă
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => onServe && onServe(item.item_id)}
-                      className="bg-zinc-200 dark:bg-white/10 hover:bg-green-500 hover:text-white dark:text-white text-zinc-600 w-10 h-10 flex items-center justify-center rounded-xl shadow-sm transition-colors active:scale-90 font-black"
-                    >
-                      ✓
-                    </button>
+                  )}
+                  {isServed && (
+                    <span className="text-[9px] font-black uppercase tracking-widest text-green-500 mt-1">
+                      ✅ Gata de dus
+                    </span>
                   )}
                 </div>
-              );
-            })
-          ) : (
-            <div className="py-8 text-center bg-zinc-50 dark:bg-white/5 rounded-4xl border-2 border-dashed border-zinc-200 dark:border-zinc-800 text-zinc-400 font-bold uppercase text-[9px] italic">
-              Toate produsele sunt la client ✅
-            </div>
-          )}
-        </div>
-      )}
-
-      {isSmall && hasOrders && (
-        <div className="flex-1 mb-4 flex items-center">
-           <span className="bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest">
-             {group.pending_items.length} produse pending
-           </span>
-        </div>
-      )}
-
-      {isSmall && !hasOrders && (
-        <div className="flex-1 mb-4" />
-      )}
+                {isServed ? (
+                  <button
+                    onClick={() => onDeliver && onDeliver(item.item_id)}
+                    className="bg-green-600 hover:bg-green-500 text-white px-2 h-8 flex items-center justify-center rounded-xl shadow-lg transition-transform active:scale-90 text-[9px] uppercase font-black tracking-widest"
+                  >
+                    La Masă
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => onServe && onServe(item.item_id)}
+                    className="bg-zinc-200 dark:bg-white/10 hover:bg-green-500 hover:text-white dark:text-white text-zinc-600 w-8 h-8 flex items-center justify-center rounded-xl shadow-sm transition-colors active:scale-90 font-black"
+                  >
+                    ✓
+                  </button>
+                )}
+              </div>
+            );
+          })
+        ) : (
+          <div className="py-6 text-center bg-zinc-50 dark:bg-white/5 rounded-4xl border-2 border-dashed border-zinc-200 dark:border-zinc-800 text-zinc-400 font-bold uppercase text-[9px] italic">
+            Totul e la client ✅
+          </div>
+        )}
+      </div>
 
       {/* BUTON ÎNCHIDERE NOTĂ */}
       <button
