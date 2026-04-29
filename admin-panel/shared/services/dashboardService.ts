@@ -187,4 +187,17 @@ export const dashboardService = {
     }
     return res.json();
   },
+
+  getTableHistory: async (tableId: string) => {
+    const res = await fetchWithAuth(`${API_BASE_URL}/table-history/${tableId}`);
+    if (!res.ok) throw new Error("Eroare la preluarea istoricului");
+    return res.json();
+  },
+
+  deleteOrderItem: async (itemId: string) => {
+    const res = await fetchWithAuth(`${API_BASE_URL}/order-items/${itemId}`, {
+      method: "DELETE",
+    });
+    return res.ok;
+  },
 };

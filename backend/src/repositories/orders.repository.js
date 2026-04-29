@@ -71,7 +71,7 @@ export async function updateOrderStatus(orderId, status) {
 
 export async function getUnpaidTableHistory(tableId) {
   const query = `
-    SELECT oi.quantity, p.name, oi.price_at_time as price, o.placed_by_staff, oi.notes
+    SELECT oi.id as item_id, oi.quantity, p.name, oi.price_at_time as price, o.placed_by_staff, oi.notes
     FROM orders o
     JOIN order_items oi ON oi.order_id = o.id
     JOIN products p ON oi.product_id = p.id
@@ -115,6 +115,10 @@ export async function markOrderItemDelivered(itemId) {
   await pool.query("UPDATE order_items SET status = 'delivered', served_at = NOW() WHERE id = $1", [
     itemId,
   ]);
+}
+
+export async function deleteOrderItem_db(itemId) {
+  await pool.query("DELETE FROM order_items WHERE id = $1", [itemId]);
 }
 
 export async function closeTableOrders(tableId, paymentMethod = "cash") {

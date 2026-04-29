@@ -9,8 +9,8 @@ import {
   updateOrderStatus,
   withTransaction,
   insertRequest,
-  updateRequestStatus,
   markOrderItemDelivered,
+  deleteOrderItem_db,
 } from "../repositories/orders.repository.js";
 
 export async function createOrder(payload) {
@@ -80,5 +80,10 @@ export async function deliverOrderItem(itemId) {
 
 export async function closeTable(tableId, paymentMethod = 'cash') {
   await closeTableOrders(tableId, paymentMethod);
+  return { success: true };
+}
+
+export async function removeOrderItem(itemId) {
+  await deleteOrderItem_db(itemId);
   return { success: true };
 }

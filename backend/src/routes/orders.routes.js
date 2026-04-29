@@ -11,6 +11,7 @@ import {
   updateOrderStatusHandler,
   unlockTableHandler,
   deliverOrderItemHandler,
+  deleteOrderItemHandler,
 } from "../controllers/orders.controller.js";
 import { validateCreateOrderPayload } from "../middleware/validation.js";
 
@@ -28,6 +29,7 @@ router.get("/orders/:barId", verifyToken, listActiveOrdersHandler);
 router.patch("/orders/:orderId/status", verifyToken, updateOrderStatusHandler);
 router.patch("/order-items/:itemId/serve", verifyToken, serveOrderItemHandler);
 router.patch("/order-items/:itemId/deliver", verifyToken, deliverOrderItemHandler);
+router.delete("/order-items/:itemId", verifyToken, deleteOrderItemHandler);
 router.patch("/tables/:tableId/close", verifyToken, closeTableHandler);
 
 export default router;

@@ -7,6 +7,7 @@ import {
   listActiveOrders,
   serveOrderItem,
   deliverOrderItem,
+  removeOrderItem,
 } from "../services/orders.service.js";
 import {
   createRequest,
@@ -266,6 +267,18 @@ export async function getPersonalHistoryHandler(req, res) {
     if (!personal_token) return res.status(400).json({ error: "personal_token lipsă" });
     const items = await getMyShare(tableId, personal_token);
     return res.json(items);
+  } catch (error) {
+    return res.status(resolveStatus(error)).json({ error: error.message });
+  }
+}
+
+export async function deleteOrderItemHandler(req, res) {
+  try {
+    const { itemId } = req.params;
+    const response = await removeOrderItem(itemId);
+    const io = req.app.get("io");
+    if (io) io.emit("new-data", { type: "ITEM_DELETED", itemId });
+    return res.json(response);
   } catch (error) {
     return res.status(resolveStatus(error)).json({ error: error.message });
   }

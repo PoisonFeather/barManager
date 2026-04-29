@@ -25,6 +25,7 @@ import { MenuSection } from "./components/menuSection";
 import { Sidebar } from "./components/Sidebar";
 import { AnalyticsSection } from "./components/analyticsSection";
 import { StaffOrderModal } from "./components/StaffOrderModal";
+import { TableHistoryModal } from "./components/TableHistoryModal";
 import { ZoneDroppable } from "./components/ZoneDroppable";
 import { useZones } from "@/shared/hooks/useZones";
 
@@ -34,6 +35,7 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
   const [activeTab, setActiveTab] = useState<"orders" | "stock" | "menu">("orders");
   const [mainView, setMainView] = useState<"workspace" | "analytics">("workspace");
   const [staffOrderTarget, setStaffOrderTarget] = useState<{ tableId: string; tableNumber: number } | null>(null);
+  const [historyTarget, setHistoryTarget] = useState<{ tableId: string; tableNumber: number } | null>(null);
   const [activeZoneId, setActiveZoneId] = useState<string | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [userRole, setUserRole] = useState<string>("server");
@@ -69,6 +71,13 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
   const displayedTableGroups = activeZoneId 
     ? tableGroups.filter(t => t.zone_id === activeZoneId)
     : tableGroups;
+
+  // Sorting tables by latest activity time
+  const sortedTableGroups = [...displayedTableGroups].sort((a, b) => {
+    const aTime = a.last_activity_time ? new Date(a.last_activity_time).getTime() : 0;
+    const bTime = b.last_activity_time ? new Date(b.last_activity_time).getTime() : 0;
+    return bTime - aTime;
+  });
 
   const { isAudioEnabled, enableAudio } = useAudioAlerts(tableGroups);
 
@@ -147,7 +156,6 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
     }
   };
 
-  // 2. LOGICA PENTRU DRAG & DROP
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
 
@@ -170,6 +178,36 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
       }
     }
   };
+
+  const renderTables = (groups: any[], size: "small" | "large") => (
+    <div className={`grid ${size === "small" ? "grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"} gap-6 animate-in fade-in duration-700`}>
+      {groups.length === 0 ? (
+        <div className="col-span-full py-32 text-center border-2 border-dashed border-zinc-200 dark:border-zinc-900 rounded-[4rem]">
+          <p className="text-zinc-400 font-black uppercase tracking-widest text-sm italic">Nicio masă în această zonă</p>
+        </div>
+      ) : (
+        groups.map(group => (
+          <TableCard 
+            key={group.table_id} 
+            group={group} 
+            size={size}
+            onComplete={handleComplete} 
+            onServe={handleServe} 
+            onDeliver={handleDeliver}
+            onClose={() => handleClose(group.table_id, group.requests?.find((r: any) => r.type === "bill")?.payment_method)}
+            onApprove={handleApprove}
+            onReject={handleReject}
+            onAddOrder={(tableId: string, tableNumber: number) =>
+              setStaffOrderTarget({ tableId, tableNumber })
+            }
+            onOpenHistory={(tableId: string, tableNumber: number) =>
+              setHistoryTarget({ tableId, tableNumber })
+            }
+          />
+        ))
+      )}
+    </div>
+  );
 
   if (!barData) return <div className="min-h-screen bg-black flex items-center justify-center text-white font-black animate-pulse uppercase tracking-[0.5em]">Conectare...</div>;
 
@@ -225,29 +263,35 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in duration-700">
-                  {displayedTableGroups.length === 0 ? (
-                    <div className="col-span-full py-32 text-center border-2 border-dashed border-zinc-200 dark:border-zinc-900 rounded-[4rem]">
-                      <p className="text-zinc-400 font-black uppercase tracking-widest text-sm italic">Nicio masă în această zonă</p>
-                    </div>
-                  ) : (
-                    displayedTableGroups.map(group => (
-                      <TableCard 
-                        key={group.table_id} 
-                        group={group} 
-                        onComplete={handleComplete} 
-                        onServe={handleServe} 
-                        onDeliver={handleDeliver}
-                        onClose={() => handleClose(group.table_id, group.requests?.find((r: any) => r.type === "bill")?.payment_method)}
-                        onApprove={handleApprove}
-                        onReject={handleReject}
-                        onAddOrder={(tableId: string, tableNumber: number) =>
-                          setStaffOrderTarget({ tableId, tableNumber })
-                        }
-                      />
-                    ))
-                  )}
-                </div>
+                {activeZoneId === null ? (
+                  <div className="space-y-12">
+                    {zones.map(zone => {
+                      const zoneTables = sortedTableGroups.filter(t => t.zone_id === zone.id);
+                      if (zoneTables.length === 0) return null;
+                      return (
+                        <div key={zone.id}>
+                          <h2 className="text-xl font-black uppercase tracking-widest mb-6 flex items-center gap-4">
+                            <span>{zone.name}</span>
+                            <div className="h-[1px] bg-zinc-200 dark:bg-white/10 flex-1"></div>
+                          </h2>
+                          {renderTables(zoneTables, "small")}
+                        </div>
+                      );
+                    })}
+                    {/* Unassigned Tables */}
+                    {sortedTableGroups.filter(t => !t.zone_id).length > 0 && (
+                      <div>
+                        <h2 className="text-xl font-black uppercase tracking-widest mb-6 flex items-center gap-4 text-zinc-500">
+                          <span>Fără Zonă</span>
+                          <div className="h-[1px] bg-zinc-200 dark:bg-white/10 flex-1"></div>
+                        </h2>
+                        {renderTables(sortedTableGroups.filter(t => !t.zone_id), "small")}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  renderTables(sortedTableGroups, "large")
+                )}
               </DndContext>
             )}
 
@@ -268,6 +312,16 @@ export default function BartenderDashboard({ params }: { params: Promise<{ slug:
           categories={barData.categories || []}
           onClose={() => setStaffOrderTarget(null)}
           onSuccess={refresh}
+        />
+      )}
+
+      {/* Modal Istoric Masă */}
+      {historyTarget && (
+        <TableHistoryModal
+          tableId={historyTarget.tableId}
+          tableNumber={historyTarget.tableNumber}
+          onClose={() => setHistoryTarget(null)}
+          onUpdate={refresh}
         />
       )}
     </div>

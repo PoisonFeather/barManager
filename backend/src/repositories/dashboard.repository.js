@@ -42,7 +42,13 @@ export async function getDashboardSummaryByBar(barId) {
       COALESCE(SUM(oi.quantity * oi.price_at_time) FILTER (WHERE o.status = 'confirmed'), 0) as total_to_pay,
 
       -- 👇 NOU 1: Adunăm numerele meselor copil ca să apară pe ecusonul albastru (+ Mesele: 5, 6)
-      COALESCE((SELECT json_agg(child.table_number) FROM tables child WHERE child.merged_into_id = t.id), '[]'::json) as merged_children
+      COALESCE((SELECT json_agg(child.table_number) FROM tables child WHERE child.merged_into_id = t.id), '[]'::json) as merged_children,
+
+      GREATEST(
+         COALESCE((SELECT MAX(created_at) FROM orders WHERE table_id = t.id), '1970-01-01'::timestamp),
+         COALESCE((SELECT MAX(created_at) FROM requests WHERE table_id = t.id), '1970-01-01'::timestamp),
+         COALESCE(t.updated_at, '1970-01-01'::timestamp)
+      ) as last_activity_time
 
     FROM tables t
     LEFT JOIN orders o ON (o.table_id = t.id OR o.table_id IN (SELECT id FROM tables WHERE merged_into_id = t.id)) AND o.is_paid = FALSE
