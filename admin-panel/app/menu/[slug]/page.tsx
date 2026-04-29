@@ -148,7 +148,11 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
   const scrollToCategory = useCallback((catId: string) => {
     const el = document.getElementById(`cat-${catId}`);
     if (!el) return;
-    const offset = 120; // header + nav bar height
+    
+    // Calculăm înălțimea reală a header-ului sticky pentru offset
+    const stickyWrapper = document.getElementById('sticky-header-wrapper');
+    const offset = stickyWrapper ? stickyWrapper.offsetHeight + 20 : 130;
+    
     const top = el.getBoundingClientRect().top + window.scrollY - offset;
     window.scrollTo({ top, behavior: 'smooth' });
     setActiveCategory(catId);
@@ -271,64 +275,67 @@ export default function ClientMenu({ params }: { params: Promise<{ slug: string 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-black text-zinc-900 dark:text-white pb-32 relative transition-colors duration-300">
 
-      {/* HEADER */}
-      <div className="sticky top-0 z-40 p-5 backdrop-blur-xl border-b border-zinc-200 dark:border-white/10 flex justify-between items-center bg-white/80 dark:bg-black/80" style={{ borderBottomColor: barData.primary_color + '44' }}>
-        <div>
-          {(barData.logo_url || barData.logo_url_light) ? (
-            <>
-              {/* Logo Dark Mode — vizibil doar în dark */}
-              <img
-                src={barData.logo_url || barData.logo_url_light}
-                alt={barData.name}
-                className="h-8 w-auto max-w-40 object-contain hidden dark:block"
-              />
-              {/* Logo Light Mode — vizibil doar în light */}
-              <img
-                src={barData.logo_url_light || barData.logo_url}
-                alt={barData.name}
-                className="h-8 w-auto max-w-40 object-contain block dark:hidden"
-              />
-            </>
-          ) : (
-            <h1 className="font-black text-2xl uppercase leading-none">{barData.name}</h1>
-          )}
-          <p className="text-[9px] text-zinc-500 font-bold uppercase mt-1 tracking-widest leading-none">Order Live System</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <ThemeToggle />
-          <div className="px-4 py-2 rounded-2xl text-[11px] font-black shadow-sm" style={{ backgroundColor: barData.primary_color || '#ffffff', color: '#000' }}>
-            Masa {currentTable ? currentTable.table_number : "??"}
+      {/* STICKY HEADER & NAV WRAPPER */}
+      <div id="sticky-header-wrapper" className="sticky top-0 z-40 flex flex-col">
+        {/* HEADER */}
+        <div className="p-5 backdrop-blur-xl border-b border-zinc-200 dark:border-white/10 flex justify-between items-center bg-white/80 dark:bg-black/80" style={{ borderBottomColor: barData.primary_color + '44' }}>
+          <div>
+            {(barData.logo_url || barData.logo_url_light) ? (
+              <>
+                {/* Logo Dark Mode — vizibil doar în dark */}
+                <img
+                  src={barData.logo_url || barData.logo_url_light}
+                  alt={barData.name}
+                  className="h-8 w-auto max-w-40 object-contain hidden dark:block"
+                />
+                {/* Logo Light Mode — vizibil doar în light */}
+                <img
+                  src={barData.logo_url_light || barData.logo_url}
+                  alt={barData.name}
+                  className="h-8 w-auto max-w-40 object-contain block dark:hidden"
+                />
+              </>
+            ) : (
+              <h1 className="font-black text-2xl uppercase leading-none">{barData.name}</h1>
+            )}
+            <p className="text-[9px] text-zinc-500 font-bold uppercase mt-1 tracking-widest leading-none">Order Live System</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <div className="px-4 py-2 rounded-2xl text-[11px] font-black shadow-sm" style={{ backgroundColor: barData.primary_color || '#ffffff', color: '#000' }}>
+              Masa {currentTable ? currentTable.table_number : "??"}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* CATEGORY NAV BAR */}
-      {barData.categories?.length > 1 && (
-        <div
-          ref={navRef}
-          className="sticky top-17.25 z-30 bg-white/90 dark:bg-black/90 backdrop-blur-xl border-b border-zinc-100 dark:border-white/5 px-4 py-3"
-        >
-          <div className="flex gap-2 overflow-x-auto no-scrollbar">
-            {barData.categories.map((cat: any) => {
-              const isActive = activeCategory === cat.id;
-              return (
-                <button
-                  key={cat.id}
-                  ref={isActive ? (el) => { activePillRef.current = el; } : null}
-                  onClick={() => scrollToCategory(cat.id)}
-                  className="shrink-0 px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-all duration-200 whitespace-nowrap"
-                  style={isActive
-                    ? { backgroundColor: barData.primary_color || '#18181b', color: '#000' }
-                    : { backgroundColor: 'transparent', color: 'inherit', border: '1px solid', borderColor: 'rgba(128,128,128,0.25)' }
-                  }
-                >
-                  {cat.name}
-                </button>
-              );
-            })}
+        {/* CATEGORY NAV BAR */}
+        {barData.categories?.length > 1 && (
+          <div
+            ref={navRef}
+            className="bg-white/90 dark:bg-black/90 backdrop-blur-xl border-b border-zinc-100 dark:border-white/5 px-4 py-3"
+          >
+            <div className="flex gap-2 overflow-x-auto no-scrollbar">
+              {barData.categories.map((cat: any) => {
+                const isActive = activeCategory === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    ref={isActive ? (el) => { activePillRef.current = el; } : null}
+                    onClick={() => scrollToCategory(cat.id)}
+                    className="shrink-0 px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-all duration-200 whitespace-nowrap"
+                    style={isActive
+                      ? { backgroundColor: barData.primary_color || '#18181b', color: '#000' }
+                      : { backgroundColor: 'transparent', color: 'inherit', border: '1px solid', borderColor: 'rgba(128,128,128,0.25)' }
+                    }
+                  >
+                    {cat.name}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* LISTA PRODUSE */}
       <div className="p-4 space-y-10 mt-4">

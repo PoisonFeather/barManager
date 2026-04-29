@@ -46,13 +46,12 @@ const LANG = {
     pricingSub:
       "Nu plătești abonamente mari fără să știi ce primești. Plătești exact cât folosești.",
 
-    planFreeTitle: "Gratuit",
-    planFreePrice: "0€",
+    planFreeTitle: "Doar meniu",
+    planFreePrice: "10€",
     planFreePeriod: "/ lună",
-    planFreeDesc: "Pornește motorul. Fără card, fără risc.",
+    planFreeDesc: "Pornește motorul.",
     planFreeFeatures: [
       "1 locație activă",
-      "Până la 5 mese",
       "Meniu QR nelimitat",
       "Acces la dashboard de bază",
     ],
@@ -93,11 +92,11 @@ const LANG = {
 
     testimonialBadge: "Ce spun clienții noștri",
     t1Quote:
-      "\"Am redus erorile de comandă cu 80% în prima săptămână. Personalul nu mai aleargă după bonuri.\"\n— Mihai, Bar Fabric București",
+      "\"Am redus erorile de comandă cu 80% în prima săptămână. Personalul nu mai aleargă după bonuri.\"\n— Mihai",
     t2Quote:
-      "\"5€ pe masă? Recuperăm asta dintr-o singură comandă uitată de ospătar.\"\n— Elena, Terasa Vii Cluj",
+      "\"5€ pe masă? Recuperăm asta dintr-o singură comandă uitată de ospătar.\"\n— Elena",
     t3Quote:
-      "\"QR-ul e o minune. Clienții comandă singuri, noi ne concentrăm pe calitate.\"\n— Radu, Cafenea Nomad",
+      "\"QR-ul e o minune. Clienții comandă singuri, noi ne concentrăm pe calitate.\"\n— Radu",
   },
   en: {
     lang: "en",
@@ -139,13 +138,12 @@ const LANG = {
     pricingSub:
       "No hidden fees, no opaque subscriptions. You pay exactly for what you use.",
 
-    planFreeTitle: "Free",
-    planFreePrice: "€0",
+    planFreeTitle: "Menu only",
+    planFreePrice: "€10",
     planFreePeriod: "/ month",
-    planFreeDesc: "Start the engine. No card required, no risk.",
+    planFreeDesc: "Start the engine.",
     planFreeFeatures: [
       "1 active location",
-      "Up to 5 tables",
       "Unlimited QR menu",
       "Basic dashboard access",
     ],
@@ -186,11 +184,11 @@ const LANG = {
 
     testimonialBadge: "What our clients say",
     t1Quote:
-      "\"We reduced order errors by 80% in the first week. Staff no longer chase receipts.\"\n— Mihai, Bar Fabric Bucharest",
+      "\"We reduced order errors by 80% in the first week. Staff no longer chase receipts.\"\n— Mihai",
     t2Quote:
-      "\"€5 per table? We recover that from a single order a waiter forgot.\"\n— Elena, Terasa Vii Cluj",
+      "\"€5 per table? We recover that from a single order a waiter forgot.\"\n— Elena",
     t3Quote:
-      "\"QR is a game-changer. Customers order themselves, we focus on quality.\"\n— Radu, Nomad Café",
+      "\"QR is a game-changer. Customers order themselves, we focus on quality.\"\n— Radu",
   },
 } as const;
 
@@ -231,7 +229,7 @@ export default function Home() {
     <>
       {/* SEO — injected via next/head semantics; layout.tsx handles <title> globally */}
       <div
-        className="min-h-screen bg-black text-white font-sans overflow-x-hidden selection:bg-orange-500 selection:text-black"
+        className="min-h-screen bg-zinc-900 text-white font-sans overflow-x-hidden selection:bg-orange-500 selection:text-black"
         lang={t.lang}
       >
         {/* ── BACKGROUND GLOWS ──────────────────────────────────────── */}
@@ -240,7 +238,7 @@ export default function Home() {
 
         {/* ── NAVBAR ────────────────────────────────────────────────── */}
         <nav
-          className="fixed top-0 left-0 right-0 z-50 px-6 py-5 border-b border-white/5 bg-black/60 backdrop-blur-lg"
+          className="fixed top-0 left-0 right-0 z-50 px-6 py-5 border-b border-white/5 bg-zinc-900/80 backdrop-blur-lg"
           role="navigation"
           aria-label="Main navigation"
         >
@@ -375,9 +373,9 @@ export default function Home() {
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ delay }}
                   viewport={{ once: true, margin: "-100px" }}
-                  className="bg-zinc-900/50 p-8 rounded-[2.5rem] border border-white/5 hover:bg-zinc-900 transition-colors group"
+                  className="bg-zinc-800/50 p-8 rounded-[2.5rem] border border-white/5 hover:bg-zinc-800 transition-colors group"
                 >
-                  <div className="w-14 h-14 rounded-2xl bg-zinc-800 flex items-center justify-center text-2xl mb-6 group-hover:bg-orange-500/20 group-hover:text-orange-400 transition-colors">
+                  <div className="w-14 h-14 rounded-2xl bg-zinc-700/50 flex items-center justify-center text-2xl mb-6 group-hover:bg-orange-500/20 group-hover:text-orange-400 transition-colors">
                     {icon}
                   </div>
                   <h3 className="text-lg font-black tracking-tight mb-2">{title}</h3>
@@ -427,7 +425,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="bg-zinc-900/50 rounded-[2.5rem] border border-white/5 p-10 flex flex-col"
+                className="bg-zinc-800/50 rounded-[2.5rem] border border-white/5 p-10 flex flex-col"
               >
                 <div className="mb-8">
                   <h3 className="text-xl font-black tracking-tight mb-1">{t.planFreeTitle}</h3>
@@ -458,7 +456,7 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.12 }}
                 viewport={{ once: true }}
-                className="relative bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-[2.5rem] border border-orange-500/30 p-10 flex flex-col shadow-[0_0_60px_rgba(234,88,12,0.15)] overflow-hidden"
+                className="relative bg-gradient-to-br from-zinc-800 to-zinc-900 rounded-[2.5rem] border border-orange-500/30 p-10 flex flex-col shadow-[0_0_60px_rgba(234,88,12,0.15)] overflow-hidden"
               >
                 {/* glow */}
                 <div className="absolute top-0 right-0 w-[60%] h-[60%] bg-orange-500/10 blur-[80px] pointer-events-none" />
@@ -528,7 +526,7 @@ export default function Home() {
               ].map(({ val, label, color }) => (
                 <div
                   key={label}
-                  className="text-center bg-zinc-900/50 rounded-3xl border border-white/5 px-8 py-8"
+                  className="text-center bg-zinc-800/50 rounded-3xl border border-white/5 px-8 py-8"
                 >
                   <div className={`text-4xl font-black tracking-tighter mb-2 ${color}`}>{val}</div>
                   <div className="text-zinc-400 text-sm font-medium">{label}</div>
@@ -560,7 +558,7 @@ export default function Home() {
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.1 }}
                     viewport={{ once: true }}
-                    className="bg-zinc-900/50 border border-white/5 rounded-[2rem] p-8"
+                    className="bg-zinc-800/50 border border-white/5 rounded-[2rem] p-8"
                   >
                     <div className="text-orange-400 text-3xl mb-4 leading-none">&ldquo;</div>
                     <p className="text-sm text-zinc-300 leading-relaxed font-medium mb-6">{quote?.replace(/^"/, "")}</p>
@@ -574,7 +572,7 @@ export default function Home() {
           </section>
 
           {/* ── CTA BANNER ───────────────────────────────────────────── */}
-          <div className="mt-32 md:mt-48 mb-20 bg-gradient-to-tr from-zinc-900 to-zinc-950 border border-white/10 rounded-[3rem] p-10 md:p-20 text-center relative overflow-hidden">
+          <div className="mt-32 md:mt-48 mb-20 bg-gradient-to-tr from-zinc-800 to-zinc-900 border border-white/10 rounded-[3rem] p-10 md:p-20 text-center relative overflow-hidden">
             <div className="absolute top-0 right-0 w-[50%] h-[100%] bg-orange-500/10 blur-[100px] pointer-events-none" />
             <motion.h2
               variants={fadeUp}
@@ -613,7 +611,7 @@ export default function Home() {
         </main>
 
         {/* ── FOOTER ────────────────────────────────────────────────── */}
-        <footer className="border-t border-white/5 bg-black text-center py-12 relative z-10" role="contentinfo">
+        <footer className="border-t border-white/5 bg-zinc-950 text-center py-12 relative z-10" role="contentinfo">
           <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-2 opacity-50">
               <span className="text-xs font-black uppercase tracking-widest text-white">BarManager © 2026</span>
