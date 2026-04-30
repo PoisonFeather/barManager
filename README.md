@@ -1,176 +1,103 @@
-# BarManager
+# BarManager SaaS
 
-BarManager is a full-stack QR ordering MVP for bars and restaurants.
+BarManager is a modern, real-time, full-stack QR ordering and bar management SaaS platform. It streamlines the ordering process for customers while providing powerful tools for waitstaff, kitchen staff, and bar owners.
 
-Core flow:
+## 🌟 Core Features
 
-**Scan -> View menu -> Add to cart -> Send order -> Serve**
+- **Customer QR Menu**: Scan a table's QR code to view a dynamic, beautiful menu and place orders instantly without waiting for a waiter.
+- **Real-Time Staff Dashboard**: Waiters and bartenders receive orders instantly. Drag-and-drop table management, merging tables, and grouping by zones (e.g., Terrace, Interior).
+- **Kitchen Display System (KDS)**: Dedicated view for kitchen staff to track and complete food orders, notifying waitstaff instantly when food is ready to be delivered.
+- **Smart "My Share" Split Bill**: Customers at the same table can order independently from their own devices and easily track their personal contribution to the total table bill.
+- **Superadmin Dashboard**: Platform-wide management for the SaaS owner to track active bars, total revenue, churn risk, and platform health.
+- **Automated AI Menu Import**: Built-in pipeline to convert PDF menus into structured database entries using AI (Groq/OpenAI).
 
-## What it does
-
-- Creates a bar with full onboarding (bar + categories + products + tables)
-- Exposes a customer-facing QR menu
-- Accepts and tracks orders in real time for staff
-- Provides bartender dashboard actions (serve items, close tables, stock toggle)
-- Supports table service requests (waiter / bill)
-
-## Architecture
+## 🏗️ Architecture
 
 ```text
-Next.js Admin + Client Views
+Next.js (Admin, Superadmin, Customer Views)
         |
-        v
+    Socket.IO (Real-time sync)
+        |
 Node.js + Express REST API
         |
-        v
-PostgreSQL (Docker)
+PostgreSQL (Database)
 ```
 
-## Tech stack
+## 🛠️ Tech Stack
 
-- Backend: Node.js, Express, pg, dotenv, cors
-- Frontend: Next.js, React, TypeScript, Tailwind CSS
-- Database: PostgreSQL 15 (Docker)
+- **Frontend**: Next.js 16+, React, TypeScript, Tailwind CSS v4, Framer Motion
+- **Backend**: Node.js, Express, Socket.IO, pg, dotenv
+- **Database**: PostgreSQL (Docker)
 
-## Project structure
+## 📁 Project Structure
 
 ```text
 barManager/
-  backend/
-    index.js
-    src/
-      app.js
-      config/
-      db/
-      routes/
-  admin-panel/
-  docker/
-  README.md
+  admin-panel/     # Next.js Frontend (Customer Menu, Dashboard, KDS, Superadmin, Landing)
+  backend/         # Node.js Express API & Socket.IO Server
+  docker/          # PostgreSQL Docker Compose
+  import-menu/     # Standalone AI PDF parsing script
 ```
 
-## Backend SRP structure
+## 🚀 Local Setup
 
-The backend was refactored toward Single Responsibility Principle (SRP):
-
-- `backend/index.js`: process bootstrap only (load env, create app, start server)
-- `backend/src/config/`: environment loading and startup diagnostics
-- `backend/src/db/`: database connection pool
-- `backend/src/app.js`: express middleware + route composition
-- `backend/src/routes/`: domain-focused route modules
-
-This layout improves scalability, maintainability, and safer domain evolution.
-
-## Local setup
-
-### 1) Start PostgreSQL (Docker)
-
-Use the compose file under `docker/` (example):
+### 1. Start PostgreSQL (Docker)
 
 ```bash
 cd docker
 docker compose up -d
 ```
 
-### 2) Configure backend environment
+### 2. Configure Backend
 
 Create `backend/.env`:
 
 ```env
-DATABASE_URL=postgres://user:password@localhost:5432/barmanager
-```
-
-Optional:
-
-```env
+DATABASE_URL=postgresql://user:password@localhost:5432/barmanager
 PORT=3001
+JWT_SECRET=your_super_secret_key
 ```
 
-### 3) Run backend
-
+Run the backend:
 ```bash
 cd backend
 npm install
 npm run dev
 ```
 
-### 4) Run frontend
+### 3. Configure Frontend
 
+Create `admin-panel/.env.local`:
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3001
+NEXT_PUBLIC_SOCKET_URL=http://localhost:3001
+```
+
+Run the frontend:
 ```bash
 cd admin-panel
 npm install
 npm run dev
 ```
 
-Default ports:
+### Access Points:
+- **Landing Page**: `http://localhost:3000`
+- **Customer Menu**: `http://localhost:3000/menu/[slug]`
+- **Staff Dashboard**: `http://localhost:3000/dashboard/[slug]`
+- **Kitchen KDS**: `http://localhost:3000/dashboard/[slug]/kitchen`
+- **Superadmin**: `http://localhost:3000/superadmin`
+- **Backend API**: `http://localhost:3001`
 
-- Frontend: `http://localhost:3000`
-- Backend: `http://localhost:3001`
+## 🔌 API Overview (Main Endpoints)
 
-## Health checks
+- **Auth**: `/auth/login`, `/auth/register`
+- **Orders**: `/orders`, `/orders/staff`, `/orders/:orderId/status`
+- **Tables**: `/tables/:tableId/close`, `/dashboard/merge-tables`, `/dashboard/tables/:tableId/zone`
+- **Products**: `/dashboard/products`, `/categories`
+- **Real-time**: Handled via Socket.IO events (`new-data`, `table-updated`, `menu-updated`)
 
-- `GET /health/db`  
-  Checks API readiness and database connectivity.
+## 📈 Recent Updates
 
-Example:
-
-```bash
-curl http://localhost:3001/health/db
-```
-
-## API overview (main endpoints)
-
-### Onboarding and menu
-
-- `POST /onboarding/full-setup`
-- `GET /menu/:slug`
-- `GET /menu-complete/:slug`
-- `POST /categories`
-- `POST /products`
-
-### Orders and table lifecycle
-
-- `POST /orders`
-- `GET /orders/:barId`
-- `PATCH /orders/:orderId/status`
-- `GET /table-history/:tableId`
-- `PATCH /order-items/:itemId/serve`
-- `PATCH /tables/:tableId/close`
-
-### Dashboard and requests
-
-- `GET /dashboard/summary/:barId`
-- `PATCH /products/:productId/toggle`
-- `POST /requests`
-- `PATCH /requests/:id/complete`
-
-## Example onboarding payload
-
-```json
-{
-  "bar_name": "Sunset Pub",
-  "slug": "sunset-pub",
-  "primary_color": "#ff5500",
-  "bar_number_tables": 12,
-  "menu": [
-    {
-      "category": "Cocktails",
-      "products": [
-        {
-          "name": "Mojito",
-          "price": 28,
-          "description": "Rum, lime, mint, soda"
-        }
-      ]
-    }
-  ]
-}
-```
-
-## Roadmap
-
-- Auth and role-based access
-- Request validation middleware
-- Rate limiting and API hardening
-- Real-time updates (WebSocket or SSE)
-- QR generation per table
-- Analytics and payments
+- **Kitchen-to-Waitstaff Workflow**: Real-time notifications when food is ready to be delivered.
+- **Smart Zones & History**: Tables are dynamically grouped by physical zones. History modal allows staff to edit/delete past items from a bill.
+- **Premium Theming**: Updated SaaS landing page with dark mode and Framer Motion micro-animations.
