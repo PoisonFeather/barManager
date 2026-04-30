@@ -8,13 +8,12 @@ BarManager is a modern, real-time, full-stack QR ordering and bar management Saa
 - **Real-Time Staff Dashboard**: Waiters and bartenders receive orders instantly. Drag-and-drop table management, merging tables, and grouping by zones (e.g., Terrace, Interior).
 - **Kitchen Display System (KDS)**: Dedicated view for kitchen staff to track and complete food orders, notifying waitstaff instantly when food is ready to be delivered.
 - **Smart "My Share" Split Bill**: Customers at the same table can order independently from their own devices and easily track their personal contribution to the total table bill.
-- **Superadmin Dashboard**: Platform-wide management for the SaaS owner to track active bars, total revenue, churn risk, and platform health.
 - **Automated AI Menu Import**: Built-in pipeline to convert PDF menus into structured database entries using AI (Groq/OpenAI).
 
 ## 🏗️ Architecture
 
 ```text
-Next.js (Admin, Superadmin, Customer Views)
+Next.js (Admin, Customer Views)
         |
     Socket.IO (Real-time sync)
         |
@@ -33,7 +32,7 @@ PostgreSQL (Database)
 
 ```text
 barManager/
-  admin-panel/     # Next.js Frontend (Customer Menu, Dashboard, KDS, Superadmin, Landing)
+  admin-panel/     # Next.js Frontend (Customer Menu, Dashboard, KDS, Landing)
   backend/         # Node.js Express API & Socket.IO Server
   docker/          # PostgreSQL Docker Compose
   import-menu/     # Standalone AI PDF parsing script
@@ -85,7 +84,6 @@ npm run dev
 - **Customer Menu**: `http://localhost:3000/menu/[slug]`
 - **Staff Dashboard**: `http://localhost:3000/dashboard/[slug]`
 - **Kitchen KDS**: `http://localhost:3000/dashboard/[slug]/kitchen`
-- **Superadmin**: `http://localhost:3000/superadmin`
 - **Backend API**: `http://localhost:3001`
 
 ## 🔌 API Overview (Main Endpoints)
