@@ -156,19 +156,31 @@ export function WaitTimeSection({ barId }: WaitTimeSectionProps) {
              {data.rushHours?.length === 0 ? (
                 <p className="text-xs font-bold text-zinc-500">Nu există activitate comercială înregistrată.</p>
              ) : (
-                <div className="flex items-end gap-2 h-32 w-full overflow-x-auto pb-2">
-                  {/* Simplu bar chart in Tailwind */}
-                  {data.rushHours.map((rh: any, idx: number) => {
-                    // finding max to scale bars
-                    const maxOrders = Math.max(...data.rushHours.map((r: any) => parseInt(r.orders_count)));
-                    const heightPct = (parseInt(rh.orders_count) / maxOrders) * 100;
-                    return (
-                      <div key={idx} className="flex flex-col justify-end items-center gap-2 flex-shrink-0 w-8" title={`${rh.orders_count} comenzi`}>
-                        <div className="w-full bg-blue-500 dark:bg-blue-600 rounded-t-sm" style={{ height: `${heightPct}%`, minHeight: '4px' }}></div>
-                        <span className="text-[9px] font-bold text-zinc-500">{rh.hour}:00</span>
-                      </div>
-                    )
-                  })}
+                <div className="flex items-end gap-1 sm:gap-2 h-40 w-full overflow-x-auto pb-2 mt-4">
+                  {(() => {
+                    const maxOrders = Math.max(...data.rushHours.map((r: any) => parseInt(r.orders_count)), 1);
+                    return Array.from({ length: 24 }, (_, i) => {
+                      const existing = data.rushHours.find((r: any) => parseInt(r.hour) === i);
+                      return {
+                        hour: i,
+                        orders_count: existing ? parseInt(existing.orders_count) : 0
+                      };
+                    }).map((rh: any, idx: number) => {
+                      const heightPct = (rh.orders_count / maxOrders) * 100;
+                      return (
+                        <div key={idx} className="flex flex-col justify-end items-center gap-2 flex-1 min-w-[16px] sm:min-w-[20px] group" title={`${rh.orders_count} comenzi la ora ${rh.hour}:00`}>
+                          <span className="text-[10px] font-black text-orange-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {rh.orders_count > 0 ? rh.orders_count : ""}
+                          </span>
+                          <div 
+                             className={`w-full rounded-t-md transition-all ${rh.orders_count > 0 ? "bg-orange-500 dark:bg-orange-500" : "bg-zinc-100 dark:bg-zinc-800/50"}`} 
+                             style={{ height: rh.orders_count > 0 ? `${Math.max(heightPct, 8)}%` : '4px' }}>
+                          </div>
+                          <span className="text-[9px] font-bold text-zinc-400">{String(rh.hour).padStart(2, '0')}</span>
+                        </div>
+                      )
+                    });
+                  })()}
                 </div>
              )}
           </div>
